@@ -1,0 +1,1 @@
+export { ObjectDetailContent } from './ObjectDetailContent'; 
