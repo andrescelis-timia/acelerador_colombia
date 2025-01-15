@@ -8,6 +8,7 @@ import { Tab } from '@/components/atoms/Tab';
 import { TabPanel } from '@/components/atoms/TabPanel';
 import { ObjectDetailContentProps } from './types';
 import { RefinementFlow } from '@/components/organisms/RefinementFlow';
+import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   return (
@@ -42,7 +43,9 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </div>
         </TabPanel>
         <TabPanel>
-          Contenido de Gobierno del dato
+          <div className="p-4">
+            <DataGovernmentFlow objectId={objectId} />
+          </div>
         </TabPanel>
         <TabPanel>
           Contenido de Componentes de ingesta

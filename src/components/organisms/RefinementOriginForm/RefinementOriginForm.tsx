@@ -16,12 +16,8 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
   initialData 
 }: RefinementOriginFormProps) {
   const { user } = useAuth();
-  
-  console.log('RefinementOriginForm - initialData:', initialData);
-  const isEditing = initialData && 'id_refinement' in initialData;
-  console.log('RefinementOriginForm - isEditing:', isEditing);
-  console.log('RefinementOriginForm - initialData type:', initialData ? typeof initialData : 'null');
-  console.log('RefinementOriginForm - initialData keys:', initialData ? Object.keys(initialData) : 'null');
+    
+  const isEditing = initialData && 'id_refinement' in initialData;  
 
   if (!objectId) return null;
 
