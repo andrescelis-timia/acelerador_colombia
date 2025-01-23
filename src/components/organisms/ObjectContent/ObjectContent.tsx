@@ -9,6 +9,7 @@ import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { Column } from '@/components/molecules/DataTable/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -55,6 +56,7 @@ const columns: Column[] = [
 ];
 
 export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
+  const { user, country } = useAuth();
   const router = useRouter();
   const [objects, setObjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -67,8 +69,9 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
   }, [data]);
 
   const handleEdit = async (id: string) => {
-    const object = await getById(id);
-    setSelectedObject(object);
+    if (!user?.email) return;
+    const object = await getById(id, user.email, country);
+    setSelectedObject(object || undefined);
     setIsEditFormOpen(true);
   };
 

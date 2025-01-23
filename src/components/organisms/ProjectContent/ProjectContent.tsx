@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { ObjectForm } from '@/components/organisms/ObjectForm';
 import { ObjectCreate } from '@/services/Object/types';
 import { Column } from '@/components/molecules/DataTable/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -43,6 +44,7 @@ const columns: Column[] = [
 ];
 
 export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ProjectContentProps) => {
+  const { user, country } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -57,8 +59,9 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
   }, [data]);
 
   const handleEdit = async (id: string) => {
-    const project = await getById(id);
-    setSelectedProject(project);
+    if (!user?.email) return;
+    const project = await getById(id, user.email, country);
+    setSelectedProject(project || undefined);
     setIsEditFormOpen(true);
   };
 

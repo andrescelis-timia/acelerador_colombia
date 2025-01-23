@@ -12,10 +12,10 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
   objectId, 
   initialData 
 }: RefinementMasterFormProps) {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultMaster: RefinementMasterCreate = {
     id_object: objectId,
@@ -30,7 +30,7 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
     path_output_master: '',
     filters_pre_intake_master: '',
     observations_master: '',
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -114,9 +114,9 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createMasterRefinement(dataWithUser);
+          return createMasterRefinement(dataWithUser as RefinementMasterCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -125,9 +125,9 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateMasterRefinement(dataWithUser as RefinementMasterUpdateWithId);
+          return updateMasterRefinement(dataWithUser as RefinementMasterUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementMasterUpdateWithId).id_refinement : undefined}

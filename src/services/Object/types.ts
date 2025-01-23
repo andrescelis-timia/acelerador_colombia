@@ -31,6 +31,7 @@ export interface ObjectResponse {
   name: string;
   alias: string;
   status: ObjectStatus;
+  owner_country: string;
   url_document: string;
   creation_date: string;
   creation_user: string;

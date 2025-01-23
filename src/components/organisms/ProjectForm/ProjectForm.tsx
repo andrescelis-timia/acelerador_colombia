@@ -9,7 +9,7 @@ import { ProjectCreate } from '@/services/Project/types';
 import { useAuth } from '@/lib/context/AuthContext';
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, projectId, initialData }) => {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
 
   const fields: FormFieldConfig[] = projectId ? [
     {
@@ -57,18 +57,20 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
       } as ProjectCreate}
       service={{
         createData: async (data) => {
+          if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
-            creation_user: user?.email || ''
+            creation_user: user.email
           };
-          return createData(dataWithUser as ProjectCreate);
+          return createData(dataWithUser as ProjectCreate, user.email, country);
         },
         updateData: async (data) => {
+          if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
-            update_user: user?.email || ''
+            update_user: user.email
           };
-          return updateData(dataWithUser as ProjectUpdateWithId);
+          return updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
         }
       }}
       docId={projectId}

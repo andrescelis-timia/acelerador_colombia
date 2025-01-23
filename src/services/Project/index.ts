@@ -1,96 +1,109 @@
 import { ProjectCreate, ProjectDashboardData, ProjectResponse, ProjectTableData, ProjectUpdateWithId } from './types';
 import { transformToTableData, transformToDashboardData, transformToUpdateData } from './transforms';
+import { createFetcher } from '@/lib/api/fetcher';
 import { ObjectTableData } from '../Object/types';
 import { transformToTableData as objectTransformToTableData } from '../Object/transforms';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-function getAllData(transform: 'table'): Promise<ProjectTableData[]>;
-function getAllData(transform: 'dashboard'): Promise<ProjectDashboardData>;
-function getAllData(transform: 'raw'): Promise<ProjectResponse[]>;
-async function getAllData(transform: 'table' | 'dashboard' | 'raw') {
+function getAllData(transform: 'table', user: string, country: string): Promise<ProjectTableData[]>;
+function getAllData(transform: 'dashboard', user: string, country: string): Promise<ProjectDashboardData>;
+function getAllData(transform: 'raw', user: string, country: string): Promise<ProjectResponse[]>;
+async function getAllData(transform: 'table' | 'dashboard' | 'raw', user: string, country: string) {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/projects`);
-    if (!response.ok) throw new Error('Error al obtener proyectos');
-    const data: ProjectResponse[] = await response.json();
+    const data: ProjectResponse[] = await fetcher(`${API_URL}/projects`);
+    if (!data) return transform === 'table' || transform === 'raw' ? [] : null;
     
     if (transform === 'table') return transformToTableData(data);
     if (transform === 'dashboard') return transformToDashboardData(data);
     return data;
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return transform === 'table' || transform === 'raw' ? [] : null;
+    }
     console.error('Error al obtener proyectos:', error);
     throw error;
   }
 }
 
-async function getById(id: string): Promise<ProjectUpdateWithId> {
+async function getById(id: string, user: string, country: string): Promise<ProjectUpdateWithId | null> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/projects/${id}`);
-    if (!response.ok) throw new Error('Error al obtener proyecto');
-    const data: ProjectResponse = await response.json();
+    const data: ProjectResponse = await fetcher(`${API_URL}/projects/${id}`);
+    if (!data) return null;
     return {
       ...transformToUpdateData(data),
       id_project: data.id_project
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return null;
+    }
     console.error('Error al obtener proyecto:', error);
     throw error;
   }
 }
 
-async function deleteData(id: string): Promise<void> {
+async function deleteData(id: string, user: string, country: string): Promise<void> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/projects/${id}`, {
-      method: 'DELETE'
-    });
-    if (!response.ok) throw new Error('Error al eliminar proyecto');
-  } catch (error) {
+    await fetcher(`${API_URL}/projects/${id}`, { method: 'DELETE' });
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return;
+    }
     console.error('Error al eliminar proyecto:', error);
     throw error;
   }
 }
 
-async function createData(data: ProjectCreate): Promise<ProjectResponse> {
+async function createData(data: ProjectCreate, user: string, country: string): Promise<ProjectResponse> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/projects`, {
+    return await fetcher(`${API_URL}/projects`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error('Error al crear proyecto');
-    return await response.json();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error al crear proyecto:', error);
     throw error;
   }
 }
 
-async function updateData(data: ProjectUpdateWithId): Promise<void> {
+async function updateData(data: ProjectUpdateWithId, user: string, country: string): Promise<void> {
+  const fetcher = createFetcher(user, country);
+  
   try {
     const { id_project, ...updateData } = data;
-    const response = await fetch(`${API_URL}/projects/${id_project}`, {
+    await fetcher(`${API_URL}/projects/${id_project}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(updateData)
     });
-    if (!response.ok) throw new Error('Error al actualizar proyecto');
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return;
+    }
     console.error('Error al actualizar proyecto:', error);
     throw error;
   }
 }
 
-async function getObjectsById(id: string): Promise<ObjectTableData[]> {
+async function getObjectsById(id: string, user: string, country: string): Promise<ObjectTableData[]> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/projects/${id}/objects`);
-    if (!response.ok) throw new Error('Error al obtener objetos del proyecto');
-    const data = await response.json();
+    const data = await fetcher(`${API_URL}/projects/${id}/objects`);
+    if (!data) return [];
     return objectTransformToTableData(data);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return [];
+    }
     console.error('Error al obtener objetos del proyecto:', error);
     throw error;
   }

@@ -26,6 +26,7 @@ export interface ProjectResponse {
   ticket_jira: string;
   name: string;
   status: ProjectStatus;
+  owner_country: string;
   creation_date: string;
   creation_user: string;
   update_date?: string;

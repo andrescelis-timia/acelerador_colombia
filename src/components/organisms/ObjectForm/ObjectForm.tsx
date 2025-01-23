@@ -8,7 +8,7 @@ import { ObjectCreate, ObjectUpdateWithId } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
 
 export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, projectId, initialData }) => {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
 
   if (!projectId) return null;
 
@@ -77,19 +77,21 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       initialData={initialData || defaultObject}
       service={{
         createData: async (data) => {
+          if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
             id_project: projectId,
-            creation_user: user?.email || ''
+            creation_user: user.email
           };
-          return createData(dataWithUser as ObjectCreate);
+          return createData(dataWithUser as ObjectCreate, user.email, country);
         },
         updateData: async (data) => {
+          if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
-            update_user: user?.email || ''
+            update_user: user.email
           };
-          return updateData(dataWithUser as ObjectUpdateWithId);
+          return updateData(dataWithUser as ObjectUpdateWithId, user.email, country);
         }
       }}
       docId={isEditing ? (initialData as ObjectUpdateWithId).id_object : undefined}

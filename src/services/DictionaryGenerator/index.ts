@@ -1,22 +1,45 @@
-import { GenerateDictionaryRequest, GenerateDictionaryResponse } from './types';
+import { 
+  GenerateDictionaryJsonRequest,
+  GenerateDictionaryBaseRequest,
+  GenerateDictionaryBaseResponse
+} from './types';
+import { DictionaryJsonHeaderResponse } from '../DictionaryJsonHeader/types';
+import { createFetcher } from '@/lib/api/fetcher';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-async function generateDictionary(data: GenerateDictionaryRequest): Promise<GenerateDictionaryResponse> {
+async function generateDictionaryJson(data: GenerateDictionaryJsonRequest, user: string, country: string): Promise<DictionaryJsonHeaderResponse> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/dictionary-generator`, {
+    return await fetcher(`${API_URL}/dictionary-generator/json`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error('Error al generar diccionario');
-    return await response.json();
-  } catch (error) {
-    console.error('Error al generar diccionario:', error);
+  } catch (error: unknown) {
+    console.error('Error al generar diccionario JSON:', error);
+    throw error;
+  }
+}
+
+async function generateDictionaryBase(data: GenerateDictionaryBaseRequest, user: string, country: string): Promise<GenerateDictionaryBaseResponse> {
+  const fetcher = createFetcher(user, country);
+  
+  try {
+    return await fetcher(`${API_URL}/dictionary-generator/base`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      throw new Error('Diccionario JSON no encontrado');
+    }
+    console.error('Error al generar diccionario base:', error);
     throw error;
   }
 }
 
 export {
-  generateDictionary
+  generateDictionaryJson,
+  generateDictionaryBase
 }; 

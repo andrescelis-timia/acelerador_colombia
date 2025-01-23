@@ -5,8 +5,7 @@ import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createOriginRefinement, updateOriginRefinement } from '@/services/Refinement';
 import { RefinementOriginFormProps } from './types';
 import { useAuth } from '@/lib/context/AuthContext';
-import { RefinementOriginUpdateWithId } from '@/services/Refinement/types';
-import { RefinementOriginCreate } from '@/services/Refinement/types';
+import { RefinementOriginCreate, RefinementOriginUpdateWithId } from '@/services/Refinement/types';
 import { memo } from 'react';
 
 export const RefinementOriginForm = memo(function RefinementOriginForm({ 
@@ -15,11 +14,10 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
   objectId, 
   initialData 
 }: RefinementOriginFormProps) {
-  const { user } = useAuth();
-    
-  const isEditing = initialData && 'id_refinement' in initialData;  
+  const { user, country } = useAuth();
+  const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultOrigin: RefinementOriginCreate = {
     id_object: objectId,
@@ -44,7 +42,7 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
     table_content_staying_origin: '',
     depure_table_origin: '',
     moment_table_taken_origin: '',
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -184,9 +182,9 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createOriginRefinement(dataWithUser);
+          return createOriginRefinement(dataWithUser as RefinementOriginCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -195,9 +193,9 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateOriginRefinement(dataWithUser as RefinementOriginUpdateWithId);
+          return updateOriginRefinement(dataWithUser as RefinementOriginUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementOriginUpdateWithId).id_refinement : undefined}

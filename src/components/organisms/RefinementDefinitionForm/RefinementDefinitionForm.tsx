@@ -12,10 +12,10 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
   objectId, 
   initialData 
 }: RefinementDefinitionFormProps) {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultDefinition: RefinementDefinitionCreate = {
     id_object: objectId,
@@ -25,7 +25,7 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
     received_staging_filename_definition: '',
     table_raw_name_definition: '',
     table_master_name_definition: '',
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -79,9 +79,9 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createDefinitionRefinement(dataWithUser);
+          return createDefinitionRefinement(dataWithUser as RefinementDefinitionCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -90,9 +90,9 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateDefinitionRefinement(dataWithUser as RefinementDefinitionUpdateWithId);
+          return updateDefinitionRefinement(dataWithUser as RefinementDefinitionUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementDefinitionUpdateWithId).id_refinement : undefined}

@@ -164,6 +164,7 @@ export interface RefinementResponse {
   id_refinement: string;
   id_object: string;
   status: 'in_progress' | 'completed';
+  owner_country: string;
   origin?: RefinementOriginCreate;
   transmission?: RefinementTransmissionCreate;
   datio?: RefinementDatioCreate;

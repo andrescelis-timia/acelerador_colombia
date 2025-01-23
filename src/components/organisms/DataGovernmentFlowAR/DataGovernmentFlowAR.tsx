@@ -8,13 +8,13 @@ import { getRefinementByObjectId } from '@/services/Refinement';
 import { RefinementResponse } from '@/services/Refinement/types';
 import { gridLayout, flowStepsConfig } from './config';
 import { PlayIcon, EyeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import { generateDictionary } from '@/services/DictionaryGenerator';
+import { generateDictionaryJson } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDetail';
 import { DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 
-export const DataGovernmentFlow = ({ objectId }: DataGovernmentFlowProps) => {
-  const { user } = useAuth();
+export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
+  const { user, country } = useAuth();
   const [dictionaryJsonHeader, setDictionaryJsonHeader] = useState<DictionaryJsonHeaderResponse | null>(null);
   const [dictionaryJsonDetails, setDictionaryJsonDetails] = useState<DictionaryJsonDetailResponse[]>([]);
   const [refinement, setRefinement] = useState<RefinementResponse | null>(null);
@@ -22,15 +22,16 @@ export const DataGovernmentFlow = ({ objectId }: DataGovernmentFlowProps) => {
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
+    if (!user?.email) return;
     try {
       setLoading(true);
-      const data = await getRefinementByObjectId(objectId);
+      const data = await getRefinementByObjectId(objectId, user.email, country);
       setRefinement(data);
-      const dictData = await getDictionaryJsonHeader(objectId);
+      const dictData = await getDictionaryJsonHeader(objectId, user.email, country);
       setDictionaryJsonHeader(dictData);
       
       if (dictData?.id_dictionary_json_header) {
-        const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header);
+        const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header, user.email, country);
         setDictionaryJsonDetails(details);
       }
     } catch (error) {
@@ -38,7 +39,7 @@ export const DataGovernmentFlow = ({ objectId }: DataGovernmentFlowProps) => {
     } finally {
       setLoading(false);
     }
-  }, [objectId]);
+  }, [objectId, user?.email, country]);
 
   useEffect(() => {
     fetchData();
@@ -58,28 +59,25 @@ export const DataGovernmentFlow = ({ objectId }: DataGovernmentFlowProps) => {
   };
 
   const cleanDataForDownload = (header: DictionaryJsonHeaderResponse, details: DictionaryJsonDetailResponse[]) => {
-    const { 
-      id_dictionary_json_header, 
-      id_object, 
-      creation_date, 
-      creation_user, 
-      update_date, 
-      update_user, 
-      ...cleanHeader 
-    } = header;
+    const fieldsToRemove = [
+      'id_dictionary_json_header',
+      'id_object',
+      'creation_date',
+      'creation_user',
+      'update_date',
+      'update_user',
+      'id_dictionary_json_detail'
+    ];
 
-    const cleanDetails = details.map(detail => {
-      const { 
-        id_dictionary_json_detail, 
-        id_dictionary_json_header, 
-        creation_date, 
-        creation_user, 
-        update_date, 
-        update_user, 
-        ...cleanDetail 
-      } = detail;
-      return cleanDetail;
-    });
+    const cleanHeader = Object.fromEntries(
+      Object.entries(header).filter(([key]) => !fieldsToRemove.includes(key))
+    );
+
+    const cleanDetails = details.map(detail => 
+      Object.fromEntries(
+        Object.entries(detail).filter(([key]) => !fieldsToRemove.includes(key))
+      )
+    );
 
     return {
       header: cleanHeader,
@@ -110,19 +108,17 @@ export const DataGovernmentFlow = ({ objectId }: DataGovernmentFlowProps) => {
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: async () => {
-                console.log('Clicking play teradata');
                 if (!selectedFile || !user?.email) {
                   console.log('Validation failed:', { selectedFile, userEmail: user?.email });
                   return;
                 }
                 try {
-                  console.log('Generating dictionary...');
-                  await generateDictionary({
-                    id_object: objectId,
-                    fields: [], // Aquí necesitamos procesar el archivo para obtener los campos
-                    creation_user: user.email
-                  });
-                  console.log('Dictionary generated successfully');
+                  await generateDictionaryJson({
+                    header: {
+                      id_object: objectId
+                    },
+                    details: [] // Los detalles se generarán automáticamente en el backend
+                  }, user.email, country);
                   await fetchData();
                 } catch (error) {
                   console.error('Error al generar diccionario:', error);

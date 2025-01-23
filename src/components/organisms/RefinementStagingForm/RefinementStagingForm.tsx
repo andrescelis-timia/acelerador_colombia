@@ -12,16 +12,16 @@ export const RefinementStagingForm = memo(function RefinementStagingForm({
   objectId, 
   initialData 
 }: RefinementStagingFormProps) {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultStaging: RefinementStagingCreate = {
     id_object: objectId,
     path_base_staging: '',
     path_staging: '',
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -51,9 +51,9 @@ export const RefinementStagingForm = memo(function RefinementStagingForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createStagingRefinement(dataWithUser);
+          return createStagingRefinement(dataWithUser as RefinementStagingCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -62,9 +62,9 @@ export const RefinementStagingForm = memo(function RefinementStagingForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateStagingRefinement(dataWithUser as RefinementStagingUpdateWithId);
+          return updateStagingRefinement(dataWithUser as RefinementStagingUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementStagingUpdateWithId).id_refinement : undefined}

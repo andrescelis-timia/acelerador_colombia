@@ -1,49 +1,93 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import LoginPage from '@/app/login/page';
+import { getUserByEmail } from '@/services/User';
 
-interface AuthContextType {
+export type AuthContextType = {
   user: User | null;
-  loading: boolean;
-}
+  country: string;
+  countries: string[];
+  setCountry: (country: string) => void;
+};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: true,
+  country: '',
+  countries: [],
+  setCountry: () => {}
 });
 
-export const useAuth = () => useContext(AuthContext);
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [country, setCountry] = useState('');
+
+  // Cargar el país del localStorage solo en el cliente
+  useEffect(() => {
+    const savedCountry = localStorage.getItem('selectedCountry');
+    if (savedCountry) {
+      setCountry(savedCountry);
+    }
+  }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user?.email) {
+        try {
+          const userDataArray = await getUserByEmail(user.email);
+          
+          if (Array.isArray(userDataArray) && userDataArray.length > 0) {
+            const userCountries = userDataArray.map(userData => userData.country);
+            setUser(user);
+            setCountries(userCountries);
+            
+            const savedCountry = localStorage.getItem('selectedCountry');
+            if (!savedCountry || !userCountries.includes(savedCountry)) {
+              setCountry(userCountries[0]);
+              localStorage.setItem('selectedCountry', userCountries[0]);
+            }
+          } else {
+            setUser(null);
+            setCountries([]);
+            setCountry('');
+            localStorage.removeItem('selectedCountry');
+          }
+        } catch {
+          setUser(null);
+          setCountries([]);
+          setCountry('');
+          localStorage.removeItem('selectedCountry');
+        }
+      } else {
+        setUser(null);
+        setCountries([]);
+        setCountry('');
+        localStorage.removeItem('selectedCountry');
+      }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0A3977]"></div>
-      </div>
-    );
-  }
+  // Persistir el país seleccionado cuando cambie
+  useEffect(() => {
+    if (country) {
+      localStorage.setItem('selectedCountry', country);
+    }
+  }, [country]);
 
-  if (!user) {
-    return <LoginPage />;
+  if (loading) {
+    return null;
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, country, countries, setCountry }}>
       {children}
     </AuthContext.Provider>
   );
-} 
+}
+
+export const useAuth = () => useContext(AuthContext); 

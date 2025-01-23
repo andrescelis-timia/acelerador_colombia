@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { GlobeAltIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { SidebarProps } from './types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export const Sidebar = ({ isExpanded, onToggle, navItems }: SidebarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [showCountries, setShowCountries] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState('CO');
+  const { country, countries, setCountry } = useAuth();
 
-  const handleCountrySelect = (country: string) => {
-    setSelectedCountry(country);
+  const handleCountrySelect = (selectedCountry: string) => {
+    setCountry(selectedCountry);
     setShowCountries(false);
+    router.push('/project');
   };
 
   return (
@@ -55,60 +58,54 @@ export const Sidebar = ({ isExpanded, onToggle, navItems }: SidebarProps) => {
       </div>
 
       <div className="flex flex-col items-center space-y-4 pt-4">
-        <div className="relative">
-          <button 
-            type="button"
-            onClick={() => setShowCountries(!showCountries)}
-            className="p-3 hover:bg-[#0067B2]/50 rounded-lg transition-colors flex items-center"
-          >
-            <GlobeAltIcon className="w-6 h-6 text-white" />
-            {isExpanded && (
-              <span className="ml-3 text-white text-sm whitespace-nowrap">
-                País
-              </span>
+        {countries.length > 1 && (
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={() => setShowCountries(!showCountries)}
+              className="p-3 hover:bg-[#0067B2]/50 rounded-lg transition-colors flex items-center"
+            >
+              <GlobeAltIcon className="w-6 h-6 text-white" />
+              {isExpanded && (
+                <span className="ml-3 text-white text-sm whitespace-nowrap">
+                  País
+                </span>
+              )}
+            </button>
+            
+            {showCountries && (
+              <div className="absolute bottom-full left-14 mb-2 bg-white rounded-lg shadow-lg p-2 z-[9999] min-w-[100px]">
+                {countries.map((countryCode) => (
+                  <button
+                    key={countryCode}
+                    type="button"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors block w-full"
+                    onClick={() => handleCountrySelect(countryCode)}
+                    title={countryCode}
+                  >
+                    <Image
+                      src={`/flags/${countryCode.toLowerCase()}.svg`}
+                      alt={countryCode}
+                      width={24}
+                      height={16}
+                    />
+                  </button>
+                ))}
+              </div>
             )}
-          </button>
-          
-          {showCountries && (
-            <div className="absolute bottom-full left-14 mb-2 bg-white rounded-lg shadow-lg p-2 z-[9999] min-w-[100px]">
-              <button
-                type="button"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors block mb-2 w-full"
-                onClick={() => handleCountrySelect('AR')}
-                title="Argentina"
-              >
-                <Image
-                  src={`/flags/ar.svg`}
-                  alt="Argentina"
-                  width={24}
-                  height={16}
-                />
-              </button>
-              <button
-                type="button"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors block w-full"
-                onClick={() => handleCountrySelect('CO')}
-                title="Colombia"
-              >
-                <Image
-                  src={`/flags/co.svg`}
-                  alt="Colombia"
-                  width={24}
-                  height={16}
-                />
-              </button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
         
-        <div className="w-6 h-4 overflow-hidden">
-          <Image
-            src={`/flags/${selectedCountry.toLowerCase()}.svg`}
-            alt={selectedCountry === 'AR' ? 'Argentina' : 'Colombia'}
-            width={24}
-            height={16}
-          />
-        </div>
+        {country && (
+          <div className="w-6 h-4 overflow-hidden">
+            <Image
+              src={`/flags/${country.toLowerCase()}.svg`}
+              alt={country}
+              width={24}
+              height={16}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

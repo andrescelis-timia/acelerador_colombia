@@ -1,38 +1,33 @@
 import { DictionaryJsonHeaderResponse } from '../DictionaryJsonHeader/types';
+import { DictionaryJsonDetailResponse } from '../DictionaryJsonDetail/types';
+import { DictionaryBaseRawHeaderResponse } from '../DictionaryBaseRawHeader/types';
+import { DictionaryBaseRawDetailResponse } from '../DictionaryBaseRawDetail/types';
+import { DictionaryBaseMasterHeaderResponse } from '../DictionaryBaseMasterHeader/types';
+import { DictionaryBaseMasterDetailResponse } from '../DictionaryBaseMasterDetail/types';
+import { CreateDictionaryJsonHeader } from '../DictionaryJsonHeader/types';
+import { CreateDictionaryJsonDetail } from '../DictionaryJsonDetail/types';
 
-export interface FieldDefinition {
-  format: string;
-  name: string;
-  nullable: boolean;
-  order: number;
-  title: string;
+export interface GenerateDictionaryJsonRequest {
+  header: CreateDictionaryJsonHeader;
+  details: CreateDictionaryJsonDetail[];
 }
 
-export interface GenerateDictionaryRequest {
-  id_object: string;
-  fields: FieldDefinition[];
-  creation_user: string;
-}
-
-export interface DictionaryJsonDetail {
-  id_dictionary_json_detail: string;
-  id_dictionary_json_header: string;
-  name_field: string;
-  logical_format: string;
-  date_format: string;
-  calculated: string;
-  key_origin: string;
-  key_datio: string;
-  description: string;
-  observation: string;
-  required: string;
-  creation_date: string;
-  creation_user: string;
-  update_date?: string;
-  update_user?: string;
-}
-
-export interface GenerateDictionaryResponse {
+export interface GenerateDictionaryJsonResponse {
   header: DictionaryJsonHeaderResponse;
-  details: DictionaryJsonDetail[];
+  details: DictionaryJsonDetailResponse[];
+}
+
+export interface GenerateDictionaryBaseRequest {
+  id_object: string;
+}
+
+export interface GenerateDictionaryBaseResponse {
+  raw: {
+    header: DictionaryBaseRawHeaderResponse;
+    details: DictionaryBaseRawDetailResponse[];
+  };
+  master: {
+    header: DictionaryBaseMasterHeaderResponse;
+    details: DictionaryBaseMasterDetailResponse[];
+  };
 } 

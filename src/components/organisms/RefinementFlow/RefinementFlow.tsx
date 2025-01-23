@@ -13,17 +13,20 @@ import { RefinementRawForm } from '@/components/organisms/RefinementRawForm';
 import { RefinementMasterForm } from '@/components/organisms/RefinementMasterForm';
 import { gridLayout, flowStepsConfig } from './config';
 import { getAllPossibleFields } from './fields';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
-  const calculateProgress = useCallback((data: any, suffix: string): string => {
-    if (!data) {
+  const { user, country } = useAuth();
+
+  const calculateProgress = useCallback((data: unknown | null, suffix: string): string => {
+    if (!data || typeof data !== 'object') {
       const totalFields = getAllPossibleFields(suffix);
       return `0/${totalFields}`;
     }
     
-    const fields = Object.entries(data).filter(([key]) => key.endsWith(`_${suffix}`));
+    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) => key.endsWith(`_${suffix}`));
     const totalFields = fields.length;
-    const filledFields = fields.filter(([_, value]) => 
+    const filledFields = fields.filter(([, value]) => 
       value !== null && value !== undefined && value !== ''
     ).length;
     
@@ -46,9 +49,10 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
   const [loading, setLoading] = useState(true);
 
   const fetchRefinement = useCallback(async () => {
+    if (!user?.email) return;
     try {
       setLoading(true);
-      const data = await getRefinementByObjectId(objectId);
+      const data = await getRefinementByObjectId(objectId, user.email, country);
       setRefinement(data);
       setFlowSteps(getUpdatedFlowSteps(data));
     } catch (error) {
@@ -56,7 +60,7 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
     } finally {
       setLoading(false);
     }
-  }, [objectId, getUpdatedFlowSteps]);
+  }, [objectId, user?.email, country, getUpdatedFlowSteps]);
 
   useEffect(() => {
     fetchRefinement();

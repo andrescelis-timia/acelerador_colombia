@@ -1,77 +1,88 @@
 import { ObjectCreate, ObjectUpdateWithId, ObjectResponse, ObjectTableData } from './types';
 import { transformToTableData, transformToUpdateData } from './transforms';
+import { createFetcher } from '@/lib/api/fetcher';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-function getAllData(transform: 'table'): Promise<ObjectTableData[]>;
-function getAllData(transform: 'raw'): Promise<ObjectResponse[]>;
-async function getAllData(transform: 'table' | 'raw') {
+function getAllData(transform: 'table', user: string, country: string): Promise<ObjectTableData[]>;
+function getAllData(transform: 'raw', user: string, country: string): Promise<ObjectResponse[]>;
+async function getAllData(transform: 'table' | 'raw', user: string, country: string) {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/objects`);
-    if (!response.ok) throw new Error('Error al obtener objetos');
-    const data: ObjectResponse[] = await response.json();
+    const data: ObjectResponse[] = await fetcher(`${API_URL}/objects`);
+    if (!data) return [];
     
     if (transform === 'table') return transformToTableData(data);
     return data;
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return [];
+    }
     console.error('Error al obtener objetos:', error);
     throw error;
   }
 }
 
-async function getById(id: string): Promise<ObjectUpdateWithId> {
+async function getById(id: string, user: string, country: string): Promise<ObjectUpdateWithId | null> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/objects/${id}`);
-    if (!response.ok) throw new Error('Error al obtener objeto');
-    const data: ObjectResponse = await response.json();
+    const data: ObjectResponse = await fetcher(`${API_URL}/objects/${id}`);
+    if (!data) return null;
     return transformToUpdateData(data);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return null;
+    }
     console.error('Error al obtener objeto:', error);
     throw error;
   }
 }
 
-async function createData(data: ObjectCreate): Promise<ObjectResponse> {
+async function createData(data: ObjectCreate, user: string, country: string): Promise<ObjectResponse> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/objects`, {
+    return await fetcher(`${API_URL}/objects`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error('Error al crear objeto');
-    return await response.json();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error al crear objeto:', error);
     throw error;
   }
 }
 
-async function updateData(data: ObjectUpdateWithId): Promise<void> {
+async function updateData(data: ObjectUpdateWithId, user: string, country: string): Promise<void> {
+  const fetcher = createFetcher(user, country);
+  
   try {
     const { id_object, ...updateData } = data;
-    const response = await fetch(`${API_URL}/objects/${id_object}`, {
+    await fetcher(`${API_URL}/objects/${id_object}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(updateData)
     });
-    if (!response.ok) throw new Error('Error al actualizar objeto');
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return;
+    }
     console.error('Error al actualizar objeto:', error);
     throw error;
   }
 }
 
-async function deleteData(id: string): Promise<void> {
+async function deleteData(id: string, user: string, country: string): Promise<void> {
+  const fetcher = createFetcher(user, country);
+  
   try {
-    const response = await fetch(`${API_URL}/objects/${id}`, {
+    await fetcher(`${API_URL}/objects/${id}`, {
       method: 'DELETE'
     });
-    if (!response.ok) throw new Error('Error al eliminar objeto');
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return;
+    }
     console.error('Error al eliminar objeto:', error);
     throw error;
   }

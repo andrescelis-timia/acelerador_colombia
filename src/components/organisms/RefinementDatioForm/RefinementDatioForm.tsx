@@ -12,10 +12,10 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
   objectId, 
   initialData 
 }: RefinementDatioFormProps) {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultDatio: RefinementDatioCreate = {
     id_object: objectId,
@@ -29,7 +29,7 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
     intake_period_datio: '',
     number_records_intake_datio: 0,
     flag_net_controlm_datio: false,
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -105,9 +105,9 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createDatioRefinement(dataWithUser);
+          return createDatioRefinement(dataWithUser as RefinementDatioCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -116,9 +116,9 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateDatioRefinement(dataWithUser as RefinementDatioUpdateWithId);
+          return updateDatioRefinement(dataWithUser as RefinementDatioUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementDatioUpdateWithId).id_refinement : undefined}

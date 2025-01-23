@@ -8,9 +8,16 @@ import { Tab } from '@/components/atoms/Tab';
 import { TabPanel } from '@/components/atoms/TabPanel';
 import { ObjectDetailContentProps } from './types';
 import { RefinementFlow } from '@/components/organisms/RefinementFlow';
-import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
+import { DataGovernmentFlowAR } from '@/components/organisms/DataGovernmentFlowAR';
+import { DataGovernmentFlowCO } from '@/components/organisms/DataGovernmentFlowCO';
+import { useAuth } from '@/lib/context/AuthContext';
+import { IngestaComponentFlow } from '@/components/organisms/IngestaComponentFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
+  const { country } = useAuth();
+
+  const DataGovernmentFlow = country === 'AR' ? DataGovernmentFlowAR : DataGovernmentFlowCO;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -31,26 +38,47 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         Objeto: {objectName}
       </h2>
 
-      <TabGroup>
-        <TabList>
-          <Tab>Refinamiento</Tab>
-          <Tab>Gobierno del dato</Tab>
-          <Tab>Componentes de ingesta</Tab>
-        </TabList>
-        <TabPanel>
-          <div className="p-4">
-            <RefinementFlow objectId={objectId} />
-          </div>
-        </TabPanel>
-        <TabPanel>
-          <div className="p-4">
-            <DataGovernmentFlow objectId={objectId} />
-          </div>
-        </TabPanel>
-        <TabPanel>
-          Contenido de Componentes de ingesta
-        </TabPanel>
-      </TabGroup>
+      {country === 'AR' ? (
+        <TabGroup>
+          <TabList>
+            <Tab>Refinamiento</Tab>
+            <Tab>Gobierno del dato</Tab>
+            <Tab>Componentes de ingesta</Tab>
+          </TabList>
+          <TabPanel>
+            <div className="p-4">
+              <RefinementFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <DataGovernmentFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <IngestaComponentFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+        </TabGroup>
+      ) : (
+        <TabGroup>
+          <TabList>
+            <Tab>Gobierno del dato</Tab>
+            <Tab>Componentes de ingesta</Tab>
+          </TabList>
+          <TabPanel>
+            <div className="p-4">
+              <DataGovernmentFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <IngestaComponentFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+        </TabGroup>
+      )}
     </motion.div>
   );
 }; 

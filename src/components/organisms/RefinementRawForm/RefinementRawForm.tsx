@@ -12,10 +12,10 @@ export const RefinementRawForm = memo(function RefinementRawForm({
   objectId, 
   initialData 
 }: RefinementRawFormProps) {
-  const { user } = useAuth();
+  const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
 
-  if (!objectId) return null;
+  if (!objectId || !user?.email) return null;
 
   const defaultRaw: RefinementRawCreate = {
     id_object: objectId,
@@ -30,7 +30,7 @@ export const RefinementRawForm = memo(function RefinementRawForm({
     path_output_raw: '',
     filters_pre_intake_raw: '',
     observations_raw: '',
-    creation_user: user?.email || ''
+    creation_user: user.email
   };
 
   const fields: FormFieldConfig[] = [
@@ -114,9 +114,9 @@ export const RefinementRawForm = memo(function RefinementRawForm({
           const dataWithUser = {
             ...data,
             id_object: objectId,
-            creation_user: user?.email || ''
+            creation_user: user.email as string
           };
-          return createRawRefinement(dataWithUser);
+          return createRawRefinement(dataWithUser as RefinementRawCreate, user.email as string, country);
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -125,9 +125,9 @@ export const RefinementRawForm = memo(function RefinementRawForm({
           const dataWithUser = {
             ...data,
             id_refinement: initialData.id_refinement,
-            update_user: user?.email || ''
+            update_user: user.email as string
           };
-          return updateRawRefinement(dataWithUser as RefinementRawUpdateWithId);
+          return updateRawRefinement(dataWithUser as RefinementRawUpdateWithId, user.email as string, country);
         }
       }}
       docId={isEditing ? (initialData as RefinementRawUpdateWithId).id_refinement : undefined}
