@@ -1,25 +1,18 @@
 'use client';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
+import { useAuth } from '@/lib/context/AuthContext';
 import Image from 'next/image';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
     try {
       setError(null);
-      console.log('Iniciando proceso de login...');
-      const result = await signInWithPopup(auth, provider);
-      console.log('Login exitoso:', result.user.email);
-      router.push('/');
-    } catch (error: unknown) {
-      const errorMessage = (error as Error).message || 'Error al iniciar sesión';
-      setError(errorMessage);
+      await signInWithGoogle();
+    } catch (error) {
+      setError((error as Error).message || 'Error al iniciar sesión');
     }
   };
 

@@ -2,13 +2,13 @@
 
 import { ObjectContent } from '@/components/organisms/ObjectContent/ObjectContent';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { getAllData, deleteData } from '@/services/Object';
 import { getObjectsById } from '@/services/Project';
 import { ObjectTableData } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
 
-export default function ObjectPage() {
+function ObjectPageContent() {
   const { user, country } = useAuth();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
@@ -48,5 +48,13 @@ export default function ObjectPage() {
       itemsPerPage={itemsPerPage}
       totalItems={objects.length}
     />
+  );
+}
+
+export default function ObjectPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <ObjectPageContent />
+    </Suspense>
   );
 } 

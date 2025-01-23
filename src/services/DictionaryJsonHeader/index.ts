@@ -1,13 +1,12 @@
 import { DictionaryJsonHeaderResponse } from './types';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 async function getDictionaryJsonHeader(objectId: string, user: string, country: string): Promise<DictionaryJsonHeaderResponse | null> {
   const fetcher = createFetcher(user, country);
   
   try {
-    const response = await fetcher(`${API_URL}/dictionary-json-headers/object/${objectId}`);
+    const response = await fetcher(`${API_CONFIG.BASE_URL}/dictionary-json-headers/object/${objectId}`);
     if (!response) return null;
     return response;
   } catch (error: unknown) {

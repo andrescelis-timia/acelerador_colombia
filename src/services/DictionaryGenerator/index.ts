@@ -5,14 +5,13 @@ import {
 } from './types';
 import { DictionaryJsonHeaderResponse } from '../DictionaryJsonHeader/types';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 async function generateDictionaryJson(data: GenerateDictionaryJsonRequest, user: string, country: string): Promise<DictionaryJsonHeaderResponse> {
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/dictionary-generator/json`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/dictionary-generator/json`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -26,7 +25,7 @@ async function generateDictionaryBase(data: GenerateDictionaryBaseRequest, user:
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/dictionary-generator/base`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/dictionary-generator/base`, {
       method: 'POST',
       body: JSON.stringify(data)
     });

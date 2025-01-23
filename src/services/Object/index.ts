@@ -1,8 +1,7 @@
 import { ObjectCreate, ObjectUpdateWithId, ObjectResponse, ObjectTableData } from './types';
 import { transformToTableData, transformToUpdateData } from './transforms';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 function getAllData(transform: 'table', user: string, country: string): Promise<ObjectTableData[]>;
 function getAllData(transform: 'raw', user: string, country: string): Promise<ObjectResponse[]>;
@@ -10,7 +9,7 @@ async function getAllData(transform: 'table' | 'raw', user: string, country: str
   const fetcher = createFetcher(user, country);
   
   try {
-    const data: ObjectResponse[] = await fetcher(`${API_URL}/objects`);
+    const data: ObjectResponse[] = await fetcher(`${API_CONFIG.BASE_URL}/objects`);
     if (!data) return [];
     
     if (transform === 'table') return transformToTableData(data);
@@ -28,7 +27,7 @@ async function getById(id: string, user: string, country: string): Promise<Objec
   const fetcher = createFetcher(user, country);
   
   try {
-    const data: ObjectResponse = await fetcher(`${API_URL}/objects/${id}`);
+    const data: ObjectResponse = await fetcher(`${API_CONFIG.BASE_URL}/objects/${id}`);
     if (!data) return null;
     return transformToUpdateData(data);
   } catch (error: unknown) {
@@ -44,7 +43,7 @@ async function createData(data: ObjectCreate, user: string, country: string): Pr
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/objects`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/objects`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -59,7 +58,7 @@ async function updateData(data: ObjectUpdateWithId, user: string, country: strin
   
   try {
     const { id_object, ...updateData } = data;
-    await fetcher(`${API_URL}/objects/${id_object}`, {
+    await fetcher(`${API_CONFIG.BASE_URL}/objects/${id_object}`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -76,7 +75,7 @@ async function deleteData(id: string, user: string, country: string): Promise<vo
   const fetcher = createFetcher(user, country);
   
   try {
-    await fetcher(`${API_URL}/objects/${id}`, {
+    await fetcher(`${API_CONFIG.BASE_URL}/objects/${id}`, {
       method: 'DELETE'
     });
   } catch (error: unknown) {

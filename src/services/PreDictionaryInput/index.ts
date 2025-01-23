@@ -1,13 +1,12 @@
 import { CreatePreDictionaryInput, UpdatePreDictionaryInput, PreDictionaryInputResponse } from './types';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 async function getPreDictionaryInputById(id: string, user: string, country: string): Promise<PreDictionaryInputResponse | null> {
   const fetcher = createFetcher(user, country);
   
   try {
-    const response = await fetcher(`${API_URL}/pre-dictionary-inputs/${id}`);
+    const response = await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/${id}`);
     if (!response) return null;
     return response;
   } catch (error: unknown) {
@@ -23,7 +22,7 @@ async function getPreDictionaryInputByObjectId(objectId: string, user: string, c
   const fetcher = createFetcher(user, country);
   
   try {
-    const response = await fetcher(`${API_URL}/pre-dictionary-inputs/object/${objectId}`);
+    const response = await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/object/${objectId}`);
     if (!response) return null;
     return response;
   } catch (error: unknown) {
@@ -39,7 +38,7 @@ async function createPreDictionaryInput(data: CreatePreDictionaryInput, user: st
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/pre-dictionary-inputs`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -53,7 +52,7 @@ async function updatePreDictionaryInput(id: string, data: UpdatePreDictionaryInp
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/pre-dictionary-inputs/${id}`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -70,7 +69,7 @@ async function deletePreDictionaryInput(id: string, user: string, country: strin
   const fetcher = createFetcher(user, country);
   
   try {
-    await fetcher(`${API_URL}/pre-dictionary-inputs/${id}`, {
+    await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/${id}`, {
       method: 'DELETE'
     });
   } catch (error: unknown) {

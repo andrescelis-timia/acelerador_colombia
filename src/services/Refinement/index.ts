@@ -16,13 +16,12 @@ import {
   RefinementMasterUpdateWithId
 } from './types';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 async function getRefinementByObjectId(objectId: string, user: string, country: string): Promise<RefinementResponse | null> {
   const fetcher = createFetcher(user, country);
   try {
-    const response = await fetcher(`${API_URL}/refinements/object/${objectId}`);
+    const response = await fetcher(`${API_CONFIG.BASE_URL}/refinements/object/${objectId}`);
     if (!response) return null;
     return response;
   } catch (error: unknown) {
@@ -38,7 +37,7 @@ async function getRefinementByObjectId(objectId: string, user: string, country: 
 async function createOriginRefinement(data: RefinementOriginCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/origin`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/origin`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -52,7 +51,7 @@ async function updateOriginRefinement(data: RefinementOriginUpdateWithId, user: 
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/origin`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/origin`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -69,7 +68,7 @@ async function updateOriginRefinement(data: RefinementOriginUpdateWithId, user: 
 async function createTransmissionRefinement(data: RefinementTransmissionCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/transmission`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/transmission`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -83,7 +82,7 @@ async function updateTransmissionRefinement(data: RefinementTransmissionUpdateWi
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/transmission`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/transmission`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -100,7 +99,7 @@ async function updateTransmissionRefinement(data: RefinementTransmissionUpdateWi
 async function createDatioRefinement(data: RefinementDatioCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/datio`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/datio`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -114,7 +113,7 @@ async function updateDatioRefinement(data: RefinementDatioUpdateWithId, user: st
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/datio`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/datio`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -131,7 +130,7 @@ async function updateDatioRefinement(data: RefinementDatioUpdateWithId, user: st
 async function createDefinitionRefinement(data: RefinementDefinitionCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/definition`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/definition`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -145,7 +144,7 @@ async function updateDefinitionRefinement(data: RefinementDefinitionUpdateWithId
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/definition`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/definition`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -162,7 +161,7 @@ async function updateDefinitionRefinement(data: RefinementDefinitionUpdateWithId
 async function createStagingRefinement(data: RefinementStagingCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/staging`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/staging`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -176,7 +175,7 @@ async function updateStagingRefinement(data: RefinementStagingUpdateWithId, user
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/staging`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/staging`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -193,7 +192,7 @@ async function updateStagingRefinement(data: RefinementStagingUpdateWithId, user
 async function createRawRefinement(data: RefinementRawCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/raw`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/raw`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -207,7 +206,7 @@ async function updateRawRefinement(data: RefinementRawUpdateWithId, user: string
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/raw`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/raw`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -224,7 +223,7 @@ async function updateRawRefinement(data: RefinementRawUpdateWithId, user: string
 async function createMasterRefinement(data: RefinementMasterCreate, user: string, country: string): Promise<RefinementResponse> {
   const fetcher = createFetcher(user, country);
   try {
-    return await fetcher(`${API_URL}/refinements/master`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/master`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -238,7 +237,7 @@ async function updateMasterRefinement(data: RefinementMasterUpdateWithId, user: 
   const fetcher = createFetcher(user, country);
   try {
     const { id_refinement, ...updateData } = data;
-    return await fetcher(`${API_URL}/refinements/${id_refinement}/master`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id_refinement}/master`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -255,7 +254,7 @@ async function updateMasterRefinement(data: RefinementMasterUpdateWithId, user: 
 async function deleteRefinement(id: string, user: string, country: string): Promise<void> {
   const fetcher = createFetcher(user, country);
   try {
-    await fetcher(`${API_URL}/refinements/${id}`, {
+    await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id}`, {
       method: 'DELETE'
     });
   } catch (error: unknown) {

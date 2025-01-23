@@ -1,13 +1,12 @@
 import { DictionaryBaseMasterHeaderResponse } from './types';
 import { createFetcher } from '@/lib/api/fetcher';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_CONFIG } from '@/lib/api/config';
 
 async function getDictionaryBaseMasterHeaderByObjectId(objectId: string, user: string, country: string): Promise<DictionaryBaseMasterHeaderResponse | null> {
   const fetcher = createFetcher(user, country);
   
   try {
-    const response = await fetcher(`${API_URL}/dictionary-base-master-headers/object/${objectId}`);
+    const response = await fetcher(`${API_CONFIG.BASE_URL}/dictionary-base-master-headers/object/${objectId}`);
     if (!response) return null;
     return response;
   } catch (error: unknown) {

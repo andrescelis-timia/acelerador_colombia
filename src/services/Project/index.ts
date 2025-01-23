@@ -1,10 +1,9 @@
 import { ProjectCreate, ProjectDashboardData, ProjectResponse, ProjectTableData, ProjectUpdateWithId } from './types';
 import { transformToTableData, transformToDashboardData, transformToUpdateData } from './transforms';
 import { createFetcher } from '@/lib/api/fetcher';
+import { API_CONFIG } from '@/lib/api/config';
 import { ObjectTableData } from '../Object/types';
 import { transformToTableData as objectTransformToTableData } from '../Object/transforms';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 function getAllData(transform: 'table', user: string, country: string): Promise<ProjectTableData[]>;
 function getAllData(transform: 'dashboard', user: string, country: string): Promise<ProjectDashboardData>;
@@ -13,7 +12,7 @@ async function getAllData(transform: 'table' | 'dashboard' | 'raw', user: string
   const fetcher = createFetcher(user, country);
   
   try {
-    const data: ProjectResponse[] = await fetcher(`${API_URL}/projects`);
+    const data: ProjectResponse[] = await fetcher(`${API_CONFIG.BASE_URL}/projects`);
     if (!data) return transform === 'table' || transform === 'raw' ? [] : null;
     
     if (transform === 'table') return transformToTableData(data);
@@ -32,7 +31,7 @@ async function getById(id: string, user: string, country: string): Promise<Proje
   const fetcher = createFetcher(user, country);
   
   try {
-    const data: ProjectResponse = await fetcher(`${API_URL}/projects/${id}`);
+    const data: ProjectResponse = await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}`);
     if (!data) return null;
     return {
       ...transformToUpdateData(data),
@@ -47,25 +46,11 @@ async function getById(id: string, user: string, country: string): Promise<Proje
   }
 }
 
-async function deleteData(id: string, user: string, country: string): Promise<void> {
-  const fetcher = createFetcher(user, country);
-  
-  try {
-    await fetcher(`${API_URL}/projects/${id}`, { method: 'DELETE' });
-  } catch (error: unknown) {
-    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
-      return;
-    }
-    console.error('Error al eliminar proyecto:', error);
-    throw error;
-  }
-}
-
 async function createData(data: ProjectCreate, user: string, country: string): Promise<ProjectResponse> {
   const fetcher = createFetcher(user, country);
   
   try {
-    return await fetcher(`${API_URL}/projects`, {
+    return await fetcher(`${API_CONFIG.BASE_URL}/projects`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -80,7 +65,7 @@ async function updateData(data: ProjectUpdateWithId, user: string, country: stri
   
   try {
     const { id_project, ...updateData } = data;
-    await fetcher(`${API_URL}/projects/${id_project}`, {
+    await fetcher(`${API_CONFIG.BASE_URL}/projects/${id_project}`, {
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
@@ -93,11 +78,27 @@ async function updateData(data: ProjectUpdateWithId, user: string, country: stri
   }
 }
 
+async function deleteData(id: string, user: string, country: string): Promise<void> {
+  const fetcher = createFetcher(user, country);
+  
+  try {
+    await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}`, {
+      method: 'DELETE'
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      return;
+    }
+    console.error('Error al eliminar proyecto:', error);
+    throw error;
+  }
+}
+
 async function getObjectsById(id: string, user: string, country: string): Promise<ObjectTableData[]> {
   const fetcher = createFetcher(user, country);
   
   try {
-    const data = await fetcher(`${API_URL}/projects/${id}/objects`);
+    const data = await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}/objects`);
     if (!data) return [];
     return objectTransformToTableData(data);
   } catch (error: unknown) {
