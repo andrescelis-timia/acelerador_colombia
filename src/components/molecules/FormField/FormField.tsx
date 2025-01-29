@@ -1,6 +1,6 @@
 import { FormFieldProps } from './types';
 
-export const FormField = ({ name, label, type, placeholder, value, onChange, options, rows }: FormFieldProps) => {
+export const FormField = ({ name, label, type, placeholder, value, onChange, options, rows, required }: FormFieldProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     if (type === 'checkbox') {
       onChange(name, (e.target as HTMLInputElement).checked);
@@ -18,6 +18,7 @@ export const FormField = ({ name, label, type, placeholder, value, onChange, opt
     <div>
       <label className="block text-sm font-medium text-gray-700">
         {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       {type === 'select' ? (
         <select

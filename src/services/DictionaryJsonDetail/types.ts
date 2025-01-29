@@ -1,5 +1,5 @@
 export interface CreateDictionaryJsonDetail {
-  id_dictionary_json_header: string;
+  id_dictionary_json_header?: string;
   name_field?: string;
   logical_format?: string;
   date_format?: string;
@@ -8,7 +8,7 @@ export interface CreateDictionaryJsonDetail {
   key_datio?: string;
   description?: string;
   observation?: string;
-  required?: string;
+  required?: boolean;
 }
 
 export interface DictionaryJsonDetailResponse {
@@ -22,7 +22,7 @@ export interface DictionaryJsonDetailResponse {
   key_datio: string;
   description: string;
   observation: string;
-  required: string;
+  required: boolean;
   owner_country: string;
   creation_date: string;
   creation_user: string;

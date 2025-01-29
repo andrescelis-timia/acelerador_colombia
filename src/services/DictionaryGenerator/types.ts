@@ -18,7 +18,8 @@ export interface GenerateDictionaryJsonResponse {
 }
 
 export interface GenerateDictionaryBaseRequest {
-  id_object: string;
+  header: CreateDictionaryJsonHeader;
+  details: CreateDictionaryJsonDetail[];
 }
 
 export interface GenerateDictionaryBaseResponse {

@@ -8,6 +8,7 @@ import { IngestaComponentFlowProps } from './types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
+import { generateRawFiles, generateMasterFiles } from '@/services/IngestaComponentsGenerator';
 
 const flowStepsConfig = [
   { id: 'raw', title: 'Raw' },
@@ -33,7 +34,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
       const data = await getIngestaOutputByObjectId(objectId, user.email, country);
       setIngestaOutput(data);
     } catch (error) {
-      console.error('Error fetching ingesta output:', error);
+      console.error('Error al obtener ingesta output:', error);
     }
   }, [objectId, user?.email, country]);
 
@@ -53,30 +54,70 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
 
   const stepsConfig = {
     raw: [
-      { label: 'Procesando RAW', duration: 500 },
-      { label: 'Validando datos', duration: 500 },
-      { label: 'Finalizando', duration: 500 }
+      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos RAW', duration: 4300 },
+      { label: 'Procesando la información del archivo fuente y extrayendo los prefijos de archivo de las rutas de origen', duration: 4300 },
+      { label: 'Organizando la información de campos RAW incluyendo posiciones, longitudes y tipos de datos', duration: 4300 },
+      { label: 'Preparando la plantilla de configuración RAW', duration: 4300 },
+      { label: 'Generando el archivo de configuración RAW con definiciones de campos y configuraciones de rutas', duration: 4300 },
+      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para RAW', duration: 4300 },
+      { label: 'Subiendo los archivos generados a la carpeta Raw en Google Drive y verificando que se guardaron correctamente', duration: 4200 }
     ],
     master: [
-      { label: 'Procesando MASTER', duration: 500 },
-      { label: 'Validando datos', duration: 500 },
-      { label: 'Finalizando', duration: 500 }
+      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos MASTER', duration: 4300 },
+      { label: 'Procesando la información del archivo fuente y extrayendo los prefijos de archivo de las rutas de origen', duration: 4300 },
+      { label: 'Organizando la información de campos MASTER incluyendo posiciones, longitudes y tipos de datos', duration: 4300 },
+      { label: 'Preparando la plantilla de configuración MASTER', duration: 4300 },
+      { label: 'Generando el archivo de configuración MASTER con definiciones de campos y configuraciones de rutas', duration: 4300 },
+      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para MASTER', duration: 4300 },
+      { label: 'Subiendo los archivos generados a la carpeta Master en Google Drive y verificando que se guardaron correctamente', duration: 4200 }
     ]
   };
 
   const handleGenerate = async (stepId: string) => {
     if (!user?.email) return;
+    
     try {
       if (stepId === 'raw') {
         setShowRawProgress(true);
+        const totalDuration = stepsConfig.raw.reduce((acc, step) => acc + step.duration, 0);
+
+        const processPromise = generateRawFiles({
+          id_object: objectId
+        }, user.email, country);
+
+        const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
+
+        await Promise.all([
+          processPromise,
+          timerPromise
+        ]).then(() => processPromise);
+
+        await fetchIngestaOutput();
       } else if (stepId === 'master') {
         setShowMasterProgress(true);
+        const totalDuration = stepsConfig.master.reduce((acc, step) => acc + step.duration, 0);
+
+        const processPromise = generateMasterFiles({
+          id_object: objectId
+        }, user.email, country);
+
+        const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
+
+        await Promise.all([
+          processPromise,
+          timerPromise
+        ]).then(() => processPromise);
+
+        await fetchIngestaOutput();
       }
-      // Aquí iría la lógica de generación según el step
-      console.log(`Generando ${stepId}...`);
-      await fetchIngestaOutput(); // Actualizamos los links después de generar
     } catch (error) {
       console.error(`Error al generar ${stepId}:`, error);
+    } finally {
+      if (stepId === 'raw') {
+        setShowRawProgress(false);
+      } else if (stepId === 'master') {
+        setShowMasterProgress(false);
+      }
     }
   };
 

@@ -6,6 +6,7 @@ export interface FormFieldConfig {
   options?: { value: string; label: string }[];
   rows?: number;
   defaultValue?: string | boolean | number;
+  required?: boolean;
 }
 
 export interface SlideFormProps<T> {

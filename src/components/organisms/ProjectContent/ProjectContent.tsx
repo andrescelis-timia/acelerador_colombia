@@ -15,22 +15,9 @@ import { ObjectCreate } from '@/services/Object/types';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
 
-const getStatusLabel = (status: string) => {
-  const statusMap: { [key: string]: string } = {
-    'pending': 'Pendiente',
-    'in_progress': 'En Proceso',
-    'completed': 'Completado'
-  };
-  return statusMap[status] || status;
-};
 
 const columns: Column[] = [
   { header: 'Nombre del Proyecto', accessor: 'name' },
-  { 
-    header: 'Estado', 
-    accessor: 'status',
-    render: (value: unknown) => getStatusLabel(value as string)
-  },
   {
     header: 'Fecha de Creación',
     accessor: 'creation_date',
@@ -137,6 +124,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
                 handleEdit(item.id);
               }}
               className="text-indigo-600 hover:text-indigo-900 mr-4"
+              title="Editar Proyecto"
             >
               <PencilIcon className="h-5 w-5 inline" />
             </button>
@@ -146,6 +134,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
                 handleAddObject(item.id);
               }}
               className="text-gray-600 hover:text-gray-900 mr-4"
+              title="Agregar Objeto"
             >
               <PlusIcon className="h-5 w-5 inline" />
             </button>
@@ -155,6 +144,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
                 handleDeleteClick(item.id);
               }}
               className="text-red-600 hover:text-red-900"
+              title="Borrar Proyecto"
             >
               <TrashIcon className="h-5 w-5 inline" />
             </button>

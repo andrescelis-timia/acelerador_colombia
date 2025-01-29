@@ -22,14 +22,13 @@ const getStatusLabel = (status: string) => {
 
 const columns: Column[] = [
   { header: 'Nombre del Objeto', accessor: 'name' },
-  { header: 'Alias del Objeto', accessor: 'alias' },
   { 
     header: 'Estado', 
     accessor: 'status',
     render: (value: unknown) => getStatusLabel(value as string)
   },
   { 
-    header: 'Solicitud de Información',
+    header: 'Enlace Pre-diccionario',
     accessor: 'url_document',
     render: (value: unknown) => (
       <a 

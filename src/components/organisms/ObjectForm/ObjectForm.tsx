@@ -28,19 +28,15 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       name: 'name',
       label: 'Nombre Legacy',
       placeholder: 'Ingrese el nombre legacy',
-      type: 'input' as const
-    },
-    {
-      name: 'alias',
-      label: 'Alias',
-      placeholder: 'Ingrese el alias',
-      type: 'input' as const
+      type: 'input' as const,
+      required: true
     },
     {
       name: 'status',
       label: 'Estado',
       placeholder: 'Seleccione el estado',
       type: 'select' as const,
+      required: true,
       options: [
         { value: 'pending', label: 'Pendiente' },
         { value: 'in_progress', label: 'En Proceso' },
@@ -52,19 +48,15 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       name: 'name',
       label: 'Nombre Legacy',
       placeholder: 'Ingrese el nombre legacy',
-      type: 'input' as const
-    },
-    {
-      name: 'alias',
-      label: 'Alias',
-      placeholder: 'Ingrese el alias',
-      type: 'input' as const
+      type: 'input' as const,
+      required: true
     },
     {
       name: 'url_document',
-      label: 'Solicitud de Información',
-      placeholder: 'Ingrese la URL de la solicitud',
-      type: 'input' as const
+      label: 'Enlace Pre-diccionario',
+      placeholder: 'Ingrese la URL del pre-diccionario',
+      type: 'input' as const,
+      required: true
     }
   ];
 
@@ -81,6 +73,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
           const dataWithUser = {
             ...data,
             id_project: projectId,
+            alias: '',
             creation_user: user.email
           };
           return createData(dataWithUser as ObjectCreate, user.email, country);
@@ -89,6 +82,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
           if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
+            alias: '',
             update_user: user.email
           };
           return updateData(dataWithUser as ObjectUpdateWithId, user.email, country);

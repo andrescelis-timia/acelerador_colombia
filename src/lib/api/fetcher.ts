@@ -27,6 +27,10 @@ export const createFetcher = (user: string | null | undefined, country: string) 
       throw customError;
     }
 
+    if (options.method === 'DELETE' || response.headers.get('content-length') === '0') {
+      return undefined;
+    }
+
     return response.json();
   };
 };

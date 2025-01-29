@@ -16,31 +16,23 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
       name: 'name',
       label: 'Nombre del Proyecto',
       placeholder: 'Ingrese el nombre del proyecto',
-      type: 'input' as const
-    },
-    {
-      name: 'status',
-      label: 'Estado',
-      placeholder: 'Seleccione el estado',
-      type: 'select' as const,
-      options: [
-        { value: 'pending', label: 'Pendiente' },
-        { value: 'in_progress', label: 'En Proceso' },
-        { value: 'completed', label: 'Completado' }
-      ]
+      type: 'input' as const,
+      required: true
     }
   ] : [
     {
       name: 'ticket_jira',
       label: 'Ticket Jira',
       placeholder: 'Ingrese el ticket de Jira',
-      type: 'input' as const
+      type: 'input' as const,
+      required: true
     },
     {
       name: 'name',
       label: 'Nombre del Proyecto',
       placeholder: 'Ingrese el nombre del proyecto',
-      type: 'input' as const
+      type: 'input' as const,
+      required: true
     }
   ];
 
@@ -68,7 +60,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
           if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
-            update_user: user.email
+            update_user: user.email,
+            ticket_jira: initialData?.ticket_jira || ''
           };
           return updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
         }
