@@ -20,16 +20,17 @@ import { API_CONFIG } from '@/lib/api/config';
 
 async function getRefinementByObjectId(objectId: string, user: string, country: string): Promise<RefinementResponse | null> {
   const fetcher = createFetcher(user, country);
+  
   try {
     const response = await fetcher(`${API_CONFIG.BASE_URL}/refinements/object/${objectId}`);
     if (!response) return null;
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
-    console.error('Error al obtener refinamiento:', error);
-    throw error;
+    throw new Error('Error al obtener refinamiento: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -41,9 +42,9 @@ async function createOriginRefinement(data: RefinementOriginCreate, user: string
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento de origen:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento de origen: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -55,12 +56,12 @@ async function updateOriginRefinement(data: RefinementOriginUpdateWithId, user: 
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento de origen:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento de origen: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -72,9 +73,9 @@ async function createTransmissionRefinement(data: RefinementTransmissionCreate, 
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento de transmisión:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento de transmisión: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -86,12 +87,12 @@ async function updateTransmissionRefinement(data: RefinementTransmissionUpdateWi
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento de transmisión:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento de transmisión: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -103,9 +104,9 @@ async function createDatioRefinement(data: RefinementDatioCreate, user: string, 
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento de datio:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento de datio: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -117,12 +118,12 @@ async function updateDatioRefinement(data: RefinementDatioUpdateWithId, user: st
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento de datio:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento de datio: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -134,9 +135,9 @@ async function createDefinitionRefinement(data: RefinementDefinitionCreate, user
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento de definición:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento de definición: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -148,12 +149,12 @@ async function updateDefinitionRefinement(data: RefinementDefinitionUpdateWithId
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento de definición:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento de definición: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -165,9 +166,9 @@ async function createStagingRefinement(data: RefinementStagingCreate, user: stri
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento de staging:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento de staging: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -179,12 +180,12 @@ async function updateStagingRefinement(data: RefinementStagingUpdateWithId, user
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento de staging:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento de staging: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -196,9 +197,9 @@ async function createRawRefinement(data: RefinementRawCreate, user: string, coun
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento raw:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento raw: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -210,12 +211,12 @@ async function updateRawRefinement(data: RefinementRawUpdateWithId, user: string
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento raw:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento raw: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -227,9 +228,9 @@ async function createMasterRefinement(data: RefinementMasterCreate, user: string
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear refinamiento master:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear refinamiento master: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -241,12 +242,12 @@ async function updateMasterRefinement(data: RefinementMasterUpdateWithId, user: 
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Refinamiento no encontrado');
     }
-    console.error('Error al actualizar refinamiento master:', error);
-    throw error;
+    throw new Error('Error al actualizar refinamiento master: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -257,12 +258,12 @@ async function deleteRefinement(id: string, user: string, country: string): Prom
     await fetcher(`${API_CONFIG.BASE_URL}/refinements/${id}`, {
       method: 'DELETE'
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return;
     }
-    console.error('Error al eliminar refinamiento:', error);
-    throw error;
+    throw new Error('Error al eliminar refinamiento: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

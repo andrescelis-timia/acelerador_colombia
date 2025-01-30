@@ -9,12 +9,12 @@ async function getPreDictionaryInputById(id: string, user: string, country: stri
     const response = await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/${id}`);
     if (!response) return null;
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
-    console.error('Error al obtener pre dictionary input:', error);
-    throw error;
+    throw new Error('Error al obtener pre dictionary input: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -25,12 +25,12 @@ async function getPreDictionaryInputByObjectId(objectId: string, user: string, c
     const response = await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/object/${objectId}`);
     if (!response) return null;
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
-    console.error('Error al obtener pre dictionary input por object ID:', error);
-    throw error;
+    throw new Error('Error al obtener pre dictionary input por object ID: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -42,9 +42,9 @@ async function createPreDictionaryInput(data: CreatePreDictionaryInput, user: st
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear pre dictionary input:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear pre dictionary input: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -56,12 +56,12 @@ async function updatePreDictionaryInput(id: string, data: UpdatePreDictionaryInp
       method: 'PUT',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Pre dictionary input no encontrado');
     }
-    console.error('Error al actualizar pre dictionary input:', error);
-    throw error;
+    throw new Error('Error al actualizar pre dictionary input: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -72,12 +72,12 @@ async function deletePreDictionaryInput(id: string, user: string, country: strin
     await fetcher(`${API_CONFIG.BASE_URL}/pre-dictionary-inputs/${id}`, {
       method: 'DELETE'
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
-      return;
+      return; // Si no existe, consideramos que ya está eliminado
     }
-    console.error('Error al eliminar pre dictionary input:', error);
-    throw error;
+    throw new Error('Error al eliminar pre dictionary input: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

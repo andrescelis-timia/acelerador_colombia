@@ -18,12 +18,12 @@ async function getAllData(transform: 'table' | 'dashboard' | 'raw', user: string
     if (transform === 'table') return transformToTableData(data);
     if (transform === 'dashboard') return transformToDashboardData(data);
     return data;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return transform === 'table' || transform === 'raw' ? [] : null;
     }
-    console.error('Error al obtener proyectos:', error);
-    throw error;
+    throw new Error('Error al obtener proyectos: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -37,12 +37,12 @@ async function getById(id: string, user: string, country: string): Promise<Proje
       ...transformToUpdateData(data),
       id_project: data.id_project
     };
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
-    console.error('Error al obtener proyecto:', error);
-    throw error;
+    throw new Error('Error al obtener proyecto por ID: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -54,9 +54,9 @@ async function createData(data: ProjectCreate, user: string, country: string): P
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear proyecto:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear proyecto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -69,12 +69,12 @@ async function updateData(data: ProjectUpdateWithId, user: string, country: stri
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
-      return;
+      throw new Error('Proyecto no encontrado');
     }
-    console.error('Error al actualizar proyecto:', error);
-    throw error;
+    throw new Error('Error al actualizar proyecto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -85,12 +85,12 @@ async function deleteData(id: string, user: string, country: string): Promise<vo
     await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}`, {
       method: 'DELETE'
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return;
     }
-    console.error('Error al eliminar proyecto:', error);
-    throw error;
+    throw new Error('Error al eliminar proyecto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -101,12 +101,12 @@ async function getObjectsById(id: string, user: string, country: string): Promis
     const data = await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}/objects`);
     if (!data) return [];
     return objectTransformToTableData(data);
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return [];
     }
-    console.error('Error al obtener objetos del proyecto:', error);
-    throw error;
+    throw new Error('Error al obtener objetos del proyecto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

@@ -4,6 +4,7 @@ import { BoxFlowCard } from '@/components/molecules/BoxFlowCard';
 import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
 import { PopupLinks } from '@/components/molecules/PopupLinks';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { IngestaComponentFlowProps } from './types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
@@ -27,6 +28,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
   const [showRawProgress, setShowRawProgress] = useState(false);
   const [showMasterProgress, setShowMasterProgress] = useState(false);
   const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchIngestaOutput = useCallback(async () => {
     if (!user?.email) return;
@@ -34,7 +36,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
       const data = await getIngestaOutputByObjectId(objectId, user.email, country);
       setIngestaOutput(data);
     } catch (error) {
-      console.error('Error al obtener ingesta output:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al obtener datos de ingesta');
     }
   }, [objectId, user?.email, country]);
 
@@ -74,7 +76,10 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
   };
 
   const handleGenerate = async (stepId: string) => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
     
     try {
       if (stepId === 'raw') {
@@ -111,7 +116,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
         await fetchIngestaOutput();
       }
     } catch (error) {
-      console.error(`Error al generar ${stepId}:`, error);
+      setErrorMessage(error instanceof Error ? error.message : `Error al generar ${stepId}`);
     } finally {
       if (stepId === 'raw') {
         setShowRawProgress(false);
@@ -184,6 +189,11 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
           onComplete={() => setShowMasterProgress(false)}
         />
       )}
+
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
     </>
   );
 }; 

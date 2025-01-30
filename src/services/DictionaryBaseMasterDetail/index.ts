@@ -9,13 +9,13 @@ async function getDictionaryBaseMasterDetailsByHeaderId(headerId: string, user: 
     const response = await fetcher(`${API_CONFIG.BASE_URL}/dictionary-base-master-details/header/${headerId}`);
     if (!response) return [];
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return [];
     }
     
-    console.error('Error al obtener detalles de diccionario base master:', error);
-    throw error;
+    throw new Error('Error al obtener detalles del diccionario base master: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

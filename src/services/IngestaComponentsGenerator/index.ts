@@ -14,13 +14,17 @@ async function generateRawFiles(
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al generar archivos raw:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al generar archivos raw: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
-async function generateMasterFiles(data: GenerateMasterFilesRequest, user: string, country: string): Promise<AIGeneratorMasterFilesResponse> {
+async function generateMasterFiles(
+  data: GenerateMasterFilesRequest, 
+  user: string, 
+  country: string
+): Promise<AIGeneratorMasterFilesResponse> {
   const fetcher = createFetcher(user, country);
   
   try {
@@ -28,9 +32,9 @@ async function generateMasterFiles(data: GenerateMasterFilesRequest, user: strin
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al generar archivos master:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al generar archivos master: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

@@ -9,13 +9,13 @@ async function getDictionaryBaseRawHeaderByObjectId(objectId: string, user: stri
     const response = await fetcher(`${API_CONFIG.BASE_URL}/dictionary-base-raw-headers/object/${objectId}`);
     if (!response) return null;
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
     
-    console.error('Error al obtener diccionario base raw header:', error);
-    throw error;
+    throw new Error('Error al obtener diccionario base raw header: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

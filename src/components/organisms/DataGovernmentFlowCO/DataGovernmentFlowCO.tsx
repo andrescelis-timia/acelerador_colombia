@@ -4,6 +4,7 @@ import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
 import { PopupLinks } from '@/components/molecules/PopupLinks';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
 import { PreDictionaryInputForm } from '@/components/organisms/PreDictionaryInputForm';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { DataGovernmentFlowProps, FileDictionaryJsonHeader } from './types';
 import { getDictionaryJsonHeader } from '@/services/DictionaryJsonHeader';
 import { CreateDictionaryJsonHeader, DictionaryJsonHeaderResponse } from '@/services/DictionaryJsonHeader/types';
@@ -41,6 +42,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
   const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
   const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const stepsConfig = {
     sample: [
@@ -75,7 +77,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         setDictionaryJsonDetails(details);
       }
     } catch (error) {
-      console.error('Error:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos del diccionario');
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       const data = await getPreDictionaryInputByObjectId(objectId, user.email, country);
       setPreDictionary(data);
     } catch (error) {
-      console.error('Error:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar el pre-diccionario');
     } finally {
       setLoading(false);
     }
@@ -100,7 +102,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       const data = await getIngestaOutputByObjectId(objectId, user.email, country);
       setIngestaOutput(data);
     } catch (error) {
-      console.error('Error fetching ingesta output:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida del diccionario');
     }
   }, [objectId, user?.email, country]);
 
@@ -144,7 +146,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           setDictionaryFileContent(content);
           setDictionaryFile(file);
         } catch (error) {
-          console.error('Error al leer el archivo:', error);
+          setErrorMessage(error instanceof Error ? error.message : 'Error al leer el archivo');
         }
       }
     };
@@ -179,7 +181,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   };
 
   const handleDownload = () => {
-    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) return;
+    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) {
+      setErrorMessage('No hay datos disponibles para descargar');
+      return;
+    }
 
     const cleanData = cleanDataForDownload(dictionaryJsonHeader, dictionaryJsonDetails);
     const blob = new Blob([JSON.stringify(cleanData, null, 2)], { type: 'application/json' });
@@ -195,16 +200,16 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
   const handleGenerateDictionaryJson = async () => {
     if (!sampleFile || !user?.email) {
-      console.log('Validation failed:', { sampleFile, userEmail: user?.email });
+      setErrorMessage('Se requiere un archivo de muestra y un usuario autenticado');
       return;
     }
 
     setShowSampleProgress(true);
     
-    // Calcular duración total de los pasos
-    const totalDuration = stepsConfig.sample.reduce((acc, step) => acc + step.duration, 0);
-
     try {
+      // Calcular duración total de los pasos
+      const totalDuration = stepsConfig.sample.reduce((acc, step) => acc + step.duration, 0);
+
       // Ejecutar el proceso en paralelo con el progress
       const processPromise = generateDictionaryJson({
         header: {
@@ -221,8 +226,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       await fetchData();
     } catch (error) {
-      console.error('Error al generar diccionario JSON:', error);
-      throw error;
+      setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario JSON');
     } finally {
       setShowSampleProgress(false);
     }
@@ -245,7 +249,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   }, []);
 
   const handleDictionaryGeneration = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
     
     setShowDictionaryProgress(true);
     const totalDuration = stepsConfig.dictionary.reduce((acc, step) => acc + step.duration, 0);
@@ -311,7 +318,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         );
 
         if (missingFields.length > 0) {
-          console.error(`El archivo JSON no tiene todos los campos requeridos. Campos faltantes: ${missingFields.join(', ')}`);
+          const errorMsg = `El archivo JSON no tiene todos los campos requeridos. Campos faltantes: ${missingFields.join(', ')}`;
+          setErrorMessage(errorMsg);
           return;
         }
 
@@ -327,7 +335,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           );
 
           if (missingDetailFields.length > 0) {
-            console.error(`Campo ${campo.nombre_campo || 'desconocido'} no tiene todos los atributos requeridos. Faltantes: ${missingDetailFields.join(', ')}`);
+            setErrorMessage(`Campo ${campo.nombre_campo || 'desconocido'} no tiene todos los atributos requeridos. Faltantes: ${missingDetailFields.join(', ')}`);
             return;
           }
         }
@@ -370,10 +378,11 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       }
 
       if (!headerToUse || !detailsToUse.length) {
-        throw new Error('No hay datos de diccionario disponibles');
+        setErrorMessage('No hay datos de diccionario disponibles');
+        return;
       }
 
-      // Ejecutar el proceso en paralelo con el progress
+      // Reemplazar el error simulado por la llamada real
       const processPromise = generateDictionaryBase({
         header: headerToUse,
         details: detailsToUse
@@ -389,7 +398,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       
       await fetchDictionaryOutput();
     } catch (error) {
-      console.error('Error al generar diccionario base:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error desconocido al generar diccionario');
     } finally {
       setShowDictionaryProgress(false);
     }
@@ -415,7 +424,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                 try {
                   await handleGenerateDictionaryJson();
                 } catch (error) {
-                  console.error('Error:', error);
+                  setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
                 } finally {
                   await new Promise(resolve => setTimeout(resolve, 1000));
                   setShowSampleProgress(false);
@@ -526,6 +535,11 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           onComplete={() => {}}
         />
       )}
+
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
     </>
   );
 }; 

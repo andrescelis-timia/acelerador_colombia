@@ -14,12 +14,12 @@ async function getAllData(transform: 'table' | 'raw', user: string, country: str
     
     if (transform === 'table') return transformToTableData(data);
     return data;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return [];
     }
-    console.error('Error al obtener objetos:', error);
-    throw error;
+    throw new Error('Error al obtener objetos: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -30,12 +30,12 @@ async function getById(id: string, user: string, country: string): Promise<Objec
     const data: ObjectResponse = await fetcher(`${API_CONFIG.BASE_URL}/objects/${id}`);
     if (!data) return null;
     return transformToUpdateData(data);
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return null;
     }
-    console.error('Error al obtener objeto:', error);
-    throw error;
+    throw new Error('Error al obtener objeto por ID: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -47,9 +47,9 @@ async function createData(data: ObjectCreate, user: string, country: string): Pr
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al crear objeto:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al crear objeto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -62,12 +62,12 @@ async function updateData(data: ObjectUpdateWithId, user: string, country: strin
       method: 'PUT',
       body: JSON.stringify(updateData)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
-      return;
+      throw new Error('Objeto no encontrado');
     }
-    console.error('Error al actualizar objeto:', error);
-    throw error;
+    throw new Error('Error al actualizar objeto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -78,12 +78,12 @@ async function deleteData(id: string, user: string, country: string): Promise<vo
     await fetcher(`${API_CONFIG.BASE_URL}/objects/${id}`, {
       method: 'DELETE'
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
-      return;
+      throw new Error('Objeto no encontrado');
     }
-    console.error('Error al eliminar objeto:', error);
-    throw error;
+    throw new Error('Error al eliminar objeto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

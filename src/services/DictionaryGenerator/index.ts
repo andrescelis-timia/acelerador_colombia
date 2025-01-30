@@ -15,9 +15,9 @@ async function generateDictionaryJson(data: GenerateDictionaryJsonRequest, user:
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
-    console.error('Error al generar diccionario JSON:', error);
-    throw error;
+  } catch (error) {
+    throw new Error('Error al generar diccionario JSON: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 
@@ -29,12 +29,13 @@ async function generateDictionaryBase(data: GenerateDictionaryBaseRequest, user:
       method: 'POST',
       body: JSON.stringify(data)
     });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       throw new Error('Diccionario JSON no encontrado');
     }
-    console.error('Error al generar diccionario base:', error);
-    throw error;
+    
+    throw new Error('Error al generar diccionario base: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

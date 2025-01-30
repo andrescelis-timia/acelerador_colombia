@@ -9,13 +9,13 @@ async function getDictionaryJsonDetailsByHeaderId(headerId: string, user: string
     const response = await fetcher(`${API_CONFIG.BASE_URL}/dictionary-json-details/header/${headerId}`);
     if (!response) return [];
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
       return [];
     }
     
-    console.error('Error al obtener detalles del diccionario:', error);
-    throw error;
+    throw new Error('Error al obtener detalles del diccionario JSON: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
   }
 }
 

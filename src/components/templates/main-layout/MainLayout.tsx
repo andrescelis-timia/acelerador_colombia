@@ -6,6 +6,7 @@ import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -14,12 +15,13 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [user] = useAuthState(auth);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cerrar sesión');
     }
   };
 
@@ -48,6 +50,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           </div>
         </div>
       </main>
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
     </div>
   );
 }; 

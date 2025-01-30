@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { BoxFlowCard } from '@/components/molecules/BoxFlowCard';
 import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { DataGovernmentFlowProps } from './types';
 import { getDictionaryJsonHeader } from '@/services/DictionaryJsonHeader';
 import { DictionaryJsonHeaderResponse } from '@/services/DictionaryJsonHeader/types';
@@ -20,6 +21,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   const [refinement, setRefinement] = useState<RefinementResponse | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
@@ -35,7 +37,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
         setDictionaryJsonDetails(details);
       }
     } catch (error) {
-      console.error('Error:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos');
     } finally {
       setLoading(false);
     }
@@ -46,6 +48,10 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   }, [fetchData]);
 
   const handleFileSelect = () => {
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx,.xml';
@@ -86,7 +92,10 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   };
 
   const handleDownload = () => {
-    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) return;
+    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) {
+      setErrorMessage('No hay datos disponibles para descargar');
+      return;
+    }
 
     const cleanData = cleanDataForDownload(dictionaryJsonHeader, dictionaryJsonDetails);
     const blob = new Blob([JSON.stringify(cleanData, null, 2)], { type: 'application/json' });
@@ -109,7 +118,9 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: async () => {
                 if (!selectedFile || !user?.email) {
-                  console.log('Validation failed:', { selectedFile, userEmail: user?.email });
+                  setErrorMessage(!selectedFile 
+                    ? 'Debe cargar un archivo primero' 
+                    : 'Usuario no autenticado');
                   return;
                 }
                 try {
@@ -117,11 +128,11 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
                     header: {
                       id_object: objectId
                     },
-                    details: [] // Los detalles se generarán automáticamente en el backend
+                    details: []
                   }, user.email, country);
                   await fetchData();
                 } catch (error) {
-                  console.error('Error al generar diccionario:', error);
+                  setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
                 }
               },
               className: "text-blue-600 hover:text-blue-800",
@@ -151,12 +162,12 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
           <BoxFlowControls
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
-              onClick: () => console.log(`Play ${stepId}`),
+              onClick: () => setErrorMessage('Funcionalidad no implementada'),
               className: "text-blue-600 hover:text-blue-800"
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
-              onClick: () => console.log(`View ${stepId}`),
+              onClick: () => setErrorMessage('Funcionalidad no implementada'),
               className: "text-blue-600 hover:text-blue-800"
             }]}
           />
@@ -169,25 +180,32 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   if (loading) return null;
 
   return (
-    <div className="relative p-8">
-      <div className="grid grid-cols-3 gap-x-12 gap-y-8">
-        {flowStepsConfig.map((step, index) => (
-          <div key={step.id} className="relative col-span-1 row-span-1" style={{
-            gridColumn: gridLayout[index].x + 1,
-            gridRow: gridLayout[index].y + 1,
-          }}>
-            <BoxFlowCard
-              title={step.title}
-              isStatic={step.id !== 'teradata'}
-              schema={step.id === 'teradata' ? 'xlsx, xml' : undefined}
-              selectedFile={step.id === 'teradata' ? selectedFile : undefined}
-              onFileClick={step.id === 'teradata' ? handleFileSelect : undefined}
-              className="w-full border border-gray-400"
-              controls={getControls(step.id)}
-            />
-          </div>
-        ))}
+    <>
+      <div className="relative p-8">
+        <div className="grid grid-cols-3 gap-x-12 gap-y-8">
+          {flowStepsConfig.map((step, index) => (
+            <div key={step.id} className="relative col-span-1 row-span-1" style={{
+              gridColumn: gridLayout[index].x + 1,
+              gridRow: gridLayout[index].y + 1,
+            }}>
+              <BoxFlowCard
+                title={step.title}
+                isStatic={step.id !== 'teradata'}
+                schema={step.id === 'teradata' ? 'xlsx, xml' : undefined}
+                selectedFile={step.id === 'teradata' ? selectedFile : undefined}
+                onFileClick={step.id === 'teradata' ? handleFileSelect : undefined}
+                className="w-full border border-gray-400"
+                controls={getControls(step.id)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
+    </>
   );
 };

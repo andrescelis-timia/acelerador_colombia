@@ -4,6 +4,7 @@ import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'f
 import { auth } from '@/lib/firebase/config';
 import { getUserByEmail } from '@/services/User';
 import { useRouter } from 'next/navigation';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 
 export type AuthContextType = {
   user: User | null;
@@ -28,18 +29,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState<string[]>([]);
   const [country, setCountry] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
 
   const signInWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      // La cookie se establecerá a través del efecto de onAuthStateChanged
-      console.log('Login exitoso:', result.user.email);
+      await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error) {
-      console.error('Error en login:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al iniciar sesión con Google');
       throw error;
     }
   };
@@ -54,11 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userCountries = userDataArray.map(userData => userData.country);
             setUser(user);
             setCountries(userCountries);
-            
-            // Establecer cookie de sesión
             document.cookie = `session=${user.uid}; path=/`;
             
-            // Cargar el país guardado
             const savedCountry = localStorage.getItem('selectedCountry');
             if (savedCountry && userCountries.includes(savedCountry)) {
               setCountry(savedCountry);
@@ -67,31 +63,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.setItem('selectedCountry', userCountries[0]);
             }
           } else {
-            setUser(null);
-            setCountries([]);
-            setCountry('');
-            localStorage.removeItem('selectedCountry');
-            document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            setErrorMessage('Usuario no tiene países asignados');
+            handleLogout();
           }
-        } catch {
-          setUser(null);
-          setCountries([]);
-          setCountry('');
-          localStorage.removeItem('selectedCountry');
-          document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        } catch (error) {
+          setErrorMessage(error instanceof Error ? error.message : 'Error al obtener datos del usuario');
+          handleLogout();
         }
       } else {
-        setUser(null);
-        setCountries([]);
-        setCountry('');
-        localStorage.removeItem('selectedCountry');
-        document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        handleLogout();
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
+  const handleLogout = () => {
+    setUser(null);
+    setCountries([]);
+    setCountry('');
+    localStorage.removeItem('selectedCountry');
+    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  };
 
   useEffect(() => {
     if (country) {
@@ -109,6 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading 
     }}>
       {children}
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
     </AuthContext.Provider>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { BoxFlowCard } from '@/components/molecules/BoxFlowCard';
 import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
+import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { RefinementFlowProps } from './types';
 import { getRefinementByObjectId } from '@/services/Refinement';
 import { RefinementResponse } from '@/services/Refinement/types';
@@ -17,6 +18,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 
 export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
   const { user, country } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const calculateProgress = useCallback((data: unknown | null, suffix: string): string => {
     if (!data || typeof data !== 'object') {
@@ -56,7 +58,7 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
       setRefinement(data);
       setFlowSteps(getUpdatedFlowSteps(data));
     } catch (error) {
-      console.error('Error:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al obtener datos de refinamiento');
     } finally {
       setLoading(false);
     }
@@ -72,6 +74,10 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
   }, [fetchRefinement]);
 
   const handleOpenForm = (formId: string) => {
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
     setActiveForm(formId);
   };
 
@@ -175,6 +181,11 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
           />
         </>
       )}
+
+      <ErrorModal 
+        message={errorMessage}
+        onClose={() => setErrorMessage(null)}
+      />
     </>
   );
 }; 
