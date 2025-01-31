@@ -8,7 +8,7 @@ export const IconButton = ({ icon, onClick, disabled, className, title }: IconBu
     disabled={disabled}
     title={title}
     className={cn(
-      "h-4 w-4 text-gray-600",
+      "h-4 w-4 text-blue-500",
       !disabled && "hover:text-blue-600 transition-colors",
       disabled && "opacity-50 cursor-not-allowed",
       className

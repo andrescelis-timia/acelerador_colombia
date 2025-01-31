@@ -137,6 +137,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
                 handleEdit(item.id);
               }}
               className="text-indigo-600 hover:text-indigo-900 mr-4"
+              title="Editar Objeto"
             >
               <PencilIcon className="h-5 w-5 inline" />
             </button>
@@ -146,6 +147,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
                 handleDeleteClick(item.id);
               }}
               className="text-red-600 hover:text-red-900"
+              title="Borrar Objeto"
             >
               <TrashIcon className="h-5 w-5 inline" />
             </button>
