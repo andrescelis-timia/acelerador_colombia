@@ -11,12 +11,12 @@ export const BoxFlowCard = ({
   className,
   controls
 }: BoxFlowCardProps) => (
-  <div className={cn("w-full flex-shrink-0 rounded-lg", className)}>
-    <div className="h-full border-2 border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
-      <div className="border-b-2 border-gray-400 p-2 bg-white">
+  <div className={cn("w-[200px] h-[150px] flex-shrink-0 rounded-lg", className)}>
+    <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
+      <div className="border-b border-[#94B5F0] p-2 bg-white h-[40px] flex items-center">
         {controls}
       </div>
-      <div className="p-4">
+      <div className="flex-1 p-4 flex flex-col justify-center">
         {isStatic ? (
           <div className="flex items-center justify-center mb-2">
             <span className="text-sm font-medium text-gray-900 truncate max-w-[120px]" title={title}>
@@ -43,7 +43,7 @@ export const BoxFlowCard = ({
             )}
           </div>
         )}
-        {schema && <div className="text-xs text-gray-500">{schema}</div>}
+        {schema && <div className="text-xs text-gray-500 text-center">{schema}</div>}
       </div>
     </div>
   </div>

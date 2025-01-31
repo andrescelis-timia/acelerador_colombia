@@ -18,16 +18,6 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 
-const gridLayout = [
-  { x: 0, y: 0 }, // sample
-  { x: 1, y: 0 }, // dictionary
-];
-
-const flowStepsConfig = [
-  { id: 'sample', title: 'Muestra', schema: 'txt, csv' },
-  { id: 'dictionary', title: 'Diccionario', schema: 'json' },
-];
-
 export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'CO' } = useAuth();
   const [dictionaryJsonHeader, setDictionaryJsonHeader] = useState<DictionaryJsonHeaderResponse | null>(null);
@@ -430,14 +420,14 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                   setShowSampleProgress(false);
                 }
               },
-              className: "text-blue-600 hover:text-blue-800",
+              className: "text-green-500 hover:text-green-600",
               disabled: !sampleFile,
               tooltip: !sampleFile ? 'Debe cargar un archivo primero' : undefined
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
               onClick: handleDownload,
-              className: "text-blue-600 hover:text-blue-800",
+              className: "text-blue-500 hover:text-blue-600",
               disabled: !dictionaryJsonHeader,
               tooltip: !dictionaryJsonHeader ? 'No hay JSON disponible' : undefined
             }]}
@@ -449,14 +439,14 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: handleDictionaryGeneration,
-              className: "text-blue-600 hover:text-blue-800",
+              className: "text-green-500 hover:text-green-600",
               disabled: !dictionaryJsonHeader && !dictionaryFile,
               tooltip: !dictionaryJsonHeader && !dictionaryFile ? 'Se requiere un diccionario o archivo JSON' : undefined
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
               onClick: () => setIsLinksPopupOpen(true),
-              className: "text-blue-600 hover:text-blue-800",
+              className: "text-blue-500 hover:text-blue-600",
               disabled: !ingestaOutput,
               tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
             }]}
@@ -479,31 +469,44 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   return (
     <>
       <div className="relative p-8">
-        <div className="grid grid-cols-4 gap-x-12 gap-y-8">
-          {flowStepsConfig.map((step, index) => (
-            <div key={step.id} className="relative col-span-1 row-span-1" style={{
-              gridColumn: gridLayout[index].x + 1,
-              gridRow: gridLayout[index].y + 1,
-            }}>
-              <BoxFlowCard
-                title={step.title}
-                isStatic={false}
-                schema={step.schema}
-                selectedFile={
-                  step.id === 'sample' 
-                    ? sampleFile 
-                    : dictionaryFile
-                }
-                onFileClick={
-                  step.id === 'sample' 
-                    ? handleSampleFileSelect 
-                    : handleDictionaryFileSelect
-                }
-                className="w-full border border-gray-400"
-                controls={getControls(step.id)}
-              />
-            </div>
-          ))}
+        <div className="flex items-center gap-12">
+          {/* Línea de conexión */}
+          <div 
+            className="absolute h-[2px] bg-[#94B5F0]"
+            style={{ 
+              top: '50%',
+              transform: 'translateY(-50%)',
+              left: '232px',
+              width: '48px',
+              zIndex: 0
+            }} 
+          />
+
+          {/* BoxFlowCard Muestra */}
+          <div className="relative z-10">
+            <BoxFlowCard
+              title="Muestra"
+              isStatic={false}
+              schema="txt, csv"
+              selectedFile={sampleFile}
+              onFileClick={handleSampleFileSelect}
+              className="border-2 border-[#94B5F0]"
+              controls={getControls('sample')}
+            />
+          </div>
+
+          {/* BoxFlowCard Diccionario */}
+          <div className="relative z-10">
+            <BoxFlowCard
+              title="Diccionario"
+              isStatic={false}
+              schema="json"
+              selectedFile={dictionaryFile}
+              onFileClick={handleDictionaryFileSelect}
+              className="border-2 border-[#94B5F0]"
+              controls={getControls('dictionary')}
+            />
+          </div>
         </div>
       </div>
 

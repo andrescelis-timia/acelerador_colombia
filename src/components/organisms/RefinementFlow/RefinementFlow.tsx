@@ -12,7 +12,7 @@ import { RefinementDefinitionForm } from '@/components/organisms/RefinementDefin
 import { RefinementStagingForm } from '@/components/organisms/RefinementStagingForm';
 import { RefinementRawForm } from '@/components/organisms/RefinementRawForm';
 import { RefinementMasterForm } from '@/components/organisms/RefinementMasterForm';
-import { gridLayout, flowStepsConfig } from './config';
+import { flowStepsConfig } from './config';
 import { getAllPossibleFields } from './fields';
 import { useAuth } from '@/lib/context/AuthContext';
 
@@ -81,36 +81,104 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
     setActiveForm(formId);
   };
 
+  const getControls = (stepId: string) => (
+    <BoxFlowControls
+      centerContent={
+        <button
+          onClick={() => handleOpenForm(stepId)}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          {flowSteps.find(step => step.id === stepId)?.progress}
+        </button>
+      }
+    />
+  );
+
   if (loading) return null;
 
   return (
     <>
-      <div className="relative p-8">
-        <div className="grid grid-cols-3 gap-x-12 gap-y-8">
-          {flowSteps.map((step, index) => (
-            <div key={step.id} className="relative col-span-1 row-span-1" style={{
-              gridColumn: gridLayout[index].x + 1,
-              gridRow: gridLayout[index].y + 1,
-            }}>
+      <div className="relative p-8 overflow-x-auto">
+        <div className="min-w-[1000px]">
+          {/* Primera fila - Flujo principal */}
+          <div className="flex items-center justify-start gap-12 mb-16">
+            <div className="relative z-10">
               <BoxFlowCard
-                title={step.title}
+                title="Origin"
                 isStatic={true}
-                className="w-full border border-gray-400"
-                controls={
-                  <BoxFlowControls
-                    centerContent={
-                      <button
-                        onClick={() => handleOpenForm(step.id)}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        {step.progress}
-                      </button>
-                    }
-                  />
-                }
+                className="border-2 border-[#94B5F0]"
+                controls={getControls('origin')}
               />
             </div>
-          ))}
+            <div className="relative">
+              <div className="absolute h-[2px] bg-[#94B5F0] w-12 top-1/2 -translate-y-1/2 -left-12" />
+              <div className="relative z-10">
+                <BoxFlowCard
+                  title="Transmission"
+                  isStatic={true}
+                  className="border-2 border-[#94B5F0]"
+                  controls={getControls('transmission')}
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute h-[2px] bg-[#94B5F0] w-12 top-1/2 -translate-y-1/2 -left-12" />
+              <div className="relative z-10">
+                <BoxFlowCard
+                  title="Datio"
+                  isStatic={true}
+                  className="border-2 border-[#94B5F0]"
+                  controls={getControls('datio')}
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute h-[2px] bg-[#94B5F0] w-12 top-1/2 -translate-y-1/2 -left-12" />
+              <div className="relative z-10">
+                <BoxFlowCard
+                  title="Definition"
+                  isStatic={true}
+                  className="border-2 border-[#94B5F0]"
+                  controls={getControls('definition')}
+                />
+              </div>
+              <div className="absolute h-24 w-[2px] bg-[#94B5F0] left-1/2 top-full" />
+            </div>
+          </div>
+
+          {/* Segunda fila */}
+          <div className="flex items-center" style={{ paddingLeft: '250px' }}>
+            <div className="relative z-10">
+              <BoxFlowCard
+                title="Master"
+                isStatic={true}
+                className="border-2 border-[#94B5F0]"
+                controls={getControls('master')}
+              />
+            </div>
+            <div className="relative" style={{ marginLeft: '50px' }}>
+              <div className="absolute h-[2px] bg-[#94B5F0] w-12 top-1/2 -translate-y-1/2 -left-12" />
+              <div className="relative z-10">
+                <BoxFlowCard
+                  title="Raw"
+                  isStatic={true}
+                  className="border-2 border-[#94B5F0]"
+                  controls={getControls('raw')}
+                />
+              </div>
+            </div>
+            <div className="relative" style={{ marginLeft: '50px' }}>
+              <div className="absolute h-[2px] bg-[#94B5F0] w-12 top-1/2 -translate-y-1/2 -left-12" />
+              <div className="relative z-10">
+                <BoxFlowCard
+                  title="Staging"
+                  isStatic={true}
+                  className="border-2 border-[#94B5F0]"
+                  controls={getControls('staging')}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

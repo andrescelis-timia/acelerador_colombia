@@ -8,24 +8,29 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 
 export default function ProjectPage() {
-  const { user, country } = useAuth();
+  const { user, country, loading } = useAuth();
   const [projects, setProjects] = useState<ProjectTableData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   const loadProjects = useCallback(async () => {
+    if (loading) return;
+    
     if (!user?.email) {
-      setErrorMessage('Usuario no autenticado');
+      if (!loading) {
+        setErrorMessage('Usuario no autenticado');
+      }
       return;
     }
+
     try {
       const data = await getAllData('table', user.email, country);
       setProjects(data);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar proyectos');
     }
-  }, [user?.email, country]);
+  }, [user?.email, country, loading]);
 
   useEffect(() => {
     loadProjects();

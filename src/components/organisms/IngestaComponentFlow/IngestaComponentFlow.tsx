@@ -11,16 +11,6 @@ import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { generateRawFiles, generateMasterFiles } from '@/services/IngestaComponentsGenerator';
 
-const flowStepsConfig = [
-  { id: 'raw', title: 'Raw' },
-  { id: 'master', title: 'Master' },
-];
-
-const gridLayout = [
-  { x: 0, y: 0 }, // raw
-  { x: 1, y: 0 }, // master
-];
-
 export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) => {
   const { user, country } = useAuth();
   const [isLinksPopupOpen, setIsLinksPopupOpen] = useState(false);
@@ -132,7 +122,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
         leftIcons={[{
           icon: <PlayIcon className="h-5 w-5" />,
           onClick: () => handleGenerate(stepId),
-          className: "text-blue-600 hover:text-blue-800",
+          className: "text-green-500 hover:text-green-600",
           disabled: false
         }]}
         rightIcons={[{
@@ -141,7 +131,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
             setSelectedStep(stepId);
             setIsLinksPopupOpen(true);
           },
-          className: "text-blue-600 hover:text-blue-800",
+          className: "text-blue-500 hover:text-blue-600",
           disabled: false
         }]}
       />
@@ -151,20 +141,38 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
   return (
     <>
       <div className="relative p-8">
-        <div className="grid grid-cols-4 gap-x-12 gap-y-8">
-          {flowStepsConfig.map((step, index) => (
-            <div key={step.id} className="relative col-span-1 row-span-1" style={{
-              gridColumn: gridLayout[index].x + 1,
-              gridRow: gridLayout[index].y + 1,
-            }}>
-              <BoxFlowCard
-                title={step.title}
-                isStatic={true}
-                className="w-full border border-gray-400"
-                controls={getControls(step.id)}
-              />
-            </div>
-          ))}
+        <div className="flex items-center gap-12">
+          {/* Línea de conexión */}
+          <div 
+            className="absolute h-[2px] bg-[#94B5F0]"
+            style={{ 
+              top: '50%',
+              transform: 'translateY(-50%)',
+              left: '232px',
+              width: '48px',
+              zIndex: 0
+            }} 
+          />
+
+          {/* BoxFlowCard Raw */}
+          <div className="relative z-10">
+            <BoxFlowCard
+              title="Raw"
+              isStatic={true}
+              className="border-2 border-[#94B5F0]"
+              controls={getControls('raw')}
+            />
+          </div>
+
+          {/* BoxFlowCard Master */}
+          <div className="relative z-10">
+            <BoxFlowCard
+              title="Master"
+              isStatic={true}
+              className="border-2 border-[#94B5F0]"
+              controls={getControls('master')}
+            />
+          </div>
         </div>
       </div>
 
