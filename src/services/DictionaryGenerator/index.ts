@@ -1,7 +1,9 @@
 import { 
   GenerateDictionaryJsonRequest,
   GenerateDictionaryBaseRequest,
-  GenerateDictionaryBaseResponse
+  GenerateDictionaryBaseResponse,
+  GenerateDictionaryL1TRequest,
+  GenerateDictionaryL1TResponse
 } from './types';
 import { DictionaryJsonHeaderResponse } from '../DictionaryJsonHeader/types';
 import { createFetcher } from '@/lib/api/fetcher';
@@ -39,7 +41,30 @@ async function generateDictionaryBase(data: GenerateDictionaryBaseRequest, user:
   }
 }
 
+async function generateDictionaryL1T(
+  data: GenerateDictionaryL1TRequest, 
+  user: string, 
+  country: string
+): Promise<GenerateDictionaryL1TResponse> {
+  const fetcher = createFetcher(user, country);
+  
+  try {
+    return await fetcher(`${API_CONFIG.BASE_URL}/dictionary-generator/l1t`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      throw new Error('Dictionary JSON Header no encontrado');
+    }
+    
+    throw new Error('Error al generar diccionario L1T: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
+  }
+}
+
 export {
   generateDictionaryJson,
-  generateDictionaryBase
+  generateDictionaryBase,
+  generateDictionaryL1T
 }; 

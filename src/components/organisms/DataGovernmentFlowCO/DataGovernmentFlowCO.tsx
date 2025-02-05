@@ -13,7 +13,7 @@ import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/serv
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputResponse } from '@/services/PreDictionaryInput/types';
 import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { generateDictionaryJson, generateDictionaryBase } from '@/services/DictionaryGenerator';
+import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
@@ -33,6 +33,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
   const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedLinks, setSelectedLinks] = useState<Array<{ label: string; url: string }>>([]);
+  const [showL1TProgress, setShowL1TProgress] = useState(false);
 
   const stepsConfig = {
     sample: [
@@ -52,7 +54,18 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       { label: 'Creando diccionarios de datos detallados y mapeos de campos', duration: 13500 },
       { label: 'Validando relaciones y dependencias entre diccionarios', duration: 13500 },
       { label: 'Creando y guardando archivos CSV finales con todos los metadatos y mapeos', duration: 15000 }
+    ],
+    l1t: [
+      { label: 'Extrayendo diccionario Master de objects y fields', duration: 10000 },
+      { label: 'Procesando datos de L1T', duration: 10000 },
+      { label: 'Generando dictionario L1T de objects y fields', duration: 10000 }
     ]
+  };
+
+  const PROCESS_TITLES = {
+    sample: 'Procesando Muestra',
+    dictionary: 'Generando Diccionario',
+    l1t: 'Generando Diccionario L1T'
   };
 
   const fetchData = useCallback(async () => {
@@ -422,7 +435,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               },
               className: "text-green-500 hover:text-green-600",
               disabled: !sampleFile,
-              tooltip: !sampleFile ? 'Debe cargar un archivo primero' : undefined
+              tooltip: !sampleFile ? 'Debe cargar un archivo primero' : PROCESS_TITLES.sample
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
@@ -441,11 +454,82 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               onClick: handleDictionaryGeneration,
               className: "text-green-500 hover:text-green-600",
               disabled: !dictionaryJsonHeader && !dictionaryFile,
-              tooltip: !dictionaryJsonHeader && !dictionaryFile ? 'Se requiere un diccionario o archivo JSON' : undefined
+              tooltip: !dictionaryJsonHeader && !dictionaryFile ? 
+                'Se requiere un diccionario o archivo JSON' : 
+                PROCESS_TITLES.dictionary
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
-              onClick: () => setIsLinksPopupOpen(true),
+              onClick: () => {
+                setIsLinksPopupOpen(true);
+                setSelectedLinks([
+                  { label: "Raw Object", url: ingestaOutput?.dictionary_raw_header_link || '' },
+                  { label: "Raw Fields", url: ingestaOutput?.dictionary_raw_details_link || '' },
+                  { label: "Master Object", url: ingestaOutput?.dictionary_master_header_link || '' },
+                  { label: "Master Fields", url: ingestaOutput?.dictionary_master_details_link || '' }
+                ]);
+              },
+              className: "text-blue-500 hover:text-blue-600",
+              disabled: !ingestaOutput,
+              tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
+            }]}
+          />
+        );
+      case 'l1t':
+        const canExecuteL1T = ingestaOutput !== null && 
+          ingestaOutput.dictionary_master_header_link !== null &&
+          ingestaOutput.dictionary_master_header_link !== '' && 
+          ingestaOutput.dictionary_master_details_link !== null &&
+          ingestaOutput.dictionary_master_details_link !== '';
+
+        return (
+          <BoxFlowControls
+            leftIcons={[{
+              icon: <PlayIcon className="h-5 w-5" />,
+              onClick: async () => {
+                if (!user?.email) {
+                  setErrorMessage('Usuario no autenticado');
+                  return;
+                }
+
+                setShowL1TProgress(true);
+                const totalDuration = stepsConfig.l1t.reduce((acc, step) => acc + step.duration, 0);
+                
+                try {
+                  const processPromise = generateDictionaryL1T({
+                    id_object: objectId
+                  }, user.email, country);
+
+                  const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
+
+                  // Esperar a que ambos terminen
+                  await Promise.all([
+                    processPromise,
+                    timerPromise
+                  ]);
+
+                  await fetchDictionaryOutput();
+                } catch (error) {
+                  setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario L1T');
+                } finally {
+                  setShowL1TProgress(false);
+                }
+              },
+              className: "text-green-500 hover:text-green-600",
+              disabled: !canExecuteL1T,
+              tooltip: !canExecuteL1T ? 
+                'Se requieren los links del diccionario master' : 
+                PROCESS_TITLES.l1t
+            }]}
+            rightIcons={[{
+              icon: <EyeIcon className="h-5 w-5" />,
+              onClick: () => {
+                setIsLinksPopupOpen(true);
+                setSelectedLinks([
+                  { label: "L1T Object", url: ingestaOutput?.dictionary_l1t_master_header_link || '' },
+                  { label: "L1T Fields", url: ingestaOutput?.dictionary_l1t_master_detail_link || '' }
+                ]);
+              },
               className: "text-blue-500 hover:text-blue-600",
               disabled: !ingestaOutput,
               tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
@@ -457,20 +541,13 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   };
 
-  const dictionaryLinks = [
-    { label: "Raw Object", url: ingestaOutput?.dictionary_raw_header_link || '' },
-    { label: "Raw Fields", url: ingestaOutput?.dictionary_raw_details_link || '' },
-    { label: "Master Object", url: ingestaOutput?.dictionary_master_header_link || '' },
-    { label: "Master Fields", url: ingestaOutput?.dictionary_master_details_link || '' }
-  ];
-
   if (loading) return null;
 
   return (
     <>
       <div className="relative p-8">
         <div className="flex items-center gap-12">
-          {/* Línea de conexión */}
+          {/* Líneas de conexión existentes */}
           <div 
             className="absolute h-[2px] bg-[#94B5F0]"
             style={{ 
@@ -507,6 +584,28 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               controls={getControls('dictionary')}
             />
           </div>
+
+          {/* Nueva línea de conexión para L1T */}
+          <div 
+            className="absolute h-[2px] bg-[#94B5F0]"
+            style={{ 
+              top: '50%',
+              transform: 'translateY(-50%)',
+              left: '480px',
+              width: '48px',
+              zIndex: 0
+            }} 
+          />
+
+          {/* Nueva BoxFlowCard L1T */}
+          <div className="relative z-10">
+            <BoxFlowCard
+              title="L1T"
+              isStatic={true}
+              className="border-2 border-[#94B5F0]"
+              controls={getControls('l1t')}
+            />
+          </div>
         </div>
       </div>
 
@@ -519,13 +618,16 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       <PopupLinks
         isOpen={isLinksPopupOpen}
-        onClose={() => setIsLinksPopupOpen(false)}
-        links={dictionaryLinks}
+        onClose={() => {
+          setIsLinksPopupOpen(false);
+          setSelectedLinks([]); // Limpiar los links seleccionados al cerrar
+        }}
+        links={selectedLinks}
       />
 
       {showSampleProgress && (
         <ProgressDialog
-          title="Procesando Muestra"
+          title={PROCESS_TITLES.sample}
           steps={stepsConfig.sample}
           onComplete={() => {}}
         />
@@ -533,8 +635,16 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       
       {showDictionaryProgress && (
         <ProgressDialog
-          title="Generando Diccionario"
+          title={PROCESS_TITLES.dictionary}
           steps={stepsConfig.dictionary}
+          onComplete={() => {}}
+        />
+      )}
+
+      {showL1TProgress && (
+        <ProgressDialog
+          title={PROCESS_TITLES.l1t}
+          steps={stepsConfig.l1t}
           onComplete={() => {}}
         />
       )}
