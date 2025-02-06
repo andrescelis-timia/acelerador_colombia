@@ -343,10 +343,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
                 }
                 try {
                   await generateDictionaryJson({
-                    header: {
-                      id_object: objectId
-                    },
-                    details: []
+                    id_object: objectId
                   }, user.email, country);
                   await fetchData();
                 } catch (error) {

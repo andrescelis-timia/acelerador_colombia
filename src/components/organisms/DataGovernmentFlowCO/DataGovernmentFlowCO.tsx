@@ -164,7 +164,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       'creation_user',
       'update_date',
       'update_user',
-      'id_dictionary_json_detail'
+      'id_dictionary_json_detail',
+      'owner_country'
     ];
 
     const cleanHeader = Object.fromEntries(
@@ -215,10 +216,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       // Ejecutar el proceso en paralelo con el progress
       const processPromise = generateDictionaryJson({
-        header: {
-          id_object: objectId
-        },
-        details: []
+        id_object: objectId
       }, user.email, country);
 
       // Esperar a que ambos terminen
@@ -237,7 +235,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
   const calculateProgress = useCallback((data: unknown | null): string => {
     if (!data || typeof data !== 'object') {
-      return '0/12';
+      return '0/15';
     }
     
     const fields = Object.entries(data as Record<string, unknown>).filter(([key]) => 
@@ -410,14 +408,29 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const getControls = (stepId: string) => {
     switch (stepId) {
       case 'sample':
+        const progress = calculateProgress(preDictionary);
+        const [filled, total] = progress.split('/').map(Number);
+        const isPreDictionaryComplete = filled === total;
+        const canExecuteSample = sampleFile && isPreDictionaryComplete;
+        
+        const getPreDictionaryTooltip = () => {
+          if (!sampleFile) return 'Debe cargar un archivo primero';
+          if (!isPreDictionaryComplete) {
+            const remaining = total - filled;
+            return `Te faltan llenar ${remaining} campo${remaining === 1 ? '' : 's'} adicional${remaining === 1 ? '' : 'es'}`;
+          }
+          return PROCESS_TITLES.sample;
+        };
+
         return (
           <BoxFlowControls
             centerContent={
               <button
                 onClick={() => handleOpenForm('pre-dictionary')}
                 className="text-sm text-blue-600 hover:text-blue-800"
+                title="Campos adicionales"
               >
-                {calculateProgress(preDictionary)}
+                {progress}
               </button>
             }
             leftIcons={[{
@@ -434,8 +447,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                 }
               },
               className: "text-green-500 hover:text-green-600",
-              disabled: !sampleFile,
-              tooltip: !sampleFile ? 'Debe cargar un archivo primero' : PROCESS_TITLES.sample
+              disabled: !canExecuteSample,
+              tooltip: getPreDictionaryTooltip()
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,

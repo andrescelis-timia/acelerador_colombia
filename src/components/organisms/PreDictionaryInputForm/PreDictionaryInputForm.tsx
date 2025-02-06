@@ -30,7 +30,10 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
     path_output_raw: '',
     path_input_master: '',
     path_output_master: '',
-    aggregate_fields_master: ''
+    aggregate_fields_master: '',
+    table_content_origin: '',
+    information_group_level_2: '',
+    number_records_period_intake: ''
   };
 
   const fields: FormFieldConfig[] = [
@@ -53,6 +56,12 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       type: 'input'
     },
     {
+      name: 'table_content_origin',
+      label: 'Descripción de la tabla de contenido de origen',
+      placeholder: 'Ingrese la descripción de la tabla de contenido de origen',
+      type: 'input'
+    },
+    {
       name: 'table_raw_name',
       label: 'Nombre de tabla RAW',
       placeholder: 'Ingrese el nombre de la tabla RAW',
@@ -62,6 +71,12 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       name: 'table_master_name',
       label: 'Nombre de tabla MASTER',
       placeholder: 'Ingrese el nombre de la tabla MASTER',
+      type: 'input'
+    },        
+    {
+      name: 'information_group_level_2',
+      label: 'Información de grupo nivel 2',
+      placeholder: 'Ingrese la información de grupo nivel 2',
       type: 'input'
     },
     {
@@ -105,6 +120,13 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       label: 'Campos de agregación MASTER',
       placeholder: 'Ingrese los campos de agregación MASTER',
       type: 'input'
+    },
+    {
+      name: 'number_records_period_intake',
+      label: 'Cantidad de registros por periodo de ingesta',
+      placeholder: 'Ingrese la cantidad de registros por periodo de ingesta',
+      type: 'input'
+
     }
   ];
 
@@ -112,7 +134,7 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
     <SlideForm<CreatePreDictionaryInput | UpdatePreDictionaryInput>
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Editar Pre-Diccionario' : 'Crear Pre-Diccionario'}
+      title='Campos adicionales'
       fields={fields}
       initialData={initialData || defaultPreDictionary}
       service={{

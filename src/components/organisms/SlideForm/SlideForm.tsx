@@ -53,7 +53,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
       <Dialog
         open={isOpen}
         onClose={onClose}
-        className="fixed inset-0 overflow-y-auto"
+        className="fixed inset-0 overflow-y-auto z-50"
       >
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">

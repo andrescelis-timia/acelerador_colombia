@@ -8,8 +8,7 @@ import { CreateDictionaryJsonHeader } from '../DictionaryJsonHeader/types';
 import { CreateDictionaryJsonDetail } from '../DictionaryJsonDetail/types';
 
 export interface GenerateDictionaryJsonRequest {
-  header: CreateDictionaryJsonHeader;
-  details: CreateDictionaryJsonDetail[];
+  id_object: string;
 }
 
 export interface GenerateDictionaryJsonResponse {
