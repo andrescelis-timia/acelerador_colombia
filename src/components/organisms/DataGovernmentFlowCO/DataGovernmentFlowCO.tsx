@@ -157,31 +157,43 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   };
 
   const cleanDataForDownload = (header: DictionaryJsonHeaderResponse, details: DictionaryJsonDetailResponse[]) => {
-    const fieldsToRemove = [
-      'id_dictionary_json_header',
-      'id_object',
-      'creation_date',
-      'creation_user',
-      'update_date',
-      'update_user',
-      'id_dictionary_json_detail',
-      'owner_country'
-    ];
+    const cleanDetails = details.map(detail => ({
+      nombre_campo: detail.name_field,
+      logical_format: detail.logical_format,
+      formato_fecha: detail.date_format,
+      calculado: detail.calculated,
+      clave_origen: detail.key_origin,
+      clave_datio: detail.key_datio,
+      descripcion: detail.description,
+      observacion: detail.observation,
+      obligatorio: detail.required ? 'true' : 'false'
+    }));
 
-    const cleanHeader = Object.fromEntries(
-      Object.entries(header).filter(([key]) => !fieldsToRemove.includes(key))
-    );
-
-    const cleanDetails = details.map(detail => 
-      Object.fromEntries(
-        Object.entries(detail).filter(([key]) => !fieldsToRemove.includes(key))
-      )
-    );
-
-    return {
-      header: cleanHeader,
-      details: cleanDetails
+    const cleanData: FileDictionaryJsonHeader = {
+      pais: header.country,
+      origen: header.origin,
+      aplicativo_producto: header.app_product,
+      nombre_origen: header.name_origin,
+      'descripción_contenido_tabla_origen': header.table_content_origin,
+      claves_primarias_tabla: header.primary_keys_table,
+      nombre_tabla_en_datio: header.table_name_datio,
+      claves_primarias_datio: header.primary_keys_datio,
+      tabla_en_raw: header.table_raw_name,
+      tabla_en_master: header.table_master_name,
+      information_group_level_2: header.information_group_level_2,
+      campos_particion_raw: header.partition_fields_raw,
+      campos_agregar_raw: header.aggregate_fields_raw,
+      path_input_raw: header.path_input_raw,
+      path_output_raw: header.path_output_raw,
+      path_input_master: header.path_input_master,
+      path_output_master: header.path_output_master,
+      campos_particion_master: header.partition_fields_master,
+      campos_agregar_master: header.aggregate_fields_master,
+      'Cant_Registros_periodo_ingesta': header.number_records_period_intake,
+      campos: cleanDetails
     };
+
+    return cleanData;
   };
 
   const handleDownload = () => {
