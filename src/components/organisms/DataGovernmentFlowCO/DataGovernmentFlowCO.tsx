@@ -43,17 +43,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       { label: 'Finalizando', duration: 500 }
     ],
     dictionary: [
-      { label: 'Inicializando acceso a APIs, bases de datos y almacenamiento en la nube', duration: 13500 },
-      { label: 'Cargando archivos de entrada y configuraciones desde la nube', duration: 13500 },
-      { label: 'Verificando y aplicando reglas y formatos específicos del país', duration: 13500 },
-      { label: 'Creando estructura base del diccionario para tablas raw', duration: 13500 },
-      { label: 'Creando estructura base del diccionario para tablas master', duration: 13500 },
-      { label: 'Identificando y validando relaciones entre campos raw y master', duration: 13500 },
-      { label: 'Ejecutando IA para analizar y enriquecer metadatos, nombres y descripciones de campos', duration: 13500 },
-      { label: 'Aplicando formatos estándar y validaciones a todos los campos', duration: 13500 },
-      { label: 'Creando diccionarios de datos detallados y mapeos de campos', duration: 13500 },
-      { label: 'Validando relaciones y dependencias entre diccionarios', duration: 13500 },
-      { label: 'Creando y guardando archivos CSV finales con todos los metadatos y mapeos', duration: 15000 }
+      { label: 'Inicializando acceso a APIs, bases de datos y almacenamiento en la nube', duration: 16500 },
+      { label: 'Cargando archivos de entrada y configuraciones desde la nube', duration: 16500 },
+      { label: 'Verificando y aplicando reglas y formatos específicos del país', duration: 16500 },
+      { label: 'Creando estructura base del diccionario para tablas raw', duration: 16500 },
+      { label: 'Creando estructura base del diccionario para tablas master', duration: 16500 },
+      { label: 'Ejecutando IA para analizar y enriquecer metadatos, nombres y descripciones de campos', duration: 16500 },
+      { label: 'Aplicando formatos estándar y validaciones a todos los campos', duration: 16500 },
+      { label: 'Creando diccionarios de datos detallados y mapeos de campos', duration: 16500 },
+      { label: 'Creando y guardando archivos CSV finales con todos los metadatos y mapeos', duration: 18000 }
     ],
     l1t: [
       { label: 'Extrayendo diccionario Master de objects y fields', duration: 10000 },

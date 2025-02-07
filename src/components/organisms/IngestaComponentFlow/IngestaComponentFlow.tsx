@@ -58,22 +58,18 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
 
   const stepsConfig = {
     raw: [
-      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos RAW', duration: 4300 },
-      { label: 'Procesando la información del archivo fuente y extrayendo los prefijos de archivo de las rutas de origen', duration: 4300 },
-      { label: 'Organizando la información de campos RAW incluyendo posiciones, longitudes y tipos de datos', duration: 4300 },
-      { label: 'Preparando la plantilla de configuración RAW', duration: 4300 },
-      { label: 'Generando el archivo de configuración RAW con definiciones de campos y configuraciones de rutas', duration: 4300 },
-      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para RAW', duration: 4300 },
-      { label: 'Subiendo los archivos generados a la carpeta Raw en Google Drive y verificando que se guardaron correctamente', duration: 4200 }
+      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos RAW', duration: 6000 },
+      { label: 'Organizando la información de campos RAW incluyendo posiciones, longitudes y tipos de datos', duration: 6000 },
+      { label: 'Preparando la plantilla de configuración RAW', duration: 6000 },
+      { label: 'Generando el archivo de configuración RAW con definiciones de campos y configuraciones de rutas', duration: 6000 },
+      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para RAW', duration: 6000 }
     ],
     master: [
-      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos MASTER', duration: 4300 },
-      { label: 'Procesando la información del archivo fuente y extrayendo los prefijos de archivo de las rutas de origen', duration: 4300 },
-      { label: 'Organizando la información de campos MASTER incluyendo posiciones, longitudes y tipos de datos', duration: 4300 },
-      { label: 'Preparando la plantilla de configuración MASTER', duration: 4300 },
-      { label: 'Generando el archivo de configuración MASTER con definiciones de campos y configuraciones de rutas', duration: 4300 },
-      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para MASTER', duration: 4300 },
-      { label: 'Subiendo los archivos generados a la carpeta Master en Google Drive y verificando que se guardaron correctamente', duration: 4200 }
+      { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos MASTER', duration: 6000 },
+      { label: 'Organizando la información de campos MASTER incluyendo posiciones, longitudes y tipos de datos', duration: 6000 },
+      { label: 'Preparando la plantilla de configuración MASTER', duration: 6000 },
+      { label: 'Generando el archivo de configuración MASTER con definiciones de campos y configuraciones de rutas', duration: 6000 },
+      { label: 'Preparando la configuración JSON con las especificaciones del job específicas para MASTER', duration: 6000 }
     ],
     l1t: [
       { label: 'Extrayendo las posiciones y longitudes de campos específicos para archivos L1T', duration: 10000 },
