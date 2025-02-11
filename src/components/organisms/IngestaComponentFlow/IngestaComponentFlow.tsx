@@ -10,7 +10,8 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { generateRawFiles, generateMasterFiles, generateL1TMasterFiles } from '@/services/IngestaComponentsGenerator';
-
+import { getById } from '@/services/Object';
+import { ObjectUpdateWithId } from '@/services/Object/types';
 export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) => {
   const { user, country } = useAuth();
   const [isLinksPopupOpen, setIsLinksPopupOpen] = useState(false);
@@ -20,6 +21,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
   const [showL1TProgress, setShowL1TProgress] = useState(false);
   const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
 
   const PROCESS_TITLES = {
     raw: 'Procesando RAW',
@@ -37,9 +39,20 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
     }
   }, [objectId, user?.email, country]);
 
+  const fetchObjectData = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      const data = await getById(objectId, user.email, country);
+      setObjectData(data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar datos del objeto');
+    }
+  }, [objectId, user?.email, country]);
+
   useEffect(() => {
     fetchIngestaOutput();
-  }, [fetchIngestaOutput]);
+    fetchObjectData();
+  }, [fetchIngestaOutput, fetchObjectData]);
 
   const rawLinks = [
     { label: "CONF", url: ingestaOutput?.component_raw_conf_link || '' },
@@ -180,12 +193,15 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
     };
 
     const getTooltip = (step: string) => {
+      const isL1TDisabled = objectData?.flag_l1t === false;
+      
       switch (step) {
         case 'raw':
           return !canExecuteRaw ? 'Se requieren los links del diccionario raw' : PROCESS_TITLES.raw;
         case 'master':
           return !canExecuteMaster ? 'Se requieren los links del diccionario master' : PROCESS_TITLES.master;
         case 'l1t':
+          if (isL1TDisabled) return 'L1T no habilitado para este objeto';
           return !canExecuteL1T ? 'Se requieren los links de componentes master' : PROCESS_TITLES.l1t;
         default:
           return undefined;
@@ -198,7 +214,9 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
           icon: <PlayIcon className="h-5 w-5" />,
           onClick: () => handleGenerate(stepId),
           className: "text-green-500 hover:text-green-600",
-          disabled: getDisabledState(stepId),
+          disabled: stepId === 'l1t' ? 
+            (objectData?.flag_l1t === false || !canExecuteL1T) : 
+            getDisabledState(stepId),
           tooltip: getTooltip(stepId)
         }]}
         rightIcons={[{
@@ -208,7 +226,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
             setIsLinksPopupOpen(true);
           },
           className: "text-blue-500 hover:text-blue-600",
-          disabled: false
+          disabled: stepId === 'l1t' && objectData?.flag_l1t === false
         }]}
       />
     );
@@ -218,7 +236,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
     <>
       <div className="relative p-8">
         <div className="flex items-center gap-12">
-          {/* Línea de conexión */}
+          {/* Línea de conexión Raw-Master */}
           <div 
             className="absolute h-[2px] bg-[#94B5F0]"
             style={{ 
@@ -250,9 +268,9 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
             />
           </div>
 
-          {/* Nueva línea de conexión para L1T */}
+          {/* Línea de conexión Master-L1T */}
           <div 
-            className="absolute h-[2px] bg-[#94B5F0]"
+            className={`absolute h-[2px] ${objectData?.flag_l1t === false ? 'bg-gray-300' : 'bg-[#94B5F0]'}`}
             style={{ 
               top: '50%',
               transform: 'translateY(-50%)',
@@ -262,12 +280,12 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
             }} 
           />
 
-          {/* Nueva BoxFlowCard L1T */}
+          {/* BoxFlowCard L1T */}
           <div className="relative z-10">
             <BoxFlowCard
               title="L1T"
               isStatic={true}
-              className="border-2 border-[#94B5F0]"
+              className={`border-2 ${objectData?.flag_l1t === false ? 'border-gray-300' : 'border-[#94B5F0]'}`}
               controls={getControls('l1t')}
             />
           </div>

@@ -18,7 +18,8 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
     alias: '',
     url_document: '',
     status: 'pending',
-    creation_user: user?.email || ''
+    creation_user: user?.email || '',
+    flag_l1t: false
   };
 
   const isEditing = initialData && 'id_object' in initialData;
@@ -42,6 +43,11 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
         { value: 'in_progress', label: 'En Proceso' },
         { value: 'completed', label: 'Completado' }
       ]
+    },
+    {
+      name: 'flag_l1t',
+      label: 'Tiene L1T?',
+      type: 'checkbox',
     }
   ] : [
     {
@@ -57,6 +63,11 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       placeholder: 'Ingrese la URL del pre-diccionario',
       type: 'input' as const,
       required: true
+    },
+    {
+      name: 'flag_l1t',
+      label: 'Tiene L1T?',
+      type: 'checkbox',
     }
   ];
 

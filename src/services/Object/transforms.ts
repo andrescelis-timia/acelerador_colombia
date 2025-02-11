@@ -7,7 +7,8 @@ export const transformToTableData = (objects: ObjectResponse[]): ObjectTableData
     alias: object.alias,
     status: object.status,
     url_document: object.url_document,
-    creation_date: object.creation_date
+    creation_date: object.creation_date,
+    flag_l1t: object.flag_l1t
   }));
   return transformed;
 };
@@ -19,5 +20,6 @@ export const transformToUpdateData = (object: ObjectResponse): ObjectUpdateWithI
   alias: object.alias,
   status: object.status,
   url_document: object.url_document,
-  update_user: object.update_user || ''
+  update_user: object.update_user || '',
+  flag_l1t: object.flag_l1t
 }); 

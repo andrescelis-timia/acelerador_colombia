@@ -10,6 +10,7 @@ export interface ObjectCreate extends Record<string, unknown> {
   url_document: string;
   id_project: string;
   creation_user: string;
+  flag_l1t: boolean;
 }
 
 export interface ObjectUpdate {
@@ -18,6 +19,7 @@ export interface ObjectUpdate {
   status: ObjectStatus;
   url_document: string;
   update_user: string;
+  flag_l1t: boolean;
 }
 
 export interface ObjectUpdateWithId extends Record<string, unknown> {
@@ -37,6 +39,7 @@ export interface ObjectResponse {
   creation_user: string;
   update_date?: string;
   update_user?: string;
+  flag_l1t: boolean;
 }
 
 export interface ObjectTableData {

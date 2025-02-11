@@ -17,6 +17,8 @@ import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T }
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
+import { getById } from '@/services/Object';
+import { ObjectUpdateWithId } from '@/services/Object/types';
 
 export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'CO' } = useAuth();
@@ -35,6 +37,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedLinks, setSelectedLinks] = useState<Array<{ label: string; url: string }>>([]);
   const [showL1TProgress, setShowL1TProgress] = useState(false);
+  const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
 
   const stepsConfig = {
     sample: [
@@ -107,11 +110,22 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   }, [objectId, user?.email, country]);
 
+  const fetchObjectData = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      const data = await getById(objectId, user.email, country);
+      setObjectData(data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar datos del objeto');
+    }
+  }, [objectId, user?.email, country]);
+
   useEffect(() => {
     fetchData();
     fetchPreDictionary();
     fetchDictionaryOutput();
-  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput]);
+    fetchObjectData();
+  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
 
   const handleCloseForm = useCallback(() => {
     setActiveForm(null);
@@ -505,6 +519,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           ingestaOutput.dictionary_master_details_link !== null &&
           ingestaOutput.dictionary_master_details_link !== '';
 
+        // El flag_l1t tiene prioridad sobre la lógica existente
+        const isL1TDisabled = objectData?.flag_l1t === false;
+
         return (
           <BoxFlowControls
             leftIcons={[{
@@ -539,10 +556,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                 }
               },
               className: "text-green-500 hover:text-green-600",
-              disabled: !canExecuteL1T,
-              tooltip: !canExecuteL1T ? 
-                'Se requieren los links del diccionario master' : 
-                PROCESS_TITLES.l1t
+              disabled: isL1TDisabled || !canExecuteL1T,
+              tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' : 
+                      !canExecuteL1T ? 'Se requieren los links del diccionario master' : 
+                      PROCESS_TITLES.l1t
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -554,8 +571,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                 ]);
               },
               className: "text-blue-500 hover:text-blue-600",
-              disabled: !ingestaOutput,
-              tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
+              disabled: isL1TDisabled || !ingestaOutput,
+              tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
+                      !ingestaOutput ? 'No hay links disponibles' : undefined
             }]}
           />
         );
@@ -570,7 +588,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     <>
       <div className="relative p-8">
         <div className="flex items-center gap-12">
-          {/* Líneas de conexión existentes */}
+          {/* Líneas de conexión */}
           <div 
             className="absolute h-[2px] bg-[#94B5F0]"
             style={{ 
@@ -598,7 +616,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           {/* BoxFlowCard Diccionario */}
           <div className="relative z-10">
             <BoxFlowCard
-              title="Diccionario"
+              title="Pre-diccionario"
               isStatic={false}
               schema="json"
               selectedFile={dictionaryFile}
@@ -608,9 +626,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
             />
           </div>
 
-          {/* Nueva línea de conexión para L1T */}
+          {/* Línea de conexión para L1T */}
           <div 
-            className="absolute h-[2px] bg-[#94B5F0]"
+            className={`absolute h-[2px] ${objectData?.flag_l1t === false ? 'bg-gray-300' : 'bg-[#94B5F0]'}`}
             style={{ 
               top: '50%',
               transform: 'translateY(-50%)',
@@ -620,12 +638,12 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
             }} 
           />
 
-          {/* Nueva BoxFlowCard L1T */}
+          {/* BoxFlowCard L1T */}
           <div className="relative z-10">
             <BoxFlowCard
               title="L1T"
               isStatic={true}
-              className="border-2 border-[#94B5F0]"
+              className={`border-2 ${objectData?.flag_l1t === false ? 'border-gray-300' : 'border-[#94B5F0]'}`}
               controls={getControls('l1t')}
             />
           </div>
