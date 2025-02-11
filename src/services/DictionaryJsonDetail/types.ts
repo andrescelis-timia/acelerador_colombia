@@ -28,4 +28,5 @@ export interface DictionaryJsonDetailResponse {
   creation_user: string;
   update_date?: string;
   update_user?: string;
+  order_row: number;
 } 

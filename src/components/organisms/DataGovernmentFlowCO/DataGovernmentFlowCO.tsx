@@ -78,7 +78,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       
       if (dictData?.id_dictionary_json_header) {
         const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header, user.email, country);
-        setDictionaryJsonDetails(details);
+        const sortedDetails = details.sort((a, b) => a.order_row - b.order_row);
+        setDictionaryJsonDetails(sortedDetails);
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos del diccionario');
