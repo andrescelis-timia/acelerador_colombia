@@ -36,8 +36,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedLinks, setSelectedLinks] = useState<Array<{ label: string; url: string }>>([]);
+  const [popupLinksTitle, setPopupLinksTitle] = useState<string>('');
   const [showL1TProgress, setShowL1TProgress] = useState(false);
   const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const stepsConfig = {
     sample: [
@@ -128,7 +130,12 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     fetchObjectData();
   }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
 
-  const handleCloseForm = useCallback(() => {
+  const handleCloseForm = useCallback((success?: boolean) => {
+    if (success) {
+      setSuccessMessage('Datos adicionales guardados correctamente');
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
     setActiveForm(null);
     fetchPreDictionary();
   }, [fetchPreDictionary]);
@@ -236,12 +243,16 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     setShowSampleProgress(true);
     
     try {
+      // Obtener la extensión del archivo
+      const fileExtension = sampleFile.name.split('.').pop() || '';
+
       // Calcular duración total de los pasos
       const totalDuration = stepsConfig.sample.reduce((acc, step) => acc + step.duration, 0);
 
       // Ejecutar el proceso en paralelo con el progress
       const processPromise = generateDictionaryJson({
-        id_object: objectId
+        id_object: objectId,
+        sample_file_extension: fileExtension
       }, user.email, country);
 
       // Esperar a que ambos terminen
@@ -260,7 +271,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
   const calculateProgress = useCallback((data: unknown | null): string => {
     if (!data || typeof data !== 'object') {
-      return '0/15';
+      return '0/9';
     }
     
     const fields = Object.entries(data as Record<string, unknown>).filter(([key]) => 
@@ -506,6 +517,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                   { label: "Master Object", url: ingestaOutput?.dictionary_master_header_link || '' },
                   { label: "Master Fields", url: ingestaOutput?.dictionary_master_details_link || '' }
                 ]);
+                setPopupLinksTitle('Archivos generados para diccionario');
               },
               className: "text-blue-500 hover:text-blue-600",
               disabled: !ingestaOutput,
@@ -570,6 +582,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                   { label: "L1T Object", url: ingestaOutput?.dictionary_l1t_master_header_link || '' },
                   { label: "L1T Fields", url: ingestaOutput?.dictionary_l1t_master_detail_link || '' }
                 ]);
+                setPopupLinksTitle('Archivos generados para diccionario L1T');
               },
               className: "text-blue-500 hover:text-blue-600",
               disabled: isL1TDisabled || !ingestaOutput,
@@ -587,6 +600,12 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
   return (
     <>
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
+
       <div className="relative p-8">
         <div className="flex items-center gap-12">
           {/* Líneas de conexión */}
@@ -665,6 +684,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           setSelectedLinks([]); // Limpiar los links seleccionados al cerrar
         }}
         links={selectedLinks}
+        title={popupLinksTitle}
       />
 
       {showSampleProgress && (

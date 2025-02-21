@@ -40,6 +40,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [isObjectFormOpen, setIsObjectFormOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setProjects(data);
@@ -52,8 +53,13 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
     setIsEditFormOpen(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCloseForm = (success?: boolean) => {
     setIsEditFormOpen(false);
+    if (success) {
+      setSuccessMessage(selectedProject ? 'Proyecto actualizado correctamente' : 'Proyecto creado correctamente');
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
     setSelectedProject(undefined);
     onEdit(selectedProject?.id_project || '');
   };
@@ -80,11 +86,27 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
     setIsObjectFormOpen(true);
   };
 
+  const handleCloseObjectForm = (success?: boolean) => {
+    setIsObjectFormOpen(false);
+    if (success) {
+      setSuccessMessage('Objeto creado correctamente');
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
+    setSelectedProjectId(null);
+  };
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
   return (
     <>
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#00A3FF] text-xl font-semibold">Mis Proyectos</h2>
       </div>
@@ -181,7 +203,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
 
       <ObjectForm
         isOpen={isObjectFormOpen}
-        onClose={() => setIsObjectFormOpen(false)}
+        onClose={handleCloseObjectForm}
         projectId={selectedProjectId || ''}
         initialData={{
           name: '',

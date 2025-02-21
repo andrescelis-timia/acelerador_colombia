@@ -4,7 +4,7 @@ import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createPreDictionaryInput, updatePreDictionaryInput } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputFormProps } from './types';
 import { useAuth } from '@/lib/context/AuthContext';
-import { CreatePreDictionaryInput, UpdatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
+import { CreatePreDictionaryInput, UpdatePreDictionaryInput, PreDictionaryPeriodicity } from '@/services/PreDictionaryInput/types';
 
 export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({ 
   isOpen, 
@@ -22,18 +22,12 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
     origin: '',
     app_product: '',
     name_origin: '',
+    table_content_origin: '',
     table_raw_name: '',
     table_master_name: '',
-    partition_fields_raw: '',
-    aggregate_fields_raw: '',
-    path_input_raw: '',
-    path_output_raw: '',
-    path_input_master: '',
-    path_output_master: '',
-    aggregate_fields_master: '',
-    table_content_origin: '',
     information_group_level_2: '',
-    number_records_period_intake: ''
+    number_records_period_intake: '',
+    periodicity: PreDictionaryPeriodicity.DAILY    
   };
 
   const fields: FormFieldConfig[] = [
@@ -80,60 +74,30 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       type: 'input'
     },
     {
-      name: 'partition_fields_raw',
-      label: 'Campos de partición RAW',
-      placeholder: 'Ingrese los campos de partición RAW',
-      type: 'input'
-    },
-    {
-      name: 'aggregate_fields_raw',
-      label: 'Campos de agregación RAW',
-      placeholder: 'Ingrese los campos de agregación RAW',
-      type: 'input'
-    },
-    {
-      name: 'path_input_raw',
-      label: 'Path input RAW',
-      placeholder: 'Ingrese el path input RAW',
-      type: 'input'
-    },
-    {
-      name: 'path_output_raw',
-      label: 'Path output RAW',
-      placeholder: 'Ingrese el path output RAW',
-      type: 'input'
-    },
-    {
-      name: 'path_input_master',
-      label: 'Path input MASTER',
-      placeholder: 'Ingrese el path input MASTER',
-      type: 'input'
-    },
-    {
-      name: 'path_output_master',
-      label: 'Path output MASTER',
-      placeholder: 'Ingrese el path output MASTER',
-      type: 'input'
-    },
-    {
-      name: 'aggregate_fields_master',
-      label: 'Campos de agregación MASTER',
-      placeholder: 'Ingrese los campos de agregación MASTER',
-      type: 'input'
-    },
-    {
       name: 'number_records_period_intake',
       label: 'Cantidad de registros por periodo de ingesta',
       placeholder: 'Ingrese la cantidad de registros por periodo de ingesta',
       type: 'input'
-
+    },
+    {
+      name: 'periodicity',
+      label: 'Periodicidad',
+      placeholder: 'Seleccione la periodicidad',
+      type: 'select' as const,
+      required: true,
+      options: [
+        { value: PreDictionaryPeriodicity.DAILY, label: 'Diario' },
+        { value: PreDictionaryPeriodicity.WEEKLY, label: 'Semanal' },
+        { value: PreDictionaryPeriodicity.MONTHLY, label: 'Mensual' },
+        { value: PreDictionaryPeriodicity.YEARLY, label: 'Anual' }
+      ]
     }
   ];
 
   return (
     <SlideForm<CreatePreDictionaryInput | UpdatePreDictionaryInput>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => onClose(false)}
       title='Campos adicionales'
       fields={fields}
       initialData={initialData || defaultPreDictionary}
@@ -144,12 +108,16 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
             ...data,
             id_object: objectId
           };
-          return createPreDictionaryInput(dataWithUser as CreatePreDictionaryInput, user.email, country);
+          const result = await createPreDictionaryInput(dataWithUser as CreatePreDictionaryInput, user.email, country);
+          onClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!user?.email) throw new Error('Email required');
           if (!initialData?.id_pre_dictionary_input) throw new Error('ID required');
-          return updatePreDictionaryInput(initialData.id_pre_dictionary_input, data as UpdatePreDictionaryInput, user.email, country);
+          const result = await updatePreDictionaryInput(initialData.id_pre_dictionary_input, data as UpdatePreDictionaryInput, user.email, country);
+          onClose(true);
+          return result;
         }
       }}
       docId={isEditing ? initialData.id_pre_dictionary_input : undefined}

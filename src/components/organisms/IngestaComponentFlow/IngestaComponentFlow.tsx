@@ -296,6 +296,7 @@ export const IngestaComponentFlow = ({ objectId }: IngestaComponentFlowProps) =>
         isOpen={isLinksPopupOpen}
         onClose={() => setIsLinksPopupOpen(false)}
         links={selectedStep === 'raw' ? rawLinks : selectedStep === 'master' ? masterLinks : l1tLinks}
+        title={selectedStep === 'raw' ? 'Archivos generados para RAW' : selectedStep === 'master' ? 'Archivos generados para MASTER' : 'Archivos generados para L1T'}
       />
 
       {showRawProgress && (

@@ -39,7 +39,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
   return (
     <SlideForm<ProjectUpdateWithId | ProjectCreate>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => onClose(false)}
       title={projectId ? 'Editar Proyecto' : 'Crear Proyecto'}
       fields={fields}
       initialData={initialData || {
@@ -54,7 +54,9 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
             ...data,
             creation_user: user.email
           };
-          return createData(dataWithUser as ProjectCreate, user.email, country);
+          const result = await createData(dataWithUser as ProjectCreate, user.email, country);
+          onClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!user?.email) throw new Error('Usuario no autenticado');
@@ -63,7 +65,9 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
             update_user: user.email,
             ticket_jira: initialData?.ticket_jira || ''
           };
-          return updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
+          const result = await updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
+          onClose(true);
+          return result;
         }
       }}
       docId={projectId}

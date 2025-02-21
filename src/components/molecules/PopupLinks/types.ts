@@ -7,4 +7,5 @@ export interface PopupLinksProps {
   isOpen: boolean;
   onClose: () => void;
   links: LinkItem[];
+  title: string;
 } 

@@ -1,38 +1,33 @@
+export enum PreDictionaryPeriodicity {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
+
 export interface CreatePreDictionaryInput extends Record<string, unknown> {
   id_object: string;
   origin: string;
   app_product: string;
   name_origin: string;
-  table_raw_name: string;
-  table_master_name: string;
   table_content_origin: string;
+  table_raw_name: string;
+  table_master_name: string;  
   information_group_level_2: string;
   number_records_period_intake: string;
-  partition_fields_raw?: string | null;
-  aggregate_fields_raw?: string | null;
-  path_input_raw?: string | null;
-  path_output_raw?: string | null;
-  path_input_master?: string | null;
-  path_output_master?: string | null;
-  aggregate_fields_master?: string | null;
+  periodicity: PreDictionaryPeriodicity;
 }
 
 export interface UpdatePreDictionaryInput extends Record<string, unknown> {
   origin: string;
   app_product: string;
   name_origin: string;
-  table_raw_name: string;
-  table_master_name: string;
   table_content_origin: string;
+  table_raw_name: string;
+  table_master_name: string;  
   information_group_level_2: string;
   number_records_period_intake: string;
-  partition_fields_raw?: string | null;
-  aggregate_fields_raw?: string | null;
-  path_input_raw?: string | null;
-  path_output_raw?: string | null;
-  path_input_master?: string | null;
-  path_output_master?: string | null;
-  aggregate_fields_master?: string | null;
+  periodicity: PreDictionaryPeriodicity;
 }
 
 export interface PreDictionaryInputResponse extends Record<string, unknown> {
@@ -41,18 +36,12 @@ export interface PreDictionaryInputResponse extends Record<string, unknown> {
   origin: string;
   app_product: string;
   name_origin: string;
-  table_raw_name: string;
-  table_master_name: string;
   table_content_origin: string;
+  table_raw_name: string;
+  table_master_name: string;  
   information_group_level_2: string;
   number_records_period_intake: string;
-  partition_fields_raw: string | null;
-  aggregate_fields_raw: string | null;
-  path_input_raw: string | null;
-  path_output_raw: string | null;
-  path_input_master: string | null;
-  path_output_master: string | null;
-  aggregate_fields_master: string | null;
+  periodicity: PreDictionaryPeriodicity;  
   owner_country: string;
   creation_date: string;
   creation_user: string;

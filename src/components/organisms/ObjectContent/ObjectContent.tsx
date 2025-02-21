@@ -62,6 +62,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
   const [selectedObject, setSelectedObject] = useState<ObjectUpdateWithId | undefined>(undefined);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [objectToDelete, setObjectToDelete] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setObjects(data);
@@ -74,8 +75,13 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
     setIsEditFormOpen(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCloseForm = (success?: boolean) => {
     setIsEditFormOpen(false);
+    if (success) {
+      setSuccessMessage(selectedObject ? 'Objeto actualizado correctamente' : 'Objeto creado correctamente');
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
     setSelectedObject(undefined);
     onEdit(selectedObject?.id_object || '');
   };
@@ -105,6 +111,12 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
 
   return (
     <>
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
+      
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#00A3FF] text-xl font-semibold">Mis Objetos</h2>
       </div>

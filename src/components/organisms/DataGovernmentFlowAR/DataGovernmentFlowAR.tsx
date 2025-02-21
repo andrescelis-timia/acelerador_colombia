@@ -32,6 +32,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   const [isLinksPopupOpen, setIsLinksPopupOpen] = useState(false);
   const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const stepsConfig = {
     dictionary: [
@@ -152,6 +153,27 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleGenerateDictionaryJson = async () => {
+    if (!selectedFile || !user?.email) {
+      setErrorMessage(!selectedFile 
+        ? 'Debe cargar un archivo primero' 
+        : 'Usuario no autenticado');
+      return;
+    }
+    try {
+      const fileExtension = selectedFile.name.split('.').pop() || '';
+      await generateDictionaryJson({
+        id_object: objectId,
+        sample_file_extension: fileExtension
+      }, user.email, country);
+      await fetchData();
+      setSuccessMessage('Diccionario JSON generado correctamente');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
+    }
   };
 
   const handleDictionaryGeneration = async () => {
@@ -299,6 +321,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
       ]).then(() => processPromise);
       
       await fetchDictionaryOutput();
+      setSuccessMessage('Diccionario base generado correctamente');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error desconocido al generar diccionario');
     } finally {
@@ -334,22 +358,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
           <BoxFlowControls
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
-              onClick: async () => {
-                if (!selectedFile || !user?.email) {
-                  setErrorMessage(!selectedFile 
-                    ? 'Debe cargar un archivo primero' 
-                    : 'Usuario no autenticado');
-                  return;
-                }
-                try {
-                  await generateDictionaryJson({
-                    id_object: objectId
-                  }, user.email, country);
-                  await fetchData();
-                } catch (error) {
-                  setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
-                }
-              },
+              onClick: handleGenerateDictionaryJson,
               className: "text-green-500 hover:text-green-600",
               disabled: !selectedFile || !refinement,
               tooltip: !selectedFile 
@@ -414,6 +423,12 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
 
   return (
     <>
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
+
       <div className="relative p-8">
         <div className="flex items-center gap-12">
           {/* Líneas de conexión */}
@@ -482,6 +497,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
       />
 
       <PopupLinks
+        title="Diccionarios"
         isOpen={isLinksPopupOpen}
         onClose={() => setIsLinksPopupOpen(false)}
         links={dictionaryLinks}

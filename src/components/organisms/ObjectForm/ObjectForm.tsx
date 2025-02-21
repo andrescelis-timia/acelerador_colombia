@@ -74,7 +74,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
   return (
     <SlideForm<ObjectUpdateWithId | ObjectCreate>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => onClose(false)}
       title={isEditing ? 'Editar Objeto' : 'Crear Objeto'}
       fields={fields}
       initialData={initialData || defaultObject}
@@ -87,7 +87,9 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
             alias: '',
             creation_user: user.email
           };
-          return createData(dataWithUser as ObjectCreate, user.email, country);
+          const result = await createData(dataWithUser as ObjectCreate, user.email, country);
+          onClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!user?.email) throw new Error('Usuario no autenticado');
@@ -96,7 +98,9 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
             alias: '',
             update_user: user.email
           };
-          return updateData(dataWithUser as ObjectUpdateWithId, user.email, country);
+          const result = await updateData(dataWithUser as ObjectUpdateWithId, user.email, country);
+          onClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as ObjectUpdateWithId).id_object : undefined}

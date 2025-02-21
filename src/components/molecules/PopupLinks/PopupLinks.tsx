@@ -2,14 +2,14 @@ import { EyeIcon } from '@heroicons/react/24/outline';
 import { Dialog } from '@headlessui/react';
 import { PopupLinksProps } from './types';
 
-export const PopupLinks = ({ isOpen, onClose, links }: PopupLinksProps) => {
+export const PopupLinks = ({ isOpen, onClose, links, title }: PopupLinksProps) => {
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-medium mb-4">Archivos generados</Dialog.Title>
+          <Dialog.Title className="text-lg font-medium mb-4">{title}</Dialog.Title>
           
           <div className="space-y-3">
             {links.map((link, index) => (

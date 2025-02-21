@@ -9,6 +9,7 @@ import { CreateDictionaryJsonDetail } from '../DictionaryJsonDetail/types';
 
 export interface GenerateDictionaryJsonRequest {
   id_object: string;
+  sample_file_extension: string;
 }
 
 export interface GenerateDictionaryJsonResponse {
