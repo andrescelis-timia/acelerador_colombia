@@ -47,26 +47,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user?.email) {
         try {
-          const userDataArray = await getUserByEmail(user.email);
+          const userData = await getUserByEmail(user.email);
           
-          if (Array.isArray(userDataArray) && userDataArray.length > 0) {
-            const userCountries = userDataArray.map(userData => userData.country);
+          if (Array.isArray(userData) && userData.length > 0) {
+            // Extraer los países de cada registro de usuario
+            const userCountries = userData.map(user => user.country);
+            console.log('Países del usuario:', userCountries);
+            
             setUser(user);
             setCountries(userCountries);
-            document.cookie = `session=${user.uid}; path=/`;
+            document.cookie = `session=${user.uid}; path=/; secure; samesite=strict`;
             
             const savedCountry = localStorage.getItem('selectedCountry');
-            if (savedCountry && userCountries.includes(savedCountry)) {
-              setCountry(savedCountry);
+            console.log('País guardado previamente:', savedCountry);
+            
+            if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'AR')) {
+              setCountry(savedCountry as 'CO' | 'AR');
             } else {
               setCountry(userCountries[0]);
               localStorage.setItem('selectedCountry', userCountries[0]);
             }
+            
+            // Redirigir explícitamente a la página de inicio
+            console.log('Redirigiendo a la página de inicio');
+            router.push('/');
           } else {
+            console.error('Usuario no tiene países asignados:', userData);
             setErrorMessage('Usuario no tiene países asignados');
             handleLogout();
           }
         } catch (error) {
+          console.error('Error completo al obtener datos del usuario:', error);
           setErrorMessage(error instanceof Error ? error.message : 'Error al obtener datos del usuario');
           handleLogout();
         }
@@ -77,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     setUser(null);
