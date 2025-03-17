@@ -31,6 +31,7 @@ export interface ProjectResponse {
   creation_user: string;
   update_date?: string;
   update_user?: string;
+  active: boolean;
 }
 
 // Formato para la tabla

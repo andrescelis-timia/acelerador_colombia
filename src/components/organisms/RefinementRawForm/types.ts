@@ -2,7 +2,7 @@ import { RefinementRawCreate, RefinementRawUpdateWithId } from '@/services/Refin
 
 export interface RefinementRawFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementRawCreate | RefinementRawUpdateWithId;
 } 

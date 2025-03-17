@@ -11,7 +11,7 @@ import { CreateDictionaryJsonHeader, DictionaryJsonHeaderResponse } from '@/serv
 import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDetail';
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
-import { PreDictionaryInputResponse } from '@/services/PreDictionaryInput/types';
+import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
 import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -40,6 +40,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [showL1TProgress, setShowL1TProgress] = useState(false);
   const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [preDictionaryDraft, setPreDictionaryDraft] = useState<CreatePreDictionaryInput | null>(null);
 
   const stepsConfig = {
     sample: [
@@ -133,7 +134,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const handleCloseForm = useCallback((success?: boolean) => {
     if (success) {
       setSuccessMessage('Datos adicionales guardados correctamente');
-      // Limpiar el mensaje después de 3 segundos
+      setPreDictionaryDraft(null);
       setTimeout(() => setSuccessMessage(null), 3000);
     }
     setActiveForm(null);
@@ -246,13 +247,82 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       // Obtener la extensión del archivo
       const fileExtension = sampleFile.name.split('.').pop() || '';
 
+      // Extraer el delimitador del archivo
+      let delimiter = '';
+      try {
+        const firstLine = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target?.result as string;
+            const firstLine = content.split('\n')[0];
+            resolve(firstLine);
+          };
+          reader.readAsText(sampleFile);
+        });
+
+        // Detectar el delimitador más común entre los candidatos comunes
+        const commonDelimiters = ['|', ',', ';', '\t'];
+        const delimiterCounts = commonDelimiters.map(d => ({
+          delimiter: d,
+          count: (firstLine.match(new RegExp(`\\${d}`, 'g')) || []).length
+        }));
+
+        // Si hay múltiples delimitadores, preferir el que tenga más ocurrencias
+        const mostUsedDelimiter = delimiterCounts
+          .filter(d => d.count > 0)
+          .sort((a, b) => b.count - a.count)[0];
+
+        // Si no se encontró ningún delimitador, intentar detectar espacios múltiples o tabulaciones
+        if (!mostUsedDelimiter) {
+          // Primero intentar detectar tabulaciones
+          const tabMatch = firstLine.match(/\t/g);
+          if (tabMatch) {
+            delimiter = '\t';
+          } else {
+            // Si no hay tabulaciones, buscar espacios múltiples
+            const multipleSpaces = firstLine.match(/\s{2,}/);
+            if (multipleSpaces) {
+              delimiter = multipleSpaces[0];
+            }
+          }
+        } else {
+          delimiter = mostUsedDelimiter.delimiter;
+        }
+
+        // Si aún no se encontró un delimitador, intentar detectar espacios múltiples en toda la línea
+        if (!delimiter) {
+          const parts = firstLine.split(/\s+/);
+          if (parts.length > 1) {
+            delimiter = ' ';
+          }
+        }
+      } catch (error) {
+        console.error('Error al extraer el delimitador:', error);
+        delimiter = '';
+      }
+      // Mostrar el delimitador de una manera más visible
+      console.log('Delimitador detectado:', {
+        value: delimiter,
+        charCode: delimiter.charCodeAt(0),
+        representation: delimiter === '\t' ? 'TAB' : 
+                        delimiter === ' ' ? 'SPACE' : 
+                        delimiter === ',' ? 'COMMA' : 
+                        delimiter === ';' ? 'SEMICOLON' : 
+                        delimiter === '|' ? 'PIPE' : 
+                        delimiter
+      });
+
+      // Convertir el delimitador a un formato seguro para la API
+      const apiDelimiter = delimiter === '\t' ? '\\t' : delimiter;
+
       // Calcular duración total de los pasos
       const totalDuration = stepsConfig.sample.reduce((acc, step) => acc + step.duration, 0);
 
       // Ejecutar el proceso en paralelo con el progress
       const processPromise = generateDictionaryJson({
         id_object: objectId,
-        sample_file_extension: fileExtension
+        sample_file_extension: fileExtension,
+        sample_file_delimiter: apiDelimiter
       }, user.email, country);
 
       // Esperar a que ambos terminen
@@ -675,6 +745,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         onClose={handleCloseForm}
         objectId={objectId}
         initialData={preDictionary || undefined}
+        draftData={preDictionaryDraft}
+        onDraftChange={setPreDictionaryDraft}
       />
 
       <PopupLinks

@@ -1,16 +1,21 @@
 'use client';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useState } from 'react';
 
 export default function LoginPage() {
   const { signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const handleGoogleLogin = async () => {
     try {
       setError(null);
       await signInWithGoogle();
+      router.push(callbackUrl);
     } catch (error) {
       setError((error as Error).message || 'Error al iniciar sesión');
     }

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createRawRefinement, updateRawRefinement } from '@/services/Refinement';
@@ -14,6 +14,7 @@ export const RefinementRawForm = memo(function RefinementRawForm({
 }: RefinementRawFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementRawCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -31,6 +32,24 @@ export const RefinementRawForm = memo(function RefinementRawForm({
     filters_pre_intake_raw: '',
     observations_raw: '',
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultRaw;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementRawCreate | RefinementRawUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementRawCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -105,10 +124,11 @@ export const RefinementRawForm = memo(function RefinementRawForm({
   return (
     <SlideForm<RefinementRawCreate | RefinementRawUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Raw' : 'Crear Raw'}
       fields={fields}
-      initialData={initialData || defaultRaw}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -116,7 +136,9 @@ export const RefinementRawForm = memo(function RefinementRawForm({
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createRawRefinement(dataWithUser as RefinementRawCreate, user.email as string, country);
+          const result = await createRawRefinement(dataWithUser as RefinementRawCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -127,7 +149,9 @@ export const RefinementRawForm = memo(function RefinementRawForm({
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateRawRefinement(dataWithUser as RefinementRawUpdateWithId, user.email as string, country);
+          const result = await updateRawRefinement(dataWithUser as RefinementRawUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementRawUpdateWithId).id_refinement : undefined}

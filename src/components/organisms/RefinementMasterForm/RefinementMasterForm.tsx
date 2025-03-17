@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createMasterRefinement, updateMasterRefinement } from '@/services/Refinement';
@@ -14,6 +14,7 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
 }: RefinementMasterFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementMasterCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -31,6 +32,24 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
     filters_pre_intake_master: '',
     observations_master: '',
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultMaster;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementMasterCreate | RefinementMasterUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementMasterCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -105,10 +124,11 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
   return (
     <SlideForm<RefinementMasterCreate | RefinementMasterUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Master' : 'Crear Master'}
       fields={fields}
-      initialData={initialData || defaultMaster}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -116,7 +136,9 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createMasterRefinement(dataWithUser as RefinementMasterCreate, user.email as string, country);
+          const result = await createMasterRefinement(dataWithUser as RefinementMasterCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -127,7 +149,9 @@ export const RefinementMasterForm = memo(function RefinementMasterForm({
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateMasterRefinement(dataWithUser as RefinementMasterUpdateWithId, user.email as string, country);
+          const result = await updateMasterRefinement(dataWithUser as RefinementMasterUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementMasterUpdateWithId).id_refinement : undefined}

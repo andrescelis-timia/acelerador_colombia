@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createDefinitionRefinement, updateDefinitionRefinement } from '@/services/Refinement';
@@ -14,6 +14,7 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
 }: RefinementDefinitionFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementDefinitionCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -26,6 +27,24 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
     table_raw_name_definition: '',
     table_master_name_definition: '',
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultDefinition;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementDefinitionCreate | RefinementDefinitionUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementDefinitionCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -70,10 +89,11 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
   return (
     <SlideForm<RefinementDefinitionCreate | RefinementDefinitionUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Definición' : 'Crear Definición'}
       fields={fields}
-      initialData={initialData || defaultDefinition}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -81,7 +101,9 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createDefinitionRefinement(dataWithUser as RefinementDefinitionCreate, user.email as string, country);
+          const result = await createDefinitionRefinement(dataWithUser as RefinementDefinitionCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -92,7 +114,9 @@ export const RefinementDefinitionForm = memo(function RefinementDefinitionForm({
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateDefinitionRefinement(dataWithUser as RefinementDefinitionUpdateWithId, user.email as string, country);
+          const result = await updateDefinitionRefinement(dataWithUser as RefinementDefinitionUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementDefinitionUpdateWithId).id_refinement : undefined}

@@ -9,19 +9,19 @@ export const DataTable = <T extends Record<string, unknown> & { id: string }>({
   onDelete,
   renderActions
 }: DataTableProps<T>) => {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [itemToArchive, setItemToArchive] = useState<string | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
-  const confirmDelete = async () => {
-    if (itemToDelete && onDelete) {
-      setIsDeleting(true);
+  const confirmArchive = async () => {
+    if (itemToArchive && onDelete) {
+      setIsArchiving(true);
       try {
-        await onDelete(itemToDelete);
+        await onDelete(itemToArchive);
       } finally {
-        setIsDeleting(false);
-        setIsDeleteDialogOpen(false);
-        setItemToDelete(null);
+        setIsArchiving(false);
+        setIsArchiveDialogOpen(false);
+        setItemToArchive(null);
       }
     }
   };
@@ -66,31 +66,31 @@ export const DataTable = <T extends Record<string, unknown> & { id: string }>({
       </div>
 
       <Dialog
-        open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
+        open={isArchiveDialogOpen}
+        onClose={() => setIsArchiveDialogOpen(false)}
         className="relative z-50"
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
             <Dialog.Title className="text-lg font-medium mb-4">
-              Confirmar eliminación
+              Confirmar archivo
             </Dialog.Title>
-            <p className="mb-6">¿Está seguro que desea eliminar este elemento?</p>
+            <p className="mb-6">¿Está seguro que desea archivar este elemento?</p>
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => setIsDeleteDialogOpen(false)}
+                onClick={() => setIsArchiveDialogOpen(false)}
                 className="px-4 py-2 border rounded-md hover:bg-gray-100"
-                disabled={isDeleting}
+                disabled={isArchiving}
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400"
-                disabled={isDeleting}
+                onClick={confirmArchive}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+                disabled={isArchiving}
               >
-                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                {isArchiving ? 'Archivando...' : 'Archivar'}
               </button>
             </div>
           </Dialog.Panel>

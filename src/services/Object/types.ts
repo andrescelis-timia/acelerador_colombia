@@ -40,6 +40,8 @@ export interface ObjectResponse {
   update_date?: string;
   update_user?: string;
   flag_l1t: boolean;
+  active: boolean;
+  project_name: string;
 }
 
 export interface ObjectTableData {
@@ -49,4 +51,5 @@ export interface ObjectTableData {
   status: ObjectStatus;
   url_document: string;
   creation_date: string;
+  project_name: string;
 } 

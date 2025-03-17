@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createData, updateData } from '@/services/Object';
@@ -9,6 +10,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 
 export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, projectId, initialData }) => {
   const { user, country } = useAuth();
+  const [draftData, setDraftData] = useState<ObjectCreate | null>(null);
 
   if (!projectId) return null;
 
@@ -23,6 +25,27 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
   };
 
   const isEditing = initialData && 'id_object' in initialData;
+
+  // Determinar los datos iniciales basados en el modo y el estado del borrador
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultObject;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      // Si el formulario se guardó exitosamente, limpiamos el borrador
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: ObjectCreate | ObjectUpdateWithId) => {
+    if (!isEditing) {
+      // Solo guardamos el borrador en modo creación
+      setDraftData(data as ObjectCreate);
+    }
+  };
 
   const fields: FormFieldConfig[] = isEditing ? [
     {
@@ -45,9 +68,20 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       ]
     },
     {
+      name: 'url_document',
+      label: 'Enlace Pre-diccionario',
+      placeholder: 'Ingrese la URL del pre-diccionario',
+      type: 'input' as const,
+      required: true,
+      pattern: '^https?:\\/\\/[\\w\\-\\.]+\\.[a-zA-Z]{2,}[\\/\\w\\-\\._~:\\/?#@!$&\'\\(\\)\\*+,;=]*$',
+      errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
+      inputMode: 'url'
+    },
+    {
       name: 'flag_l1t',
-      label: 'Tiene L1T?',
+      label: '¿Tiene L1T?',
       type: 'checkbox',
+      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
     }
   ] : [
     {
@@ -62,22 +96,27 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       label: 'Enlace Pre-diccionario',
       placeholder: 'Ingrese la URL del pre-diccionario',
       type: 'input' as const,
-      required: true
+      required: true,
+      pattern: '^https?:\\/\\/[\\w\\-\\.]+\\.[a-zA-Z]{2,}[\\/\\w\\-\\._~:\\/?#@!$&\'\\(\\)\\*+,;=]*$',
+      errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
+      inputMode: 'url'
     },
     {
       name: 'flag_l1t',
-      label: 'Tiene L1T?',
+      label: '¿Tiene L1T?',
       type: 'checkbox',
+      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
     }
   ];
 
   return (
     <SlideForm<ObjectUpdateWithId | ObjectCreate>
       isOpen={isOpen}
-      onClose={() => onClose(false)}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Objeto' : 'Crear Objeto'}
       fields={fields}
-      initialData={initialData || defaultObject}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           if (!user?.email) throw new Error('Usuario no autenticado');
@@ -88,7 +127,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
             creation_user: user.email
           };
           const result = await createData(dataWithUser as ObjectCreate, user.email, country);
-          onClose(true);
+          handleFormClose(true);
           return result;
         },
         updateData: async (data) => {
@@ -99,7 +138,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
             update_user: user.email
           };
           const result = await updateData(dataWithUser as ObjectUpdateWithId, user.email, country);
-          onClose(true);
+          handleFormClose(true);
           return result;
         }
       }}

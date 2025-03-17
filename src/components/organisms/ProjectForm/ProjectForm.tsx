@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createData, updateData } from '@/services/Project';
@@ -10,8 +11,35 @@ import { useAuth } from '@/lib/context/AuthContext';
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, projectId, initialData }) => {
   const { user, country } = useAuth();
+  const [draftData, setDraftData] = useState<ProjectCreate | null>(null);
 
-  const fields: FormFieldConfig[] = projectId ? [
+  const defaultProject: ProjectCreate = {
+    name: '',
+    ticket_jira: '',
+    creation_user: ''
+  };
+
+  const isEditing = Boolean(projectId);
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultProject;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: ProjectCreate | ProjectUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as ProjectCreate);
+    }
+  };
+
+  const fields: FormFieldConfig[] = isEditing ? [
     {
       name: 'name',
       label: 'Nombre del Proyecto',
@@ -39,14 +67,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
   return (
     <SlideForm<ProjectUpdateWithId | ProjectCreate>
       isOpen={isOpen}
-      onClose={() => onClose(false)}
-      title={projectId ? 'Editar Proyecto' : 'Crear Proyecto'}
+      onClose={handleFormClose}
+      title={isEditing ? 'Editar Proyecto' : 'Crear Proyecto'}
       fields={fields}
-      initialData={initialData || {
-        name: '',
-        ticket_jira: '',
-        creation_user: ''
-      } as ProjectCreate}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           if (!user?.email) throw new Error('Usuario no autenticado');
@@ -55,7 +80,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
             creation_user: user.email
           };
           const result = await createData(dataWithUser as ProjectCreate, user.email, country);
-          onClose(true);
+          handleFormClose(true);
           return result;
         },
         updateData: async (data) => {
@@ -66,12 +91,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
             ticket_jira: initialData?.ticket_jira || ''
           };
           const result = await updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
-          onClose(true);
+          handleFormClose(true);
           return result;
         }
       }}
       docId={projectId}
-      mode={projectId ? 'edit' : 'create'}
+      mode={isEditing ? 'edit' : 'create'}
     />
   );
 }; 

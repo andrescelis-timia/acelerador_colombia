@@ -87,4 +87,20 @@ async function deleteData(id: string, user: string, country: string): Promise<vo
   }
 }
 
-export { getAllData, getById, createData, updateData, deleteData }; 
+async function archiveData(id: string, user: string, country: string): Promise<ObjectResponse> {
+  const fetcher = createFetcher(user, country);
+  
+  try {
+    return await fetcher(`${API_CONFIG.BASE_URL}/objects/${id}/archive`, {
+      method: 'PUT'
+    });
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      throw new Error('Objeto no encontrado');
+    }
+    throw new Error('Error al archivar objeto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
+  }
+}
+
+export { getAllData, getById, createData, updateData, deleteData, archiveData }; 

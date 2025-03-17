@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createDatioRefinement, updateDatioRefinement } from '@/services/Refinement';
@@ -14,6 +14,7 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
 }: RefinementDatioFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementDatioCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -30,6 +31,24 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
     number_records_intake_datio: 0,
     flag_net_controlm_datio: false,
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultDatio;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementDatioCreate | RefinementDatioUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementDatioCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -96,10 +115,11 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
   return (
     <SlideForm<RefinementDatioCreate | RefinementDatioUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Datio' : 'Crear Datio'}
       fields={fields}
-      initialData={initialData || defaultDatio}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -107,7 +127,9 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createDatioRefinement(dataWithUser as RefinementDatioCreate, user.email as string, country);
+          const result = await createDatioRefinement(dataWithUser as RefinementDatioCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -118,7 +140,9 @@ export const RefinementDatioForm = memo(function RefinementDatioForm({
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateDatioRefinement(dataWithUser as RefinementDatioUpdateWithId, user.email as string, country);
+          const result = await updateDatioRefinement(dataWithUser as RefinementDatioUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementDatioUpdateWithId).id_refinement : undefined}

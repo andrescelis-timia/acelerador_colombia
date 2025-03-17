@@ -1,12 +1,12 @@
 'use client';
 
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createOriginRefinement, updateOriginRefinement } from '@/services/Refinement';
 import { RefinementOriginFormProps } from './types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { RefinementOriginCreate, RefinementOriginUpdateWithId } from '@/services/Refinement/types';
-import { memo } from 'react';
 
 export const RefinementOriginForm = memo(function RefinementOriginForm({ 
   isOpen, 
@@ -16,6 +16,7 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
 }: RefinementOriginFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementOriginCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -43,6 +44,24 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
     depure_table_origin: '',
     moment_table_taken_origin: '',
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultOrigin;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementOriginCreate | RefinementOriginUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementOriginCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -173,10 +192,11 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
   return (
     <SlideForm<RefinementOriginCreate | RefinementOriginUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Origen' : 'Crear Origen'}
       fields={fields}
-      initialData={initialData || defaultOrigin}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -184,7 +204,9 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createOriginRefinement(dataWithUser as RefinementOriginCreate, user.email as string, country);
+          const result = await createOriginRefinement(dataWithUser as RefinementOriginCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -195,7 +217,9 @@ export const RefinementOriginForm = memo(function RefinementOriginForm({
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateOriginRefinement(dataWithUser as RefinementOriginUpdateWithId, user.email as string, country);
+          const result = await updateOriginRefinement(dataWithUser as RefinementOriginUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementOriginUpdateWithId).id_refinement : undefined}

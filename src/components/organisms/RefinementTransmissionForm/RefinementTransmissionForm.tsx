@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { SlideForm } from '@/components/organisms/SlideForm';
 import { FormFieldConfig } from '@/components/organisms/SlideForm/types';
 import { createTransmissionRefinement, updateTransmissionRefinement } from '@/services/Refinement';
@@ -14,6 +14,7 @@ export const RefinementTransmissionForm = memo(function RefinementTransmissionFo
 }: RefinementTransmissionFormProps) {
   const { user, country } = useAuth();
   const isEditing = initialData && 'id_refinement' in initialData;
+  const [draftData, setDraftData] = useState<RefinementTransmissionCreate | null>(null);
 
   if (!objectId || !user?.email) return null;
 
@@ -23,6 +24,24 @@ export const RefinementTransmissionForm = memo(function RefinementTransmissionFo
     news_transmission: '',
     field_transmission: '',
     creation_user: user.email
+  };
+
+  const getInitialFormData = () => {
+    if (isEditing) return initialData;
+    return draftData || defaultTransmission;
+  };
+
+  const handleFormClose = (success: boolean) => {
+    if (success) {
+      setDraftData(null);
+    }
+    onClose(success);
+  };
+
+  const handleFormChange = (data: RefinementTransmissionCreate | RefinementTransmissionUpdateWithId) => {
+    if (!isEditing) {
+      setDraftData(data as RefinementTransmissionCreate);
+    }
   };
 
   const fields: FormFieldConfig[] = [
@@ -49,10 +68,11 @@ export const RefinementTransmissionForm = memo(function RefinementTransmissionFo
   return (
     <SlideForm<RefinementTransmissionCreate | RefinementTransmissionUpdateWithId>
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleFormClose}
       title={isEditing ? 'Editar Transmisión' : 'Crear Transmisión'}
       fields={fields}
-      initialData={initialData || defaultTransmission}
+      initialData={getInitialFormData()}
+      onFormChange={handleFormChange}
       service={{
         createData: async (data) => {
           const dataWithUser = {
@@ -60,7 +80,9 @@ export const RefinementTransmissionForm = memo(function RefinementTransmissionFo
             id_object: objectId,
             creation_user: user.email as string
           };
-          return createTransmissionRefinement(dataWithUser as RefinementTransmissionCreate, user.email as string, country);
+          const result = await createTransmissionRefinement(dataWithUser as RefinementTransmissionCreate, user.email as string, country);
+          handleFormClose(true);
+          return result;
         },
         updateData: async (data) => {
           if (!initialData?.id_refinement) {
@@ -71,7 +93,9 @@ export const RefinementTransmissionForm = memo(function RefinementTransmissionFo
             id_refinement: initialData.id_refinement,
             update_user: user.email as string
           };
-          return updateTransmissionRefinement(dataWithUser as RefinementTransmissionUpdateWithId, user.email as string, country);
+          const result = await updateTransmissionRefinement(dataWithUser as RefinementTransmissionUpdateWithId, user.email as string, country);
+          handleFormClose(true);
+          return result;
         }
       }}
       docId={isEditing ? (initialData as RefinementTransmissionUpdateWithId).id_refinement : undefined}

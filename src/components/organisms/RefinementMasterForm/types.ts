@@ -2,7 +2,7 @@ import { RefinementMasterCreate, RefinementMasterUpdateWithId } from '@/services
 
 export interface RefinementMasterFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementMasterCreate | RefinementMasterUpdateWithId;
 } 

@@ -10,8 +10,10 @@ import { ErrorModal } from '@/components/molecules/ErrorModal';
 export default function ProjectPage() {
   const { user, country, loading } = useAuth();
   const [projects, setProjects] = useState<ProjectTableData[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<ProjectTableData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 5;
 
   const loadProjects = useCallback(async () => {
@@ -27,6 +29,7 @@ export default function ProjectPage() {
     try {
       const data = await getAllData('table', user.email, country);
       setProjects(data);
+      setFilteredProjects(data);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar proyectos');
     }
@@ -35,6 +38,21 @@ export default function ProjectPage() {
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Resetear a la primera página cuando se busca
+    
+    if (!term.trim()) {
+      setFilteredProjects(projects);
+      return;
+    }
+
+    const filtered = projects.filter(project => 
+      project.name.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredProjects(filtered);
+  };
 
   const handleDelete = async (id: string) => {
     if (!user?.email) {
@@ -52,15 +70,15 @@ export default function ProjectPage() {
   return (
     <>
       <ProjectContent 
-        data={projects}
-        onSearch={() => {}}
+        data={filteredProjects}
+        onSearch={handleSearch}
         onEdit={loadProjects}
         onDelete={handleDelete}
-        searchTerm=""
+        searchTerm={searchTerm}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         itemsPerPage={itemsPerPage}
-        totalItems={projects.length}
+        totalItems={filteredProjects.length}
       />
       <ErrorModal 
         message={errorMessage}

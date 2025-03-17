@@ -10,6 +10,7 @@ import { CreateDictionaryJsonDetail } from '../DictionaryJsonDetail/types';
 export interface GenerateDictionaryJsonRequest {
   id_object: string;
   sample_file_extension: string;
+  sample_file_delimiter: string;
 }
 
 export interface GenerateDictionaryJsonResponse {

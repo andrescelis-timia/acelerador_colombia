@@ -2,7 +2,7 @@ import { RefinementStagingCreate, RefinementStagingUpdateWithId } from '@/servic
 
 export interface RefinementStagingFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementStagingCreate | RefinementStagingUpdateWithId;
 } 

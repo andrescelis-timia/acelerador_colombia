@@ -2,7 +2,7 @@ import { RefinementOriginCreate, RefinementOriginUpdateWithId } from '@/services
 
 export interface RefinementOriginFormProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementOriginCreate | RefinementOriginUpdateWithId;
-  objectId: string;
 } 

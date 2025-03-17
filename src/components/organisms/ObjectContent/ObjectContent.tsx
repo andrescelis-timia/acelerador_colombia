@@ -1,10 +1,10 @@
 import { DataTable } from '@/components/molecules/DataTable';
 import { ObjectContentProps } from './types';
-import { PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, ArchiveBoxIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import { ObjectForm } from '@/components/organisms/ObjectForm';
 import { ObjectUpdateWithId } from '@/services/Object/types';
-import { getById } from '@/services/Object';
+import { getById, archiveData } from '@/services/Object';
 import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ const getStatusLabel = (status: string) => {
 
 const columns: Column[] = [
   { header: 'Nombre del Objeto', accessor: 'name' },
+  { header: 'Proyecto', accessor: 'project_name'},
   { 
     header: 'Estado', 
     accessor: 'status',
@@ -60,16 +61,22 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
   const [objects, setObjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedObject, setSelectedObject] = useState<ObjectUpdateWithId | undefined>(undefined);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [objectToDelete, setObjectToDelete] = useState<string | null>(null);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [objectToArchive, setObjectToArchive] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setObjects(data);
   }, [data]);
 
   const handleEdit = async (id: string) => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
+    
     const object = await getById(id, user.email, country);
     setSelectedObject(object || undefined);
     setIsEditFormOpen(true);
@@ -77,25 +84,35 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
 
   const handleCloseForm = (success?: boolean) => {
     setIsEditFormOpen(false);
+    
     if (success) {
-      setSuccessMessage(selectedObject ? 'Objeto actualizado correctamente' : 'Objeto creado correctamente');
-      // Limpiar el mensaje después de 3 segundos
+      setSuccessMessage('Objeto actualizado correctamente');
       setTimeout(() => setSuccessMessage(null), 3000);
+      onEdit(selectedObject?.id_object || '');
     }
+    
     setSelectedObject(undefined);
-    onEdit(selectedObject?.id_object || '');
   };
 
-  const handleDeleteClick = (id: string) => {
-    setObjectToDelete(id);
-    setIsDeleteModalOpen(true);
+  const handleArchiveClick = (id: string) => {
+    setObjectToArchive(id);
+    setIsArchiveModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (objectToDelete) {
-      await onDelete(objectToDelete);
-      setIsDeleteModalOpen(false);
-      setObjectToDelete(null);
+  const handleConfirmArchive = async () => {
+    if (!objectToArchive || !user?.email) return;
+    
+    try {
+      await archiveData(objectToArchive, user.email, country);
+      setIsArchiveModalOpen(false);
+      setObjectToArchive(null);
+      setSuccessMessage('Objeto archivado correctamente');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      onEdit(objectToArchive);
+    } catch (error) {
+      console.error('Error al archivar:', error);
+      setSuccessMessage('Error al archivar el objeto');
+      setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
@@ -114,6 +131,27 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
       {successMessage && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
           {successMessage}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {errorMessage}
+          <button 
+            onClick={() => setErrorMessage(null)}
+            className="ml-2 font-bold"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-md shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-2 text-center text-gray-600">Cargando...</p>
+          </div>
         </div>
       )}
       
@@ -140,7 +178,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
         data={Array.isArray(objects) ? objects.slice(startIndex, endIndex).map(obj => ({ ...obj, id: obj.id_object })) : []}
         columns={columns}
         onEdit={handleRowClick}
-        onDelete={handleDeleteClick}
+        onDelete={handleArchiveClick}
         renderActions={(item) => (
           <div key={`actions-${item.id}`}>
             <button
@@ -156,12 +194,12 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteClick(item.id);
+                handleArchiveClick(item.id);
               }}
-              className="text-red-600 hover:text-red-900"
-              title="Borrar Objeto"
+              className="text-gray-600 hover:text-gray-900"
+              title="Archivar Objeto"
             >
-              <TrashIcon className="h-5 w-5 inline" />
+              <ArchiveBoxIcon className="h-5 w-5 inline" />
             </button>
           </div>
         )}
@@ -195,8 +233,8 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
       />
 
       <Dialog
-        open={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        open={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
         className="relative z-50"
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -204,27 +242,27 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
           <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
             <div className="flex items-center">
               <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mr-2" />
-              <Dialog.Title className="text-lg font-medium">Confirmar eliminación</Dialog.Title>
+              <Dialog.Title className="text-lg font-medium">Confirmar archivo</Dialog.Title>
             </div>
 
             <p className="mt-2 text-sm text-gray-500">
-              ¿Estás seguro de que deseas eliminar este objeto? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas archivar este objeto? Esta acción moverá el objeto al archivo histórico.
             </p>
 
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md"
-                onClick={() => setIsDeleteModalOpen(false)}
+                onClick={() => setIsArchiveModalOpen(false)}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
-                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded-md"
+                onClick={handleConfirmArchive}
               >
-                Eliminar
+                Archivar
               </button>
             </div>
           </Dialog.Panel>

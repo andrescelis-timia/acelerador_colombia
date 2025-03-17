@@ -2,11 +2,11 @@
 
 import { DataTable } from '@/components/molecules/DataTable';
 import { ProjectContentProps } from './types';
-import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, ArchiveBoxIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import { ProjectForm } from '@/components/organisms/ProjectForm';
 import { ProjectUpdateWithId } from '@/services/Project/types';
-import { getById } from '@/services/Project';
+import { getById, archiveData } from '@/services/Project';
 import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
@@ -30,14 +30,14 @@ const columns: Column[] = [
   }
 ];
 
-export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ProjectContentProps) => {
+export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ProjectContentProps) => {
   const { user, country } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectUpdateWithId | undefined>(undefined);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [projectToArchive, setProjectToArchive] = useState<string | null>(null);
   const [isObjectFormOpen, setIsObjectFormOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -64,16 +64,25 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
     onEdit(selectedProject?.id_project || '');
   };
 
-  const handleDeleteClick = (id: string) => {
-    setProjectToDelete(id);
-    setIsDeleteModalOpen(true);
+  const handleArchiveClick = (id: string) => {
+    setProjectToArchive(id);
+    setIsArchiveModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (projectToDelete) {
-      await onDelete(projectToDelete);
-      setIsDeleteModalOpen(false);
-      setProjectToDelete(null);
+  const handleConfirmArchive = async () => {
+    if (projectToArchive && user?.email) {
+      try {
+        await archiveData(projectToArchive, user.email, country);
+        setIsArchiveModalOpen(false);
+        setProjectToArchive(null);
+        setSuccessMessage('Proyecto archivado correctamente');
+        setTimeout(() => setSuccessMessage(null), 3000);
+        onEdit(projectToArchive); // Refrescar la lista después de archivar
+      } catch (error) {
+        console.error('Error al archivar:', error);
+        setSuccessMessage('Error al archivar el proyecto');
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     }
   };
 
@@ -137,7 +146,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
         data={Array.isArray(projects) ? projects.slice(startIndex, endIndex).map(proj => ({ ...proj, id: proj.id_project })) : []}
         columns={columns}
         onEdit={handleRowClick}
-        onDelete={handleDeleteClick}
+        onDelete={handleArchiveClick}
         renderActions={(item) => (
           <div key={`actions-${item.id}`}>
             <button
@@ -163,12 +172,12 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteClick(item.id);
+                handleArchiveClick(item.id);
               }}
-              className="text-red-600 hover:text-red-900"
-              title="Borrar Proyecto"
+              className="text-gray-600 hover:text-gray-900"
+              title="Archivar Proyecto"
             >
-              <TrashIcon className="h-5 w-5 inline" />
+              <ArchiveBoxIcon className="h-5 w-5 inline" />
             </button>
           </div>
         )}
@@ -213,8 +222,8 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
       />
 
       <Dialog
-        open={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        open={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
         className="relative z-50"
       >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -222,27 +231,27 @@ export const ProjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, 
           <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
             <div className="flex items-center">
               <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mr-2" />
-              <Dialog.Title className="text-lg font-medium">Confirmar eliminación</Dialog.Title>
+              <Dialog.Title className="text-lg font-medium">Confirmar archivo</Dialog.Title>
             </div>
 
             <p className="mt-2 text-sm text-gray-500">
-              ¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas archivar este proyecto? Esta acción moverá el proyecto al archivo histórico.
             </p>
 
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md"
-                onClick={() => setIsDeleteModalOpen(false)}
+                onClick={() => setIsArchiveModalOpen(false)}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
-                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded-md"
+                onClick={handleConfirmArchive}
               >
-                Eliminar
+                Archivar
               </button>
             </div>
           </Dialog.Panel>

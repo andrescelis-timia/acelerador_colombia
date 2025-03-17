@@ -110,4 +110,20 @@ async function getObjectsById(id: string, user: string, country: string): Promis
   }
 }
 
-export { getAllData, getById, deleteData, createData, updateData, getObjectsById };
+async function archiveData(id: string, user: string, country: string): Promise<ProjectResponse> {
+  const fetcher = createFetcher(user, country);
+  
+  try {
+    return await fetcher(`${API_CONFIG.BASE_URL}/projects/${id}/archive`, {
+      method: 'PUT'
+    });
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+      throw new Error('Proyecto no encontrado');
+    }
+    throw new Error('Error al archivar proyecto: ' + 
+      (error instanceof Error ? error.message : 'Error desconocido'));
+  }
+}
+
+export { getAllData, getById, deleteData, createData, updateData, getObjectsById, archiveData };

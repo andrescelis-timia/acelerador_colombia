@@ -7,11 +7,16 @@ export interface FormFieldConfig {
   rows?: number;
   defaultValue?: string | boolean | number;
   required?: boolean;
+  pattern?: string;
+  errorMessage?: string;
+  min?: string;
+  inputMode?: 'numeric' | 'text' | 'tel' | 'email' | 'url';
+  helperText?: string;
 }
 
 export interface SlideFormProps<T> {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (success: boolean) => void;
   title: string;
   fields: FormFieldConfig[];
   initialData?: T;
@@ -21,4 +26,5 @@ export interface SlideFormProps<T> {
   };
   docId?: string;
   mode?: 'create' | 'edit';
+  onFormChange?: (data: T) => void;
 } 

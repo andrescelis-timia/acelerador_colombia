@@ -14,8 +14,10 @@ function ObjectPageContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const [objects, setObjects] = useState<ObjectTableData[]>([]);
+  const [filteredObjects, setFilteredObjects] = useState<ObjectTableData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 5;
 
   const loadObjects = useCallback(async () => {
@@ -25,6 +27,7 @@ function ObjectPageContent() {
         ? await getObjectsById(projectId, user.email, country)
         : await getAllData('table', user.email, country);
       setObjects(data);
+      setFilteredObjects(data);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar objetos');
     }
@@ -33,6 +36,22 @@ function ObjectPageContent() {
   useEffect(() => {
     loadObjects();
   }, [loadObjects]);
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Resetear a la primera página cuando se busca
+    
+    if (!term.trim()) {
+      setFilteredObjects(objects);
+      return;
+    }
+
+    const filtered = objects.filter(object => 
+      object.name.toLowerCase().includes(term.toLowerCase()) ||
+      object.project_name?.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredObjects(filtered);
+  };
 
   const handleDelete = async (id: string) => {
     if (!user?.email) {
@@ -50,15 +69,15 @@ function ObjectPageContent() {
   return (
     <>
       <ObjectContent 
-        data={objects}
-        onSearch={() => {}}
+        data={filteredObjects}
+        onSearch={handleSearch}
         onEdit={loadObjects}
         onDelete={handleDelete}
-        searchTerm=""
+        searchTerm={searchTerm}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         itemsPerPage={itemsPerPage}
-        totalItems={objects.length}
+        totalItems={filteredObjects.length}
       />
       <ErrorModal 
         message={errorMessage}

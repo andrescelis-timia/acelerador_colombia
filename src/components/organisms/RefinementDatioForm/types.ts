@@ -2,7 +2,7 @@ import { RefinementDatioCreate, RefinementDatioUpdateWithId } from '@/services/R
 
 export interface RefinementDatioFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementDatioCreate | RefinementDatioUpdateWithId;
 } 

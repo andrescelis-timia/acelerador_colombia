@@ -2,7 +2,7 @@ import { RefinementTransmissionCreate, RefinementTransmissionUpdateWithId } from
 
 export interface RefinementTransmissionFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementTransmissionCreate | RefinementTransmissionUpdateWithId;
 } 

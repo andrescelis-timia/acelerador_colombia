@@ -2,7 +2,7 @@ import { RefinementDefinitionCreate, RefinementDefinitionUpdateWithId } from '@/
 
 export interface RefinementDefinitionFormProps {
   isOpen: boolean;
-  onClose: () => void;
-  objectId: string;
+  onClose: (success: boolean) => void;
+  objectId?: string;
   initialData?: RefinementDefinitionCreate | RefinementDefinitionUpdateWithId;
 } 
