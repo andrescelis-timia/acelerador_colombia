@@ -2,9 +2,9 @@
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
-export default function LoginPage() {
+function LoginContent() {
   const { signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -49,5 +49,17 @@ export default function LoginPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0A3977]"></div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 } 

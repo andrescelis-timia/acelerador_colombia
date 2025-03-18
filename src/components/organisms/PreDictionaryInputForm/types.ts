@@ -1,4 +1,4 @@
-import { CreatePreDictionaryInput, PreDictionaryInputResponse, UpdatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
+import { CreatePreDictionaryInput, PreDictionaryInputResponse } from '@/services/PreDictionaryInput/types';
 
 export interface PreDictionaryInputFormProps {
   isOpen: boolean;

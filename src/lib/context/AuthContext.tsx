@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { getUserByEmail } from '@/services/User';
-import { useRouter } from 'next/navigation';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 
 export type AuthContextType = {
@@ -30,7 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [countries, setCountries] = useState<string[]>([]);
   const [country, setCountry] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const router = useRouter();
 
   const signInWithGoogle = async () => {
     try {

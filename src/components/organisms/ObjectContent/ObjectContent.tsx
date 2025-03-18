@@ -55,7 +55,7 @@ const columns: Column[] = [
   }
 ];
 
-export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
+export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
   const { user, country } = useAuth();
   const router = useRouter();
   const [objects, setObjects] = useState(data);
@@ -65,7 +65,6 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
   const [objectToArchive, setObjectToArchive] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setObjects(data);
@@ -146,15 +145,6 @@ export const ObjectContent = ({ data, onSearch, onEdit, onDelete, currentPage, s
         </div>
       )}
 
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-md shadow-lg">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-2 text-center text-gray-600">Cargando...</p>
-          </div>
-        </div>
-      )}
-      
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#00A3FF] text-xl font-semibold">Mis Objetos</h2>
       </div>

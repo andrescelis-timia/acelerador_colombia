@@ -166,7 +166,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
       const fileExtension = selectedFile.name.split('.').pop() || '';
       await generateDictionaryJson({
         id_object: objectId,
-        sample_file_extension: fileExtension
+        sample_file_extension: fileExtension,
+        sample_file_delimiter: ';'
       }, user.email, country);
       await fetchData();
       setSuccessMessage('Diccionario JSON generado correctamente');
