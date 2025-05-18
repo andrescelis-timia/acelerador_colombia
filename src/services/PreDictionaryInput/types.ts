@@ -1,4 +1,5 @@
 export enum PreDictionaryPeriodicity {
+  NOT_SPECIFIED = '',
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
@@ -16,6 +17,10 @@ export interface CreatePreDictionaryInput extends Record<string, unknown> {
   information_group_level_2: string;
   number_records_period_intake: string;
   periodicity: PreDictionaryPeriodicity;
+  partition_fields_raw: string;
+  partition_fields_master: string;
+  aggregate_fields_raw: string;
+  aggregate_fields_master: string;
 }
 
 export interface UpdatePreDictionaryInput extends Record<string, unknown> {
@@ -28,6 +33,10 @@ export interface UpdatePreDictionaryInput extends Record<string, unknown> {
   information_group_level_2: string;
   number_records_period_intake: string;
   periodicity: PreDictionaryPeriodicity;
+  partition_fields_raw: string;
+  partition_fields_master: string;
+  aggregate_fields_raw: string;
+  aggregate_fields_master: string;
 }
 
 export interface PreDictionaryInputResponse extends Record<string, unknown> {
@@ -42,6 +51,10 @@ export interface PreDictionaryInputResponse extends Record<string, unknown> {
   information_group_level_2: string;
   number_records_period_intake: string;
   periodicity: PreDictionaryPeriodicity;  
+  partition_fields_raw: string;
+  partition_fields_master: string;
+  aggregate_fields_raw: string;
+  aggregate_fields_master: string;
   owner_country: string;
   creation_date: string;
   creation_user: string;

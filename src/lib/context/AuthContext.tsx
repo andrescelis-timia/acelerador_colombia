@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             const savedCountry = localStorage.getItem('selectedCountry');
             
-            if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'AR')) {
-              setCountry(savedCountry as 'CO' | 'AR');
+            if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'AR' | 'HO')) {
+              setCountry(savedCountry as 'CO' | 'AR' | 'HO');
             } else {
               setCountry(userCountries[0]);
               localStorage.setItem('selectedCountry', userCountries[0]);

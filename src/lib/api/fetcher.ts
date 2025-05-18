@@ -21,8 +21,14 @@ export const createFetcher = (user: string | null | undefined, country: string) 
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      const customError = new Error(error) as Error & { status: number };
+      let errorMessage = 'Error desconocido';
+      try {
+        const errorJson = await response.json();
+        errorMessage = errorJson.message || JSON.stringify(errorJson);
+      } catch {
+        errorMessage = await response.text();
+      }
+      const customError = new Error(errorMessage) as Error & { status: number };
       customError.status = response.status;
       throw customError;
     }

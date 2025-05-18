@@ -10,13 +10,13 @@ import { ObjectDetailContentProps } from './types';
 import { RefinementFlow } from '@/components/organisms/RefinementFlow';
 import { DataGovernmentFlowAR } from '@/components/organisms/DataGovernmentFlowAR';
 import { DataGovernmentFlowCO } from '@/components/organisms/DataGovernmentFlowCO';
+import { DataGovernmentFlowHO } from '@/components/organisms/DataGovernmentFlowHO';
 import { useAuth } from '@/lib/context/AuthContext';
 import { IngestaComponentFlow } from '@/components/organisms/IngestaComponentFlow';
+import { MERFlow } from '@/components/organisms/MERFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country } = useAuth();
-
-  const DataGovernmentFlow = country === 'AR' ? DataGovernmentFlowAR : DataGovernmentFlowCO;
 
   return (
     <motion.div
@@ -52,7 +52,30 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </TabPanel>
           <TabPanel>
             <div className="p-4">
-              <DataGovernmentFlow objectId={objectId} />
+              <DataGovernmentFlowAR objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <IngestaComponentFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+        </TabGroup>
+      ) : country === 'HO' ? (
+        <TabGroup>
+          <TabList>
+            <Tab>Gobierno del dato</Tab>
+            <Tab>Modelo Entidad Relación</Tab>
+            <Tab>Componentes de ingesta</Tab>
+          </TabList>
+          <TabPanel>
+            <div className="p-4">
+              <DataGovernmentFlowHO objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <MERFlow objectId={objectId} />
             </div>
           </TabPanel>
           <TabPanel>
@@ -69,7 +92,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </TabList>
           <TabPanel>
             <div className="p-4">
-              <DataGovernmentFlow objectId={objectId} />
+              <DataGovernmentFlowCO objectId={objectId} />
             </div>
           </TabPanel>
           <TabPanel>

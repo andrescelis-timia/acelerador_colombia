@@ -344,8 +344,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       return '0/9';
     }
     
+    // Excluir campos que no deben contarse
+    const excludeFields = ['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'];
+    // Si el país es CO, también excluimos los campos de partición y agregación
+    if (country === 'CO') {
+      excludeFields.push('partition_fields_raw', 'partition_fields_master', 'aggregate_fields_raw', 'aggregate_fields_master');
+    }
+
     const fields = Object.entries(data as Record<string, unknown>).filter(([key]) => 
-      !['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'].includes(key)
+      !excludeFields.includes(key)
     );
     const totalFields = fields.length;
     const filledFields = fields.filter(([, value]) => 
@@ -353,7 +360,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     ).length;
     
     return `${filledFields}/${totalFields}`;
-  }, []);
+  }, [country]);
 
   const handleDictionaryGeneration = async () => {
     if (!user?.email) {

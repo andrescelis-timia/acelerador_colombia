@@ -29,11 +29,23 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
     table_master_name: '',
     information_group_level_2: '',
     number_records_period_intake: '',
-    periodicity: PreDictionaryPeriodicity.DAILY    
+    periodicity: country === 'CO' ? PreDictionaryPeriodicity.DAILY : PreDictionaryPeriodicity.NOT_SPECIFIED,
+    partition_fields_raw: '',
+    partition_fields_master: '',
+    aggregate_fields_raw: '',
+    aggregate_fields_master: ''
   };
 
   const getInitialFormData = () => {
-    if (isEditing) return initialData;
+    if (isEditing) {
+      if (country === 'HO') {
+        return {
+          ...initialData,
+          periodicity: PreDictionaryPeriodicity.NOT_SPECIFIED
+        };
+      }
+      return initialData;
+    }
     return draftData || defaultPreDictionary;
   };
 
@@ -50,7 +62,7 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
     }
   };
 
-  const fields: FormFieldConfig[] = [
+  const baseFields: FormFieldConfig[] = [
     {
       name: 'origin',
       label: 'Origen',
@@ -110,7 +122,11 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       errorMessage: 'Este campo solo acepta números enteros positivos',
       min: '0',
       inputMode: 'numeric'
-    },
+    }
+  ];
+
+  const coFields: FormFieldConfig[] = [
+    ...baseFields,
     {
       name: 'periodicity',
       label: 'Periodicidad',
@@ -125,6 +141,40 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
       ]
     }
   ];
+
+  const hoFields: FormFieldConfig[] = [
+    ...baseFields,
+    {
+      name: 'partition_fields_raw',
+      label: 'Campos de partición RAW',
+      placeholder: 'Ingrese los campos de partición RAW',
+      type: 'input',
+      required: true
+    },
+    {
+      name: 'partition_fields_master',
+      label: 'Campos de partición MASTER',
+      placeholder: 'Ingrese los campos de partición MASTER',
+      type: 'input',
+      required: true
+    },
+    {
+      name: 'aggregate_fields_raw',
+      label: 'Campos de agregación RAW',
+      placeholder: 'Ingrese los campos de agregación RAW',
+      type: 'input',
+      required: true
+    },
+    {
+      name: 'aggregate_fields_master',
+      label: 'Campos de agregación MASTER',
+      placeholder: 'Ingrese los campos de agregación MASTER',
+      type: 'input',
+      required: true
+    }
+  ];
+
+  const fields = country === 'CO' ? coFields : hoFields;
 
   return (
     <SlideForm<CreatePreDictionaryInput | UpdatePreDictionaryInput>
