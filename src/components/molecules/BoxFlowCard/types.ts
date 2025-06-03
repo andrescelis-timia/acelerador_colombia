@@ -1,5 +1,5 @@
 export interface BoxFlowCardProps {
-  title: string;
+  title: string | React.ReactNode;
   schema?: string;
   onFileClick?: () => void;
   selectedFile?: File | null;

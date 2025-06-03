@@ -2,11 +2,12 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
+import { useAuth } from '@/lib/context/AuthContext';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [user] = useAuthState(auth);
+  const { country } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -25,17 +27,29 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
+  // Crear lista de navItems base
+  const baseNavItems = [
+    { icon: HomeIcon, label: 'Inicio', href: '/' },
+    { icon: BeakerIcon, label: 'Proyectos', href: '/project' },
+    { icon: TableCellsIcon, label: 'Objetos', href: '/object' },
+    { icon: Cog6ToothIcon, label: 'Configuración', href: '/configuration' }
+  ];
+
+  // Agregar Diseñador solo para país HO
+  const navItems = country === 'HO' 
+    ? [
+        ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
+        { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' },
+        ...baseNavItems.slice(3) // Configuración
+      ]
+    : baseNavItems;
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar 
         isExpanded={isExpanded}
         onToggle={() => setIsExpanded(!isExpanded)}
-        navItems={[
-          { icon: HomeIcon, label: 'Inicio', href: '/' },
-          { icon: BeakerIcon, label: 'Proyectos', href: '/project' },
-          { icon: TableCellsIcon, label: 'Objetos', href: '/object' },
-          { icon: Cog6ToothIcon, label: 'Configuración', href: '/configuration' }
-        ]} 
+        navItems={navItems} 
       />
       <main className={`flex-1 transition-all duration-300 ${
         isExpanded ? 'pl-[180px]' : 'pl-[60px]'
