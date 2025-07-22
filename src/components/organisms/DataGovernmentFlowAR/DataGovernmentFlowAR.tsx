@@ -224,7 +224,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
           key_datio: detail.key_datio,
           description: detail.description,
           observation: detail.observation,
-          required: detail.required
+          required: detail.required,
+          suffix: detail.suffix
         }));
       }
 
@@ -300,7 +301,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
           key_datio: campo.clave_datio,
           description: campo.descripcion,
           observation: campo.observacion,
-          required: campo.obligatorio === 'true'
+          required: campo.obligatorio === 'true',
+          suffix: campo.suffix
         })) as CreateDictionaryJsonDetail[];
       }
 
