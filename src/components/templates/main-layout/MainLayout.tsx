@@ -2,7 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -35,14 +35,22 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     { icon: Cog6ToothIcon, label: 'Configuración', href: '/configuration' }
   ];
 
-  // Agregar Diseñador solo para país HO
-  const navItems = country === 'HO' 
-    ? [
-        ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
-        { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' },
-        ...baseNavItems.slice(3) // Configuración
-      ]
-    : baseNavItems;
+  // Agregar elementos específicos por país
+  let navItems = [...baseNavItems];
+  
+  if (country === 'HO') {
+    navItems = [
+      ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
+      { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' },
+      ...baseNavItems.slice(3) // Configuración
+    ];
+  } else if (country === 'CO') {
+    navItems = [
+      ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
+      { icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' },
+      ...baseNavItems.slice(3) // Configuración
+    ];
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
