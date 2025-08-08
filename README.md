@@ -4,6 +4,30 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
+## Configure backend project
+- bbva-ingesta-api
+
+## Configure firebase project
+### Create project and add web app in firebase if not exist
+- https://console.firebase.google.com/
+### Enable authentication for Google
+- https://console.firebase.google.com/project/<projectId>/authentication
+
+### Set environment variables file .env.local
+- NEXT_PUBLIC_FIREBASE_API_KEY=apiKey
+- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=projectId.firebaseapp.com
+- NEXT_PUBLIC_FIREBASE_PROJECT_ID=projectId
+- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=projectId.firebasestorage.app
+- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=messagingSenderId
+- NEXT_PUBLIC_FIREBASE_APP_ID=appId
+- NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=measurementId
+
+## install dependencies
+```bash
+npm install
+```
+
+## run local
 ```bash
 npm run dev
 # or
