@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
+import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
 
 export const SmartCleanerGeneratorPanel = ({
@@ -19,7 +20,7 @@ export const SmartCleanerGeneratorPanel = ({
   masterSchema,
   componentType,
   canGenerate,
-  isSelected
+  onGenerationComplete
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -53,7 +54,7 @@ export const SmartCleanerGeneratorPanel = ({
       // Simular detección de frecuencia basada en particiones
       const detectedFrequency = masterSchema ? 'monthly' : 'daily'; // Simulado
       
-      setGenerationResults({
+      const results = {
         success: true,
         frequency: detectedFrequency,
         retention: {
@@ -70,7 +71,10 @@ export const SmartCleanerGeneratorPanel = ({
           master: 'namespace-co-dfs-rmv-smcaliasm-01.json',
           l1t: 'namespace-co-dfs-rmv-smcaliasl1tm-01.json'
         }
-      });
+      };
+      
+      setGenerationResults(results);
+      onGenerationComplete?.();
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error en la generación');
@@ -95,50 +99,48 @@ export const SmartCleanerGeneratorPanel = ({
       </div>
 
       {/* Retention Rules */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">Reglas de Retención Inteligente</h3>
+      <InfoPanel title="Reglas de Retención Inteligente" variant="info">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <ClockIcon className="h-5 w-5 text-purple-500 mr-2" />
-              <h4 className="font-medium text-purple-900">Daily</h4>
+              <ClockIcon className="h-5 w-5 text-blue-500 mr-2" />
+              <h4 className="font-medium text-blue-900">Daily</h4>
             </div>
-            <ul className="text-sm text-purple-800 space-y-1">
+            <ul className="text-sm text-blue-800 space-y-1">
               <li>• Raw: 45 días</li>
               <li>• Master: 365 días</li>
               <li>• 3+ particiones</li>
             </ul>
           </div>
           
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <ClockIcon className="h-5 w-5 text-purple-500 mr-2" />
-              <h4 className="font-medium text-purple-900">Monthly</h4>
+              <ClockIcon className="h-5 w-5 text-blue-500 mr-2" />
+              <h4 className="font-medium text-blue-900">Monthly</h4>
             </div>
-            <ul className="text-sm text-purple-800 space-y-1">
+            <ul className="text-sm text-blue-800 space-y-1">
               <li>• Raw: 2 meses</li>
               <li>• Master: 5 años</li>
               <li>• 2 particiones</li>
             </ul>
           </div>
           
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <ClockIcon className="h-5 w-5 text-purple-500 mr-2" />
-              <h4 className="font-medium text-purple-900">Annual</h4>
+              <ClockIcon className="h-5 w-5 text-blue-500 mr-2" />
+              <h4 className="font-medium text-blue-900">Annual</h4>
             </div>
-            <ul className="text-sm text-purple-800 space-y-1">
+            <ul className="text-sm text-blue-800 space-y-1">
               <li>• Raw: 2 meses</li>
               <li>• Master: 8 años</li>
               <li>• 1 partición</li>
             </ul>
           </div>
         </div>
-      </div>
+      </InfoPanel>
 
       {/* Configuration Features */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">Características de la Configuración</h3>
+      <InfoPanel title="Características de la Configuración" variant="neutral">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
@@ -166,89 +168,56 @@ export const SmartCleanerGeneratorPanel = ({
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* Frequency Detection */}
-      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start">
-          <InformationCircleIcon className="h-6 w-6 text-blue-500 mt-1 mr-3 flex-shrink-0" />
-          <div>
-            <h4 className="font-medium text-blue-800 mb-2">Detección Automática de Frecuencia</h4>
-            <div className="text-sm text-blue-800 space-y-1">
-              <div><strong>3+ particiones:</strong> Detectado como Daily (year, month, day)</div>
-              <div><strong>2 particiones:</strong> Detectado como Monthly (year, month)</div>
-              <div><strong>1 partición:</strong> Detectado como Annual (year)</div>
-              <div><strong>Sin particiones:</strong> Configuración por defecto (Monthly)</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </InfoPanel>
 
       {/* No Critical Validations */}
-      <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+      <InfoPanel title="✅ Configuración Totalmente Automática" variant="success">
         <div className="flex items-start">
           <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1 mr-3 flex-shrink-0" />
-          <div>
-            <h4 className="font-medium text-green-800 mb-2">✅ Configuración Totalmente Automática</h4>
-            <div className="text-sm text-green-800 space-y-1">
-              <div>SmartCleaner no requiere validaciones manuales críticas</div>
-              <div>Solo necesita reemplazar placeholder `&lt;PROJECT&gt;` en jobs JSON</div>
-              <div>Todas las reglas de retención se calculan automáticamente</div>
-            </div>
+          <div className="text-sm text-green-800 space-y-1">
+            <div>Solo necesita reemplazar placeholder `&lt;PROJECT&gt;` en jobs JSON</div>
+            <div>Todas las reglas de retención se calculan automáticamente</div>
           </div>
         </div>
-      </div>
-
-      {/* Generation Status */}
-      {!isSelected && (
-        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center text-gray-600">
-            <InformationCircleIcon className="h-5 w-5 mr-2" />
-            <span className="text-sm">Generador no seleccionado</span>
-          </div>
-        </div>
-      )}
+      </InfoPanel>
 
       {/* Generation Controls */}
-      {isSelected && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              onClick={handleGenerate}
-              disabled={!canGenerate || isGenerating}
-              className="flex items-center"
-            >
-              <PlayIcon className="h-5 w-5 mr-2" />
-              {isGenerating ? 'Generando...' : 'Generar Configuraciones de Limpieza'}
-            </Button>
-            
-            {!canGenerate && (
-              <span className="text-sm text-red-600">
-                {componentType === 'tabla' 
-                  ? 'Se requieren schemas Raw y Master' 
-                  : 'Se requiere schema Master'}
-              </span>
-            )}
-          </div>
-
-          {isGenerating && (
-            <div className="mb-4">
-              <ProgressBar 
-                progress={progress} 
-                className="mb-2"
-              />
-              <p className="text-sm text-gray-600">Procesando configuraciones de limpieza...</p>
-            </div>
+      <InfoPanel title="Controles de Generación" variant="neutral">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            onClick={handleGenerate}
+            disabled={!canGenerate || isGenerating}
+            className="flex items-center"
+          >
+            <PlayIcon className="h-5 w-5 mr-2" />
+            {isGenerating ? 'Generando...' : 'Generar Configuraciones de Limpieza'}
+          </Button>
+          
+          {!canGenerate && (
+            <span className="text-sm text-red-600">
+              {componentType === 'tabla' 
+                ? 'Se requieren schemas Raw y Master' 
+                : 'Se requiere schema Master'}
+            </span>
           )}
         </div>
-      )}
 
-      {/* Results */}
+        {isGenerating && (
+          <div>
+            <ProgressBar 
+              progress={progress} 
+              className="mb-2"
+            />
+            <p className="text-sm text-gray-600">Procesando configuraciones de limpieza...</p>
+          </div>
+        )}
+      </InfoPanel>
+
       {generationResults && (
-        <div className="mb-6">
+        <InfoPanel title="Generación Completada" variant="success">
           <div className="flex items-center mb-4">
             <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
-            <span className="text-lg font-medium text-green-800">Generación Completada</span>
+            <span className="text-sm text-green-800">Configuraciones generadas exitosamente</span>
           </div>
 
           {/* Detected Configuration */}
@@ -353,20 +322,17 @@ export const SmartCleanerGeneratorPanel = ({
               </div>
             </div>
           </div>
-        </div>
+        </InfoPanel>
       )}
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <InfoPanel title="Error en la Generación" variant="warning">
           <div className="flex items-start">
-            <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mt-1 mr-3 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium text-red-800 mb-1">Error en la Generación</h4>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+            <ExclamationTriangleIcon className="h-6 w-6 text-amber-500 mt-1 mr-3 flex-shrink-0" />
+            <p className="text-sm text-amber-700">{error}</p>
           </div>
-        </div>
+        </InfoPanel>
       )}
     </div>
   );

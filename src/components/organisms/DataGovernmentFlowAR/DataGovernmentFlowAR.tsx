@@ -11,8 +11,6 @@ import { PlayIcon, EyeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outlin
 import { generateDictionaryJson } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDetail';
-import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
-import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { generateDictionaryBase } from '@/services/DictionaryGenerator';
 import { CreateDictionaryJsonHeader, DictionaryJsonHeaderResponse } from '@/services/DictionaryJsonHeader/types';
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
@@ -30,9 +28,9 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLinksPopupOpen, setIsLinksPopupOpen] = useState(false);
-  const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [dictionaryLinks, setDictionaryLinks] = useState<Array<{ label: string; url: string }>>([]);
 
   const stepsConfig = {
     dictionary: [
@@ -318,12 +316,23 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
 
       const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
 
-      await Promise.all([
+      const response = await Promise.all([
         processPromise,
         timerPromise
       ]).then(() => processPromise);
       
-      await fetchDictionaryOutput();
+      // Actualizar los links si están disponibles
+      if (response && response.links) {
+        const newLinks = [
+          { label: 'Raw Object', url: response.links.dictionary_raw_header_link },
+          { label: 'Raw Fields', url: response.links.dictionary_raw_details_link },
+          { label: 'Master Object', url: response.links.dictionary_master_header_link },
+          { label: 'Master Fields', url: response.links.dictionary_master_details_link }
+        ].filter(link => link.url && link.url.trim() !== '');
+        
+        setDictionaryLinks(newLinks);
+      }
+      
       setSuccessMessage('Diccionario base generado correctamente');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
@@ -332,27 +341,6 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
       setShowDictionaryProgress(false);
     }
   };
-
-  const fetchDictionaryOutput = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const data = await getIngestaOutputByObjectId(objectId, user.email, country);
-      setIngestaOutput(data);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida del diccionario');
-    }
-  }, [objectId, user?.email, country]);
-
-  useEffect(() => {
-    fetchDictionaryOutput();
-  }, [fetchDictionaryOutput]);
-
-  const dictionaryLinks = [
-    { label: "Raw Object", url: ingestaOutput?.dictionary_raw_header_link || '' },
-    { label: "Raw Fields", url: ingestaOutput?.dictionary_raw_details_link || '' },
-    { label: "Master Object", url: ingestaOutput?.dictionary_master_header_link || '' },
-    { label: "Master Fields", url: ingestaOutput?.dictionary_master_details_link || '' }
-  ];
 
   const getControls = (stepId: string) => {
     switch (stepId) {
@@ -395,10 +383,14 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
-              onClick: () => setIsLinksPopupOpen(true),
+              onClick: () => {
+                if (dictionaryLinks.length > 0) {
+                  setIsLinksPopupOpen(true);
+                }
+              },
               className: "text-blue-500 hover:text-blue-600",
-              disabled: !ingestaOutput,
-              tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
+              disabled: dictionaryLinks.length === 0,
+              tooltip: dictionaryLinks.length === 0 ? 'No hay links disponibles' : 'Ver links de diccionarios'
             }]}
           />
         );
@@ -500,7 +492,7 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
       />
 
       <PopupLinks
-        title="Diccionarios"
+        title="Links de Diccionarios"
         isOpen={isLinksPopupOpen}
         onClose={() => setIsLinksPopupOpen(false)}
         links={dictionaryLinks}

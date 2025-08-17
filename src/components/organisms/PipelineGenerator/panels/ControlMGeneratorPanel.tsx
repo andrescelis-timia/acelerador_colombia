@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { FormField } from '@/components/molecules/FormField';
+import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { ControlMGeneratorPanelProps } from '../types';
 
 interface XMLFile {
@@ -32,8 +33,9 @@ interface JobEntry {
 export const ControlMGeneratorPanel = ({
   rawSchema,
   masterSchema,
+  componentType,
   canGenerate,
-  isSelected
+  onGenerationComplete
 }: ControlMGeneratorPanelProps) => {
   const [xmlFiles, setXmlFiles] = useState<XMLFile[]>([]);
   const [jobs, setJobs] = useState<JobEntry[]>([]);
@@ -209,7 +211,7 @@ export const ControlMGeneratorPanel = ({
       const temporality = xmlFiles[0].temporality;
       const temporalityCode = { 'DIA': '0', 'SEM': '1', 'MEN': '4', 'ANU': '8' }[temporality] || '0';
 
-      setGenerationResults({
+      const results = {
         success: true,
         uuaa,
         temporality,
@@ -230,7 +232,10 @@ export const ControlMGeneratorPanel = ({
             phases: { staging: 1, raw: 2, master: 2, masterL1T: 1 }
           }
         }
-      });
+      };
+      
+      setGenerationResults(results);
+      onGenerationComplete?.();
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error en la generación');
@@ -252,14 +257,12 @@ export const ControlMGeneratorPanel = ({
         <div className="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Control-M Generator</h2>
-          <p className="text-sm text-gray-600">Mallas de orquestación con secuencias automáticas</p>
+          <p className="text-sm text-gray-600">Mallas de orquestación</p>
         </div>
       </div>
 
       {/* XMLs Upload Section */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">XMLs Control-M</h3>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <InfoPanel title="XMLs Control-M" variant="info">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Subir XMLs (1 T04 + 1 T02)
@@ -300,20 +303,20 @@ export const ControlMGeneratorPanel = ({
               ))}
             </div>
           )}
-        </div>
-      </div>
+      </InfoPanel>
 
       {/* Jobs List Section */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-medium text-gray-900">Lista de Jobs</h3>
+      <InfoPanel 
+        title="Lista de Jobs" 
+        variant="neutral"
+        className="relative"
+      >
+        <div className="absolute top-3 right-4">
           <Button onClick={addJob} size="sm" className="flex items-center">
             <PlusIcon className="h-4 w-4 mr-1" />
             Agregar Job
           </Button>
         </div>
-        
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
           {jobs.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No hay jobs agregados</p>
           ) : (
@@ -353,12 +356,10 @@ export const ControlMGeneratorPanel = ({
               ))}
             </div>
           )}
-        </div>
-      </div>
+      </InfoPanel>
 
       {/* Datax Configuration */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">Configuración Datax</h3>
+      <InfoPanel title="Configuración Datax" variant="neutral">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormField label="Periodicidad">
             <select
@@ -419,91 +420,72 @@ export const ControlMGeneratorPanel = ({
             </FormField>
           )}
         </div>
-      </div>
+      </InfoPanel>
 
       {/* Nomenclature Info */}
-      <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+      <InfoPanel title="Sistema de Nomenclatura CUUAAXYTZZZ" variant="info">
         <div className="flex items-start">
-          <InformationCircleIcon className="h-6 w-6 text-green-500 mt-1 mr-3 flex-shrink-0" />
-          <div>
-            <h4 className="font-medium text-green-800 mb-2">Sistema de Nomenclatura CUUAAXYTZZZ</h4>
-            <div className="text-sm text-green-800 grid grid-cols-2 gap-2">
-              <div><strong>C:</strong> País (Colombia)</div>
-              <div><strong>UUAA:</strong> Unidad organizacional</div>
-              <div><strong>X:</strong> Tipo (T=Transfer, C=Process, D=Delete)</div>
-              <div><strong>Y:</strong> Ambiente (D=Dev, P=Prod)</div>
-              <div><strong>T:</strong> Temporalidad (0=Diario, 1=Semanal, 4=Mensual, 8=Anual)</div>
-              <div><strong>ZZZ:</strong> Secuencia (001, 002, 003...)</div>
-            </div>
+          <InformationCircleIcon className="h-6 w-6 text-blue-500 mt-1 mr-3 flex-shrink-0" />
+          <div className="text-sm text-blue-800 grid grid-cols-2 gap-2">
+            <div><strong>C:</strong> País (Colombia)</div>
+            <div><strong>UUAA:</strong> Unidad organizacional</div>
+            <div><strong>X:</strong> Tipo (T=Transfer, C=Process, D=Delete)</div>
+            <div><strong>Y:</strong> Ambiente (D=Dev, P=Prod)</div>
+            <div><strong>T:</strong> Temporalidad (0=Diario, 1=Semanal, 4=Mensual, 8=Anual)</div>
+            <div><strong>ZZZ:</strong> Secuencia (001, 002, 003...)</div>
           </div>
         </div>
-      </div>
+      </InfoPanel>
 
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <InfoPanel title="Errores de Validación" variant="warning">
           <div className="flex items-start">
-            <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mt-1 mr-3 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium text-red-800 mb-2">Errores de Validación</h4>
-              <ul className="text-sm text-red-700 space-y-1">
-                {validationErrors.map((error, index) => (
-                  <li key={index}>• {error}</li>
-                ))}
-              </ul>
-            </div>
+            <ExclamationTriangleIcon className="h-6 w-6 text-amber-500 mt-1 mr-3 flex-shrink-0" />
+            <ul className="text-sm text-amber-800 space-y-1">
+              {validationErrors.map((error, index) => (
+                <li key={index}>• {error}</li>
+              ))}
+            </ul>
           </div>
-        </div>
-      )}
-
-      {/* Generation Status */}
-      {!isSelected && (
-        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center text-gray-600">
-            <InformationCircleIcon className="h-5 w-5 mr-2" />
-            <span className="text-sm">Generador no seleccionado</span>
-          </div>
-        </div>
+        </InfoPanel>
       )}
 
       {/* Generation Controls */}
-      {isSelected && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              onClick={handleGenerate}
-              disabled={!canGenerateControlM || isGenerating}
-              className="flex items-center"
-            >
-              <PlayIcon className="h-5 w-5 mr-2" />
-              {isGenerating ? 'Generando...' : 'Generar Mallas Control-M'}
-            </Button>
-            
-            {!canGenerateControlM && (
-              <span className="text-sm text-red-600">
-                Se requieren 2 XMLs válidos y al menos 1 job
-              </span>
-            )}
-          </div>
-
-          {isGenerating && (
-            <div className="mb-4">
-              <ProgressBar 
-                progress={progress} 
-                className="mb-2"
-              />
-              <p className="text-sm text-gray-600">Procesando mallas Control-M...</p>
-            </div>
+      <InfoPanel title="Controles de Generación" variant="neutral">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            onClick={handleGenerate}
+            disabled={!canGenerateControlM || isGenerating}
+            className="flex items-center"
+          >
+            <PlayIcon className="h-5 w-5 mr-2" />
+            {isGenerating ? 'Generando...' : 'Generar Mallas Control-M'}
+          </Button>
+          
+          {!canGenerateControlM && (
+            <span className="text-sm text-red-600">
+              Se requieren 2 XMLs válidos y al menos 1 job
+            </span>
           )}
         </div>
-      )}
 
-      {/* Results */}
+        {isGenerating && (
+          <div>
+            <ProgressBar 
+              progress={progress} 
+              className="mb-2"
+            />
+            <p className="text-sm text-gray-600">Procesando mallas Control-M...</p>
+          </div>
+        )}
+      </InfoPanel>
+
       {generationResults && (
-        <div className="mb-6">
+        <InfoPanel title="Generación Completada" variant="success">
           <div className="flex items-center mb-4">
             <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
-            <span className="text-lg font-medium text-green-800">Generación Completada</span>
+            <span className="text-sm text-green-800">Mallas generadas exitosamente</span>
           </div>
 
           {/* Statistics */}
@@ -583,20 +565,17 @@ export const ControlMGeneratorPanel = ({
               </div>
             </div>
           </div>
-        </div>
+        </InfoPanel>
       )}
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <InfoPanel title="Error en la Generación" variant="warning">
           <div className="flex items-start">
-            <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mt-1 mr-3 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium text-red-800 mb-1">Error en la Generación</h4>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+            <ExclamationTriangleIcon className="h-6 w-6 text-amber-500 mt-1 mr-3 flex-shrink-0" />
+            <p className="text-sm text-amber-700">{error}</p>
           </div>
-        </div>
+        </InfoPanel>
       )}
     </div>
   );

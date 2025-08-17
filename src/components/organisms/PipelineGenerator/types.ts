@@ -7,14 +7,15 @@ export interface GeneratorPanelProps {
   masterSchema: File | null;
   componentType: 'tabla' | 'tablon';
   canGenerate: boolean;
-  isSelected: boolean;
+  onGenerationComplete?: () => void;
 }
 
 export interface ControlMGeneratorPanelProps {
   rawSchema: File | null;
   masterSchema: File | null;
+  componentType: 'tabla' | 'tablon';
   canGenerate: boolean;
-  isSelected: boolean;
+  onGenerationComplete?: () => void;
 }
 
 export interface SchemaUploadSectionProps {
@@ -23,8 +24,7 @@ export interface SchemaUploadSectionProps {
   componentType: 'tabla' | 'tablon';
   onSchemaUpload: (type: 'raw' | 'master', file: File | null) => void;
   onComponentTypeChange: (type: 'tabla' | 'tablon') => void;
-  selectedGenerators: string[];
-  onGeneratorsChange: (generators: string[]) => void;
+  completedGenerators?: string[];
 }
 
 export interface SchemaFile {
@@ -55,7 +55,6 @@ export interface GenerationResult {
 }
 
 export interface ValidationError {
-  field: string;
   message: string;
   severity: 'error' | 'warning';
 }

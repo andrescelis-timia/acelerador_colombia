@@ -49,7 +49,8 @@ export default function ProjectPage() {
     }
 
     const filtered = projects.filter(project => 
-      project.name.toLowerCase().includes(term.toLowerCase())
+      project.name.toLowerCase().includes(term.toLowerCase()) ||
+      project.ticket_jira.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredProjects(filtered);
   };

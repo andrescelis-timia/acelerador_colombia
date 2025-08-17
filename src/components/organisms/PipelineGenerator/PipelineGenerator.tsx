@@ -19,7 +19,7 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
   const [masterSchema, setMasterSchema] = useState<File | null>(null);
   const [componentType, setComponentType] = useState<'tabla' | 'tablon'>('tabla');
-  const [selectedGenerators, setSelectedGenerators] = useState<string[]>(['kirby']);
+  const [completedGenerators, setCompletedGenerators] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('kirby');
 
   const handleSchemaUpload = (type: 'raw' | 'master', file: File | null) => {
@@ -38,6 +38,12 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
     }
   };
 
+  const handleGeneratorComplete = (generatorId: string) => {
+    if (!completedGenerators.includes(generatorId)) {
+      setCompletedGenerators(prev => [...prev, generatorId]);
+    }
+  };
+
   const tabs = [
     { id: 'kirby', name: '🔵 Kirby', icon: CubeIcon, color: 'blue' },
     { id: 'hammurabi', name: '🟡 Hammurabi', icon: ShieldCheckIcon, color: 'orange' },
@@ -46,14 +52,14 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center mb-4">
-          <DocumentTextIcon className="h-8 w-8 text-blue-600 mr-3" />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center">
+          <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pipeline Generator</h1>
-            <p className="text-gray-600">Generación automática de componentes de ingesta</p>
+            <h1 className="text-xl font-bold text-gray-900">Pipeline Generator</h1>
+            <p className="text-sm text-gray-600">Generación automática de componentes de ingesta</p>
           </div>
         </div>
       </div>
@@ -65,21 +71,16 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
         componentType={componentType}
         onSchemaUpload={handleSchemaUpload}
         onComponentTypeChange={setComponentType}
-        selectedGenerators={selectedGenerators}
-        onGeneratorsChange={setSelectedGenerators}
+        completedGenerators={completedGenerators}
       />
 
       {/* Generators */}
-      {selectedGenerators.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Tab Navigation */}
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
-                const isSelected = selectedGenerators.includes(tab.id);
-                
-                if (!isSelected) return null;
                 
                 return (
                   <button
@@ -103,48 +104,47 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
 
           {/* Tab Content */}
           <div>
-            {activeTab === 'kirby' && selectedGenerators.includes('kirby') && (
+            {activeTab === 'kirby' && (
               <KirbyGeneratorPanel
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate('kirby')}
-                isSelected={selectedGenerators.includes('kirby')}
+                onGenerationComplete={() => handleGeneratorComplete('kirby')}
               />
             )}
 
-            {activeTab === 'hammurabi' && selectedGenerators.includes('hammurabi') && (
+            {activeTab === 'hammurabi' && (
               <HammurabiGeneratorPanel
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate('hammurabi')}
-                isSelected={selectedGenerators.includes('hammurabi')}
+                onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
               />
             )}
 
-            {activeTab === 'smartcleaner' && selectedGenerators.includes('smartcleaner') && (
+            {activeTab === 'smartcleaner' && (
               <SmartCleanerGeneratorPanel
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate('smartcleaner')}
-                isSelected={selectedGenerators.includes('smartcleaner')}
+                onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
               />
             )}
 
-            {activeTab === 'controlm' && selectedGenerators.includes('controlm') && (
+            {activeTab === 'controlm' && (
               <ControlMGeneratorPanel
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate('controlm')}
-                isSelected={selectedGenerators.includes('controlm')}
+                onGenerationComplete={() => handleGeneratorComplete('controlm')}
               />
             )}
           </div>
         </div>
-      )}
     </div>
   );
 };

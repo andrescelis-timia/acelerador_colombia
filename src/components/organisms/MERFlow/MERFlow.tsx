@@ -3,16 +3,12 @@ import { BoxFlowCard } from '@/components/molecules/BoxFlowCard';
 import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
 import { PlayIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
-import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
-import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { generateTable } from '@/services/MER';
 import { MERFlowProps } from './types';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
 
 export const MERFlow = ({ objectId }: MERFlowProps) => {
   const { user, country } = useAuth();
-  const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showMERProgress, setShowMERProgress] = useState(false);
@@ -32,34 +28,13 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
     mer: 'Generando Tabla MER'
   };
 
-  // Cargar ingestaOutput al montar
-  useState(() => {
-    const fetchOutput = async () => {
-      if (!user?.email) return;
-      try {
-        setLoading(true);
-        const data = await getIngestaOutputByObjectId(objectId, user.email, country);
-        setIngestaOutput(data);
-      } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida de ingesta');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOutput();
-  });
 
-  // Condición para habilitar el play
-  const canExecuteMER =
-    ingestaOutput !== null &&
-    ingestaOutput.dictionary_master_header_link !== null &&
-    ingestaOutput.dictionary_master_header_link !== '' &&
-    ingestaOutput.dictionary_master_details_link !== null &&
-    ingestaOutput.dictionary_master_details_link !== '';
+  // Condición para habilitar el play - simplificada sin dependencia de ingestaOutput
+  const canExecuteMER = true;
 
   // Generar el contenido VBS (no descarga)
   const handleGenerateTable = useCallback(async () => {
-    if (!user?.email || !ingestaOutput?.dictionary_master_header_link) return;
+    if (!user?.email) return;
 
     try {
       setIsGenerating(true);
@@ -97,7 +72,7 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
       setIsGenerating(false);
       setShowMERProgress(false);
     }
-  }, [user?.email, country, objectId, ingestaOutput?.dictionary_master_header_link, stepsConfig.mer]);
+  }, [user?.email, country, objectId, stepsConfig.mer]);
 
   // Descargar el archivo VBS generado
   const handleDownloadVbs = useCallback(() => {
@@ -113,7 +88,6 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
     window.URL.revokeObjectURL(url);
   }, [vbsContent]);
 
-  if (loading) return null;
 
   return (
     <>
@@ -129,12 +103,10 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
                   icon: <PlayIcon className="h-5 w-5" />,
                   onClick: handleGenerateTable,
                   className: "text-green-500 hover:text-green-600",
-                  disabled: !canExecuteMER || isGenerating,
-                  tooltip: !canExecuteMER 
-                    ? 'Se requieren los links del diccionario master' 
-                    : isGenerating 
-                      ? 'Generando tabla...' 
-                      : 'Generar Tabla'
+                  disabled: isGenerating,
+                  tooltip: isGenerating 
+                    ? 'Generando tabla...' 
+                    : 'Generar Tabla'
                 }]}
                 rightIcons={[{
                   icon: <ArrowDownTrayIcon className="h-5 w-5" />,

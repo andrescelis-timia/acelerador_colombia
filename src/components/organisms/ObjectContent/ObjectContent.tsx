@@ -29,7 +29,7 @@ const columns: Column[] = [
     render: (value: unknown) => getStatusLabel(value as string)
   },
   { 
-    header: 'Enlace Pre-diccionario',
+    header: 'Pre-diccionario',
     accessor: 'url_document',
     render: (value: unknown) => (
       <a 
@@ -39,7 +39,7 @@ const columns: Column[] = [
         className="text-blue-600 hover:text-blue-800 underline"
         onClick={(e) => e.stopPropagation()}
       >
-        Ver solicitud
+        Ver Documento
       </a>
     )
   },

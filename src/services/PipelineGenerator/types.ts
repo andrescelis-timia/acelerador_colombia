@@ -14,17 +14,17 @@ export interface GenerateKirbyRequest {
 }
 
 export interface GenerateHammurabiRequest {
-  rawSchemaData?: any;
-  masterSchemaData: any;
-  componentType: 'tabla' | 'tablon';
-  includeL1T?: boolean;
+  raw_schema_data?: any;
+  master_schema_data: any;
+  component_type: 'tabla' | 'tablon';
+  include_l1t?: boolean;
 }
 
 export interface GenerateSmartCleanerRequest {
-  rawSchemaData?: any;
-  masterSchemaData: any;
-  componentType: 'tabla' | 'tablon';
-  includeL1T?: boolean;
+  raw_schema_data?: any;
+  master_schema_data: any;
+  component_type: 'tabla' | 'tablon';
+  include_l1t?: boolean;
 }
 
 export interface GenerateControlMRequest {

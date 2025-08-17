@@ -32,6 +32,12 @@ export interface GenerateDictionaryBaseResponse {
     header: DictionaryBaseMasterHeaderResponse;
     details: DictionaryBaseMasterDetailResponse[];
   };
+  links?: {
+    dictionary_raw_header_link: string;
+    dictionary_raw_details_link: string;
+    dictionary_master_header_link: string;
+    dictionary_master_details_link: string;
+  };
 }
 
 export interface GenerateDictionaryL1TRequest {
