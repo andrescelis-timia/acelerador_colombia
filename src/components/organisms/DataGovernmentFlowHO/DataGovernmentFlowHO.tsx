@@ -15,8 +15,6 @@ import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services
 import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
-import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
-import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
 
@@ -29,7 +27,6 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
   const [preDictionary, setPreDictionary] = useState<PreDictionaryInputResponse | null>(null);
   const [isLinksPopupOpen, setIsLinksPopupOpen] = useState(false);
-  const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [showSampleProgress, setShowSampleProgress] = useState(false);
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
   const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
@@ -41,6 +38,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
   const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [preDictionaryDraft, setPreDictionaryDraft] = useState<CreatePreDictionaryInput | null>(null);
+  const [dictionaryLinks, setDictionaryLinks] = useState<Array<{ label: string; url: string }>>([]);
+  const [l1tLinks, setL1TLinks] = useState<Array<{ label: string; url: string }>>([]);
 
   const stepsConfig = {
     sample: [
@@ -104,15 +103,6 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   }, [objectId, user?.email, country]);
 
-  const fetchDictionaryOutput = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const data = await getIngestaOutputByObjectId(objectId, user.email, country);
-      setIngestaOutput(data);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida del diccionario');
-    }
-  }, [objectId, user?.email, country]);
 
   const fetchObjectData = useCallback(async () => {
     if (!user?.email) return;
@@ -127,9 +117,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
   useEffect(() => {
     fetchData();
     fetchPreDictionary();
-    fetchDictionaryOutput();
     fetchObjectData();
-  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
+  }, [fetchData, fetchPreDictionary, fetchObjectData]);
 
   const handleCloseForm = useCallback((success?: boolean) => {
     if (success) {
@@ -187,7 +176,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
       clave_datio: detail.key_datio,
       descripcion: detail.description,
       observacion: detail.observation,
-      obligatorio: detail.required ? 'true' : 'false'
+      obligatorio: detail.required ? 'true' : 'false',
+      suffix: detail.suffix || ''
     }));
 
     const cleanData: FileDictionaryJsonHeader = {
@@ -409,7 +399,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
           key_datio: detail.key_datio,
           description: detail.description,
           observation: detail.observation,
-          required: detail.required
+          required: detail.required,
+          suffix: detail.suffix
         }));
       }
 
@@ -487,7 +478,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
           key_datio: campo.clave_datio,
           description: campo.descripcion,
           observation: campo.observacion,
-          required: campo.obligatorio === 'true'
+          required: campo.obligatorio === 'true',
+          suffix: campo.suffix
         })) as CreateDictionaryJsonDetail[];
       }
 
@@ -505,12 +497,23 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
       const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
 
       // Esperar al proceso más largo
-      await Promise.all([
+      const response = await Promise.all([
         processPromise,
         timerPromise
       ]).then(() => processPromise);
       
-      await fetchDictionaryOutput();
+      // Actualizar los links si están disponibles
+      if (response && response.links) {
+        const newLinks = [
+          { label: 'Raw Object', url: response.links.dictionary_raw_header_link },
+          { label: 'Raw Fields', url: response.links.dictionary_raw_details_link },
+          { label: 'Master Object', url: response.links.dictionary_master_header_link },
+          { label: 'Master Fields', url: response.links.dictionary_master_details_link }
+        ].filter(link => link.url && link.url.trim() !== '');
+        
+        setDictionaryLinks(newLinks);
+      }
+      
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error desconocido al generar diccionario');
     } finally {
@@ -587,27 +590,18 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
               onClick: () => {
+                setSelectedLinks(dictionaryLinks);
+                setPopupLinksTitle('Links de Diccionarios');
                 setIsLinksPopupOpen(true);
-                setSelectedLinks([
-                  { label: "Raw Object", url: ingestaOutput?.dictionary_raw_header_link || '' },
-                  { label: "Raw Fields", url: ingestaOutput?.dictionary_raw_details_link || '' },
-                  { label: "Master Object", url: ingestaOutput?.dictionary_master_header_link || '' },
-                  { label: "Master Fields", url: ingestaOutput?.dictionary_master_details_link || '' }
-                ]);
-                setPopupLinksTitle('Archivos generados para diccionario');
               },
               className: "text-blue-500 hover:text-blue-600",
-              disabled: !ingestaOutput,
-              tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
+              disabled: dictionaryLinks.length === 0,
+              tooltip: dictionaryLinks.length === 0 ? 'No hay links disponibles' : 'Ver links de diccionarios'
             }]}
           />
         );
       case 'l1t':
-        const canExecuteL1T = ingestaOutput !== null && 
-          ingestaOutput.dictionary_master_header_link !== null &&
-          ingestaOutput.dictionary_master_header_link !== '' && 
-          ingestaOutput.dictionary_master_details_link !== null &&
-          ingestaOutput.dictionary_master_details_link !== '';
+        const canExecuteL1T = dictionaryJsonHeader !== null;
 
         // El flag_l1t tiene prioridad sobre la lógica existente
         const isL1TDisabled = objectData?.flag_l1t === false;
@@ -633,13 +627,22 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
                   const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
 
                   // Esperar a que ambos terminen
-                  await Promise.all([
+                  const response = await Promise.all([
                     processPromise,
                     timerPromise
-                  ]);
+                  ]).then(([result]) => result);
+                  
+                  // Actualizar los links L1T si están disponibles
+                  if (response) {
+                    const newL1TLinks = [
+                      { label: 'L1T Master Object', url: response.dictionary_l1t_master_header_link },
+                      { label: 'L1T Master Detail', url: response.dictionary_l1t_master_detail_link }
+                    ].filter(link => link.url && link.url.trim() !== '');
+                    
+                    setL1TLinks(newL1TLinks);
+                  }
 
-                  await fetchDictionaryOutput();
-                } catch (error) {
+                            } catch (error) {
                   setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario L1T');
                 } finally {
                   setShowL1TProgress(false);
@@ -654,17 +657,13 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
               onClick: () => {
+                setSelectedLinks(l1tLinks);
+                setPopupLinksTitle('Links L1T');
                 setIsLinksPopupOpen(true);
-                setSelectedLinks([
-                  { label: "L1T Object", url: ingestaOutput?.dictionary_l1t_master_header_link || '' },
-                  { label: "L1T Fields", url: ingestaOutput?.dictionary_l1t_master_detail_link || '' }
-                ]);
-                setPopupLinksTitle('Archivos generados para diccionario L1T');
               },
               className: "text-blue-500 hover:text-blue-600",
-              disabled: isL1TDisabled || !ingestaOutput,
-              tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
-                      !ingestaOutput ? 'No hay links disponibles' : undefined
+              disabled: l1tLinks.length === 0,
+              tooltip: l1tLinks.length === 0 ? 'No hay links L1T disponibles' : 'Ver links L1T'
             }]}
           />
         );

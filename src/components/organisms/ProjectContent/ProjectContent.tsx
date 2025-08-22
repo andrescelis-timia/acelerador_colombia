@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 
 
 const columns: Column[] = [
+  { header: 'Código SDA', accessor: 'ticket_jira' },
   { header: 'Nombre del Proyecto', accessor: 'name' },
   {
     header: 'Fecha de Creación',
@@ -148,7 +149,18 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
         onEdit={handleRowClick}
         onDelete={handleArchiveClick}
         renderActions={(item) => (
-          <div key={`actions-${item.id}`}>
+          <div key={`actions-${item.id}`} className="flex items-center justify-end">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddObject(item.id);
+              }}
+              className="bg-[#00A3FF] text-white px-2 py-1 rounded hover:bg-blue-600 mr-4 inline-flex items-center text-xs font-medium"
+              title="Añadir Objeto"
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Añadir Objeto
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -158,16 +170,6 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
               title="Editar Proyecto"
             >
               <PencilIcon className="h-5 w-5 inline" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddObject(item.id);
-              }}
-              className="text-gray-600 hover:text-gray-900 mr-4"
-              title="Agregar Objeto"
-            >
-              <PlusIcon className="h-5 w-5 inline" />
             </button>
             <button
               onClick={(e) => {

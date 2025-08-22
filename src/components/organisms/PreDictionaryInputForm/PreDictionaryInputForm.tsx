@@ -65,57 +65,57 @@ export const PreDictionaryInputForm = memo(function PreDictionaryInputForm({
   const baseFields: FormFieldConfig[] = [
     {
       name: 'origin',
-      label: 'Origen',
-      placeholder: 'Ingrese el origen',
+      label: 'Sistema origen',
+      placeholder: 'Ejemplo: Host, Oracle, Usuario, etc.',
       type: 'input',
       required: true
     },
     {
       name: 'app_product',
-      label: 'Aplicativo Producto',
-      placeholder: 'Ingrese el aplicativo o producto',
+      label: 'Aplicativo Origen',
+      placeholder: 'Ejemplo: Personas, Riesgos, Altamira, etc.',
       type: 'input',
       required: true
     },
     {
       name: 'name_origin',
-      label: 'Nombre de origen',
-      placeholder: 'Ingrese el nombre de origen',
+      label: 'Nombre Legacy del objeto',
+      placeholder: 'Ejemplo: PEDT00X, Parametria_xx, etc.',
       type: 'input',
       required: true
     },
     {
       name: 'table_content_origin',
-      label: 'Descripción de la tabla de contenido de origen',
+      label: 'Descripción Legacy del objeto',
       placeholder: 'Ingrese la descripción de la tabla de contenido de origen',
+      type: 'input',
+      required: true
+    },
+    {
+      name: 'information_group_level_2',
+      label: 'Descripción Level 3 (Fresno)',
+      placeholder: 'Descripción según la UUAA master',
       type: 'input',
       required: true
     },
     {
       name: 'table_raw_name',
       label: 'Nombre de tabla RAW',
-      placeholder: 'Ingrese el nombre de la tabla RAW',
+      placeholder: 'Ejemplo: t_xxxx_alias_descripcion',
       type: 'input',
       required: true
     },
     {
       name: 'table_master_name',
       label: 'Nombre de tabla MASTER',
-      placeholder: 'Ingrese el nombre de la tabla MASTER',
-      type: 'input',
-      required: true
-    },        
-    {
-      name: 'information_group_level_2',
-      label: 'Información de grupo nivel 2',
-      placeholder: 'Ingrese la información de grupo nivel 2',
+      placeholder: 'Ejemplo: t_yyyy_alias_descripcion',
       type: 'input',
       required: true
     },
     {
       name: 'number_records_period_intake',
-      label: 'Cantidad de registros por periodo de ingesta',
-      placeholder: 'Ingrese la cantidad de registros por periodo de ingesta',
+      label: 'Cantidad de registros del objeto',
+      placeholder: 'Ejemplo: 1000, 5000, etc.',
       type: 'input',
       required: true,
       pattern: '^[0-9]+$',

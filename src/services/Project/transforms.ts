@@ -3,6 +3,7 @@ import { ProjectResponse, ProjectTableData, ProjectDashboardData, ProjectStatus,
 export const transformToTableData = (projects: ProjectResponse[]): ProjectTableData[] => {
   return projects.map(project => ({
     id_project: project.id_project,
+    ticket_jira: project.ticket_jira,
     name: project.name,
     status: project.status,
     creation_date: project.creation_date

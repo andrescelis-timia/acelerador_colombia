@@ -12,8 +12,8 @@ import { DataGovernmentFlowAR } from '@/components/organisms/DataGovernmentFlowA
 import { DataGovernmentFlowCO } from '@/components/organisms/DataGovernmentFlowCO';
 import { DataGovernmentFlowHO } from '@/components/organisms/DataGovernmentFlowHO';
 import { useAuth } from '@/lib/context/AuthContext';
-import { IngestaComponentFlow } from '@/components/organisms/IngestaComponentFlow';
 import { MERFlow } from '@/components/organisms/MERFlow';
+import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country } = useAuth();
@@ -43,7 +43,6 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           <TabList>
             <Tab>Refinamiento</Tab>
             <Tab>Gobierno del dato</Tab>
-            <Tab>Componentes de ingesta</Tab>
           </TabList>
           <TabPanel>
             <div className="p-4">
@@ -55,18 +54,12 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
               <DataGovernmentFlowAR objectId={objectId} />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <IngestaComponentFlow objectId={objectId} />
-            </div>
-          </TabPanel>
         </TabGroup>
       ) : country === 'HO' ? (
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
             <Tab>Modelo Entidad Relación</Tab>
-            <Tab>Componentes de ingesta</Tab>
           </TabList>
           <TabPanel>
             <div className="p-4">
@@ -78,17 +71,12 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
               <MERFlow objectId={objectId} />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <IngestaComponentFlow objectId={objectId} />
-            </div>
-          </TabPanel>
         </TabGroup>
       ) : (
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
-            <Tab>Componentes de ingesta</Tab>
+            <Tab>Generación de Schemas</Tab>
           </TabList>
           <TabPanel>
             <div className="p-4">
@@ -97,7 +85,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </TabPanel>
           <TabPanel>
             <div className="p-4">
-              <IngestaComponentFlow objectId={objectId} />
+              <SchemaGenerationFlow objectId={objectId} />
             </div>
           </TabPanel>
         </TabGroup>

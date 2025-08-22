@@ -41,6 +41,13 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
 
   const fields: FormFieldConfig[] = isEditing ? [
     {
+      name: 'ticket_jira',
+      label: 'Código SDA',
+      placeholder: 'Ingrese el código SDA',
+      type: 'input' as const,
+      required: true
+    },
+    {
       name: 'name',
       label: 'Nombre del Proyecto',
       placeholder: 'Ingrese el nombre del proyecto',
@@ -50,8 +57,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
   ] : [
     {
       name: 'ticket_jira',
-      label: 'Ticket Jira',
-      placeholder: 'Ingrese el ticket de Jira',
+      label: 'Código SDA',
+      placeholder: 'Ingrese el código SDA',
       type: 'input' as const,
       required: true
     },
@@ -87,8 +94,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ isOpen, onClose, proje
           if (!user?.email) throw new Error('Usuario no autenticado');
           const dataWithUser = {
             ...data,
-            update_user: user.email,
-            ticket_jira: initialData?.ticket_jira || ''
+            update_user: user.email
           };
           const result = await updateData(dataWithUser as ProjectUpdateWithId, user.email, country);
           handleFormClose(true);

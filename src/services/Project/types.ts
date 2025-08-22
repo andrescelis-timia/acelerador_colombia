@@ -37,6 +37,7 @@ export interface ProjectResponse {
 // Formato para la tabla
 export interface ProjectTableData {
   id_project: string;
+  ticket_jira: string;
   name: string;
   status: ProjectStatus;
   creation_date: string;

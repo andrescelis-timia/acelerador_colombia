@@ -36,4 +36,5 @@ export interface FileDictionaryJsonDetail {
   descripcion: string;
   observacion: string;
   obligatorio: string;
+  suffix: string;
 } 
