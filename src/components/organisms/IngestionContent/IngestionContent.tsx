@@ -4,6 +4,6 @@ import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 
 export const IngestionContent = () => {
   return (
-    <PipelineGenerator />
+    <PipelineGenerator objectId="default" />
   );
 };

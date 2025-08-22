@@ -1,5 +1,6 @@
 export interface PipelineGeneratorProps {
-  // Props principales del componente
+  objectId: string;
+  initialComponentType?: 'tabla' | 'tablon';
 }
 
 export interface GeneratorPanelProps {
@@ -10,13 +11,8 @@ export interface GeneratorPanelProps {
   onGenerationComplete?: () => void;
 }
 
-export interface ControlMGeneratorPanelProps {
-  rawSchema: File | null;
-  masterSchema: File | null;
-  componentType: 'tabla' | 'tablon';
-  canGenerate: boolean;
-  onGenerationComplete?: () => void;
-}
+// ControlM y otros generadores usan la misma interfaz base
+export type ControlMGeneratorPanelProps = GeneratorPanelProps;
 
 export interface SchemaUploadSectionProps {
   rawSchema: File | null;

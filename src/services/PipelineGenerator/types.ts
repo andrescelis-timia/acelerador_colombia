@@ -7,22 +7,22 @@ export interface ProcessSchemaRequest {
 }
 
 export interface GenerateKirbyRequest {
-  raw_schema_data?: any;
-  master_schema_data: any;
+  raw_schema_data?: Record<string, unknown>;
+  master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
 }
 
 export interface GenerateHammurabiRequest {
-  raw_schema_data?: any;
-  master_schema_data: any;
+  raw_schema_data?: Record<string, unknown>;
+  master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
 }
 
 export interface GenerateSmartCleanerRequest {
-  raw_schema_data?: any;
-  master_schema_data: any;
+  raw_schema_data?: Record<string, unknown>;
+  master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
 }
@@ -209,18 +209,15 @@ export interface FieldAnalysis {
 }
 
 export interface GeneratedFile {
-  id: string;
-  fileName: string;
+  file_name: string;
   content: string;
-  downloadUrl: string;
-  size: number;
-  createdAt: string;
+  download_url?: string;
 }
 
 export interface RuleInfo {
   ruleId: string;
   className: string;
-  config: any;
+  config: Record<string, unknown>;
   fields?: string[];
 }
 
@@ -256,8 +253,8 @@ export interface ValidationResult {
 // ========================
 
 export interface BatchGenerationRequest {
-  rawSchemaData?: any;
-  masterSchemaData: any;
+  rawSchemaData?: Record<string, unknown>;
+  masterSchemaData: Record<string, unknown>;
   componentType: 'tabla' | 'tablon';
   selectedGenerators: GeneratorType[];
   controlMData?: {
@@ -295,16 +292,16 @@ export type GeneratorType = 'kirby' | 'hammurabi' | 'smartcleaner' | 'controlm';
 export interface PipelineGeneratorError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   generator?: GeneratorType;
 }
 
 export class PipelineGeneratorException extends Error {
   public code: string;
   public generator?: GeneratorType;
-  public details?: any;
+  public details?: Record<string, unknown>;
 
-  constructor(code: string, message: string, generator?: GeneratorType, details?: any) {
+  constructor(code: string, message: string, generator?: GeneratorType, details?: Record<string, unknown>) {
     super(message);
     this.name = 'PipelineGeneratorException';
     this.code = code;

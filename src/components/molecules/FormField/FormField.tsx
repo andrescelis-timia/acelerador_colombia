@@ -14,9 +14,12 @@ export const FormField = ({
   errorMessage,
   min,
   inputMode,
-  helperText
+  helperText,
+  children
 }: FormFieldProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    if (!onChange || !name) return;
+    
     if (type === 'checkbox') {
       onChange(name, (e.target as HTMLInputElement).checked);
     } else if (inputMode === 'numeric') {
@@ -32,7 +35,7 @@ export const FormField = ({
 
   return (
     <div className="space-y-2">
-      {type === 'checkbox' ? (
+      {children ? children : type === 'checkbox' ? (
         <div className="flex flex-col space-y-1">
           <div className="flex items-center">
             <input

@@ -6,7 +6,7 @@ import {
   DocumentTextIcon, 
   XMarkIcon,
   InformationCircleIcon,
-  ExclamationTriangleIcon 
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/atoms/Button';
 import { SchemaUploadSectionProps, ValidationError } from '../types';
@@ -29,11 +29,19 @@ export const SchemaUploadSection = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Limpiar errores previos
+    setValidationErrors([]);
+
     if (!file.name.endsWith('.schema')) {
       setValidationErrors([{ message: 'Por favor selecciona un archivo .schema válido', severity: 'error' }]);
       return;
     }
 
+    // Primero guardamos el archivo inmediatamente
+    console.log('Subiendo archivo:', file.name);
+    onSchemaUpload(type, file);
+
+    // Luego validamos de manera opcional (no bloqueante)
     try {
       const validation = await pipelineGeneratorService.validateSchema(file, type);
       
@@ -52,17 +60,15 @@ export const SchemaUploadSection = ({
       
       setValidationErrors(errors);
 
-      if (validation.is_valid) {
-        console.log('Schema válido, subiendo archivo:', file.name);
-        onSchemaUpload(type, file);
-      } else {
-        console.log('Schema inválido:', validation.errors);
+      if (!validation.isValid) {
+        console.log('Advertencias de validación:', validation.errors);
       }
       
     } catch (error) {
+      console.log('Error de validación (no crítico):', error);
       setValidationErrors([{ 
-        message: `Error validando schema: ${error instanceof Error ? error.message : 'Error desconocido'}`, 
-        severity: 'error' 
+        message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`, 
+        severity: 'warning' 
       }]);
     }
   };
@@ -72,52 +78,6 @@ export const SchemaUploadSection = ({
     setValidationErrors([]);
   };
 
-
-  const FileUploadCard = ({ type, file, title }: { type: 'raw' | 'master', file: File | null, title: string }) => (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h3 className="text-base font-semibold text-gray-900 mb-3">{title}</h3>
-      {!file ? (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-          <ArrowUpTrayIcon className="mx-auto h-8 w-8 text-gray-400" />
-          <div className="mt-2">
-            <label htmlFor={`file-${type}`} className="cursor-pointer">
-              <span className="block text-sm font-medium text-gray-900">
-                Haz clic para subir archivo .schema
-              </span>
-              <input
-                id={`file-${type}`}
-                name={`file-${type}`}
-                type="file"
-                accept=".schema"
-                className="sr-only"
-                onChange={(e) => handleFileUpload(type, e)}
-              />
-            </label>
-            <p className="mt-1 text-xs text-gray-500">Solo archivos .schema</p>
-          </div>
-        </div>
-      ) : (
-        <div className="border border-gray-300 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <DocumentTextIcon className="h-6 w-6 text-blue-500" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleRemoveFile(type)}
-            >
-              <XMarkIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="space-y-4">
@@ -197,6 +157,7 @@ export const SchemaUploadSection = ({
                       size="sm"
                       onClick={() => handleRemoveFile('raw')}
                       className="p-1"
+                      title="Remover archivo"
                     >
                       <XMarkIcon className="h-3 w-3" />
                     </Button>
@@ -241,6 +202,7 @@ export const SchemaUploadSection = ({
                     size="sm"
                     onClick={() => handleRemoveFile('master')}
                     className="p-1"
+                    title="Remover archivo"
                   >
                     <XMarkIcon className="h-3 w-3" />
                   </Button>

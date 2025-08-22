@@ -1,16 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
 import { 
-  PlayIcon, 
- 
-  EyeIcon, 
-  ArrowDownTrayIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon 
+  PlayIcon,  
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
 import { SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
@@ -74,9 +69,9 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     }
   }, [objectId, user?.email, country]);
 
-  const formatSchemaJson = useCallback((schema: any) => {
+  const formatSchemaJson = useCallback((schema: Record<string, unknown>) => {
     // Reordenar manualmente el schema para garantizar el orden correcto
-    const orderedSchema: any = {};
+    const orderedSchema: Record<string, unknown> = {};
     
     // Orden específico para schemas
     const keyOrder = [
@@ -103,13 +98,13 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     
     // Comprimir arrays específicos a una sola línea
     // Comprimir partitions
-    formatted = formatted.replace(/"partitions":\s*\[\s*([^\]]*?)\s*\]/gs, (match, content) => {
+    formatted = formatted.replace(/"partitions":\s*\[\s*([^\]]*?)\s*\]/g, (match, content) => {
       const compactContent = content.replace(/\s+/g, ' ').replace(/,\s*/g, ', ').trim();
       return `"partitions": [${compactContent}]`;
     });
     
     // Comprimir type en fields
-    formatted = formatted.replace(/"type":\s*\[\s*([^\]]*?)\s*\]/gs, (match, content) => {
+    formatted = formatted.replace(/"type":\s*\[\s*([^\]]*?)\s*\]/g, (match, content) => {
       const compactContent = content.replace(/\s+/g, ' ').replace(/,\s*/g, ', ').trim();
       return `"type": [${compactContent}]`;
     });
@@ -137,20 +132,6 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     URL.revokeObjectURL(url);
   }, [status.generatedSchemas, formatSchemaJson]);
 
-  const getSchemaPreview = useCallback((schemaType: 'raw' | 'master' | 'l1t') => {
-    if (!status.generatedSchemas) return null;
-
-    const schema = status.generatedSchemas.schemas[schemaType];
-    if (!schema) return null;
-
-    return {
-      name: schema.name,
-      database: schema.database,
-      storageType: schema.storageType,
-      fieldsCount: schema.fields.length,
-      securityLevel: schema.securityLevel
-    };
-  }, [status.generatedSchemas]);
 
   return (
     <div className="space-y-6">

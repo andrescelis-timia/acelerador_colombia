@@ -13,7 +13,8 @@ import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
-import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
+import { usePipelineGeneratorService, GenerateKirbyResponse } from '@/services/PipelineGenerator';
+import { useFileOperations } from '@/hooks/useFileOperations';
 
 export const KirbyGeneratorPanel = ({
   rawSchema,
@@ -24,9 +25,10 @@ export const KirbyGeneratorPanel = ({
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [generationResults, setGenerationResults] = useState<any>(null);
+  const [generationResults, setGenerationResults] = useState<GenerateKirbyResponse['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pipelineGeneratorService = usePipelineGeneratorService();
+  const { selectedFileContent, viewFileContent, downloadFile, closeFileContent } = useFileOperations();
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
@@ -89,26 +91,6 @@ export const KirbyGeneratorPanel = ({
     }
   };
 
-  const [selectedFileContent, setSelectedFileContent] = useState<{name: string, content: string} | null>(null);
-
-  const viewFileContent = (file: any) => {
-    setSelectedFileContent({
-      name: file.file_name,
-      content: file.content
-    });
-  };
-
-  const downloadFile = (file: any) => {
-    const blob = new Blob([file.content], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.file_name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
 
   const downloadAllAsZip = async () => {
     if (!generationResults) return;
@@ -484,7 +466,7 @@ export const KirbyGeneratorPanel = ({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setSelectedFileContent(null)}
+              onClick={closeFileContent}
             >
               Cerrar
             </Button>

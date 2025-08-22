@@ -30,7 +30,7 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
 
 
   // Condición para habilitar el play - simplificada sin dependencia de ingestaOutput
-  const canExecuteMER = true;
+  // const canExecuteMER = true;
 
   // Generar el contenido VBS (no descarga)
   const handleGenerateTable = useCallback(async () => {

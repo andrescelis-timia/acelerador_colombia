@@ -10,14 +10,14 @@ export interface SchemaField {
   deleted: boolean;
   metadata: boolean;
   locale: string;
-  default: any;
+  default: string;
   format?: string;
   encrypted?: boolean;
   encryptionType?: string;
   encryptionMethod?: string;
 }
 
-export interface Schema {
+export interface Schema extends Record<string, unknown> {
   namespace: string;
   name: string;
   doc: string;

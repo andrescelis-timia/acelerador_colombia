@@ -7,7 +7,6 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon,
   CheckCircleIcon,
-  Cog6ToothIcon,
   DocumentTextIcon,
   PlusIcon,
   XMarkIcon 
@@ -31,12 +30,9 @@ interface JobEntry {
 }
 
 export const ControlMGeneratorPanel = ({
-  rawSchema,
-  masterSchema,
-  componentType,
   canGenerate,
   onGenerationComplete
-}: ControlMGeneratorPanelProps) => {
+}: Pick<ControlMGeneratorPanelProps, 'canGenerate' | 'onGenerationComplete'>) => {
   const [xmlFiles, setXmlFiles] = useState<XMLFile[]>([]);
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [dataxConfig, setDataxConfig] = useState({
@@ -50,7 +46,28 @@ export const ControlMGeneratorPanel = ({
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [generationResults, setGenerationResults] = useState<any>(null);
+  const [generationResults, setGenerationResults] = useState<{
+    success: boolean;
+    uuaa: string;
+    temporality: string;
+    temporalityCode: string;
+    totalJobs: number;
+    mallas: {
+      dataxDesarrollo: string;
+      dataxProduccion: string;
+      ingestaDesarrollo: string;
+      ingestaProduccion: string;
+    };
+    sequenceStats: {
+      datax: { total: number; transferencias: number };
+      ingesta: { 
+        total: number;
+        calidad: number;
+        borrado: number;
+        phases: { staging: number; raw: number; master: number; masterL1T: number };
+      };
+    };
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -91,7 +108,7 @@ export const ControlMGeneratorPanel = ({
         errors.push('Temporalidad debe ser DIA, SEM, MEN o ANU');
       }
 
-    } catch (parseError) {
+    } catch {
       errors.push('Error al procesar el archivo XML');
     }
 
@@ -335,7 +352,7 @@ export const ControlMGeneratorPanel = ({
                   <div className="w-40">
                     <select
                       value={job.type}
-                      onChange={(e) => updateJob(index, 'type', e.target.value as any)}
+                      onChange={(e) => updateJob(index, 'type', e.target.value as 'T04' | 'T02')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="datax">Datax</option>

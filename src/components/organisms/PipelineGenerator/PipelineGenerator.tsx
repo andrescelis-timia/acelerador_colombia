@@ -30,7 +30,7 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
     }
   };
 
-  const canGenerate = (generator: string) => {
+  const canGenerate = () => {
     if (componentType === 'tabla') {
       return rawSchema !== null && masterSchema !== null;
     } else {
@@ -109,7 +109,7 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
-                canGenerate={canGenerate('kirby')}
+                canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('kirby')}
               />
             )}
@@ -119,27 +119,23 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
-                canGenerate={canGenerate('hammurabi')}
+                canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
               />
             )}
 
             {activeTab === 'smartcleaner' && (
               <SmartCleanerGeneratorPanel
-                rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
-                canGenerate={canGenerate('smartcleaner')}
+                canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
               />
             )}
 
             {activeTab === 'controlm' && (
               <ControlMGeneratorPanel
-                rawSchema={rawSchema}
-                masterSchema={masterSchema}
-                componentType={componentType}
-                canGenerate={canGenerate('controlm')}
+                canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('controlm')}
               />
             )}

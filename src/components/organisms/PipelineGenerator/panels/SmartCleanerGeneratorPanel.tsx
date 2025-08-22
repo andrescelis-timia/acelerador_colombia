@@ -16,15 +16,20 @@ import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
 
 export const SmartCleanerGeneratorPanel = ({
-  rawSchema,
   masterSchema,
   componentType,
   canGenerate,
   onGenerationComplete
-}: GeneratorPanelProps) => {
+}: Pick<GeneratorPanelProps, 'masterSchema' | 'componentType' | 'canGenerate' | 'onGenerationComplete'>) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [generationResults, setGenerationResults] = useState<any>(null);
+  const [generationResults, setGenerationResults] = useState<{
+    success: boolean;
+    frequency: string;
+    retention: { raw: string; master: string };
+    configs: { raw: string | null; master: string; l1t: string };
+    jobs: { raw: string | null; master: string; l1t: string };
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {

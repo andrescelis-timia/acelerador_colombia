@@ -17,8 +17,6 @@ import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T }
 import { useAuth } from '@/lib/context/AuthContext';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
-import { getDictionaryBaseRawHeaderByObjectId } from '@/services/DictionaryBaseRawHeader';
-import { getDictionaryBaseMasterHeaderByObjectId } from '@/services/DictionaryBaseMasterHeader';
 
 export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'CO' } = useAuth();
@@ -73,28 +71,6 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     l1t: 'Generando Diccionario L1T'
   };
 
-  const fetchData = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      setLoading(true);
-      const dictData = await getDictionaryJsonHeader(objectId, user.email, country);
-      setDictionaryJsonHeader(dictData);
-      
-      if (dictData?.id_dictionary_json_header) {
-        const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header, user.email, country);
-        const sortedDetails = details.sort((a, b) => a.order_row - b.order_row);
-        setDictionaryJsonDetails(sortedDetails);
-      }
-
-      // Verificar si existen diccionarios base generados previamente
-      await checkExistingDictionaryLinks();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos del diccionario');
-    } finally {
-      setLoading(false);
-    }
-  }, [objectId, user?.email, country]);
-
   const checkExistingDictionaryLinks = useCallback(async () => {
     if (!user?.email) return;
     
@@ -126,11 +102,6 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           existingLinks.push({ label: 'Master Fields', url: linksData.dictionary_master_details_link });
         }
         
-        if (existingLinks.length > 0) {
-          setDictionaryLinks(existingLinks);
-          console.log('Found existing dictionary links:', existingLinks);
-        }
-        
         // También cargar los links L1T si existen
         const l1tLinks = [];
         if (linksData.dictionary_l1t_master_header_link) {
@@ -140,16 +111,36 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           l1tLinks.push({ label: 'L1T Master Fields', url: linksData.dictionary_l1t_master_details_link });
         }
         
-        if (l1tLinks.length > 0) {
-          setL1TLinks(l1tLinks);
-          console.log('Found existing L1T links:', l1tLinks);
-        }
+        setDictionaryLinks(existingLinks);
+        setL1TLinks(l1tLinks);
       }
     } catch (error) {
-      console.log('No existing dictionary links found:', error);
-      // No hacer nada, mantener links vacíos
+      console.error('Error fetching dictionary links:', error);
     }
   }, [objectId, user?.email, country]);
+
+  const fetchData = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      setLoading(true);
+      const dictData = await getDictionaryJsonHeader(objectId, user.email, country);
+      setDictionaryJsonHeader(dictData);
+      
+      if (dictData?.id_dictionary_json_header) {
+        const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header, user.email, country);
+        const sortedDetails = details.sort((a, b) => a.order_row - b.order_row);
+        setDictionaryJsonDetails(sortedDetails);
+      }
+
+      // Verificar si existen diccionarios base generados previamente
+      await checkExistingDictionaryLinks();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos del diccionario');
+    } finally {
+      setLoading(false);
+    }
+  }, [objectId, user?.email, country, checkExistingDictionaryLinks]);
+
 
   const fetchPreDictionary = useCallback(async () => {
     if (!user?.email) return;
