@@ -8,6 +8,7 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
+import { API_CONFIG } from '@/lib/api/config';
 import { SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
 
 export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
@@ -35,7 +36,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     try {
       // Ejecutar la API call y esperar mínimo 5 segundos para mostrar el progreso
       const [response] = await Promise.all([
-        fetch(`http://localhost:8000/api/v1/schema-generator/object/${objectId}/schemas`, {
+        fetch(`${API_CONFIG.BASE_URL}/schema-generator/object/${objectId}/schemas`, {
           method: 'GET',
           headers: {
             'X-User': user.email,

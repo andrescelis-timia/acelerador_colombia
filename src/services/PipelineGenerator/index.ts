@@ -15,7 +15,7 @@ import {
   GeneratorType
 } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 class PipelineGeneratorService {
   constructor(private user?: string | null, private country?: string) {}
