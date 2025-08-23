@@ -511,7 +511,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
 
       // Esperar al proceso más largo
-      const response = await Promise.all([
+      await Promise.all([
         processPromise,
         timerPromise
       ]).then(() => processPromise);
