@@ -28,7 +28,7 @@ class PipelineGeneratorService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/pipeline-generator${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}/pipeline-generator${endpoint}`, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ class PipelineGeneratorService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/pipeline-generator${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}/pipeline-generator${endpoint}`, {
         method: 'POST',
         headers: {
           'X-User': this.user,
