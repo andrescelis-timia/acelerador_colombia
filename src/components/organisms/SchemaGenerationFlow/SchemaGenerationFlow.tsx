@@ -119,7 +119,41 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     const schema = status.generatedSchemas.schemas[schemaType];
     if (!schema) return;
 
-    const formattedJson = formatSchemaJson(schema);
+    // 1. Condición para excluir los campos de encriptación.
+    const isEncrypted = schema.securityLevel === 'L1T';
+    const isRaw = schema.storageZone === 'Rawdata';
+    
+    // 2. Crear una copia limpia del esquema para el proceso de ordenamiento.
+    const cleanSchema = { ...schema };
+    
+    const cleanFields = (schema.fields as any[]).map(field => {
+      const newField = { ...field };
+      
+      // Limpiar campos de encriptación si no aplica 'L1T'
+      if (!isEncrypted) {
+        const fieldsToExcludeFromFields = ['encrypted', 'encryptionType', 'encryptionMethod'];
+        fieldsToExcludeFromFields.forEach(key => {
+          if (!newField[key]) {
+            delete newField[key];
+          }
+        });
+      }
+
+      // 4. Limpiar el atributo 'format' si el tipo no es de fecha o timestamp.
+      const fieldType = Array.isArray(newField.type) ? newField.type[0] : newField.type;
+      if (fieldType !== 'date' && fieldType !== 'timestamp' && 'format' in newField) {
+          delete newField.format;
+      }
+      
+      return newField;
+    });
+    
+    cleanSchema.fields = cleanFields;
+    if (isRaw) {
+      delete cleanSchema.securityLevel;
+    }
+
+    const formattedJson = formatSchemaJson(cleanSchema);
     const blob = new Blob([formattedJson], { 
       type: 'application/json' 
     });
