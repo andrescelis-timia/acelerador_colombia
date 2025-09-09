@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
 import { API_CONFIG } from '@/lib/api/config';
-import { SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
+import {SchemaField, SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
 
 export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
   const { user, country } = useAuth();
@@ -126,7 +126,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     // 2. Crear una copia limpia del esquema para el proceso de ordenamiento.
     const cleanSchema = { ...schema };
     
-    const cleanFields = (schema.fields as any[]).map(field => {
+    const cleanFields = (schema.fields as SchemaField[]).map(field => {
       const newField = { ...field };
       
       // Limpiar campos de encriptación si no aplica 'L1T'
