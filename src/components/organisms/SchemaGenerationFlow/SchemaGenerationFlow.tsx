@@ -140,9 +140,8 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
       }
 
       // 4. Limpiar el atributo 'format' si el tipo no es de fecha o timestamp.
-      const fieldType = Array.isArray(newField.type) ? newField.type[0] : newField.type;
-      if (fieldType !== 'date' && fieldType !== 'timestamp' && 'format' in newField) {
-          delete newField.format;
+      if (newField.format === null) {
+        delete newField.format;
       }
       
       return newField;
