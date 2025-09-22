@@ -7,12 +7,8 @@ import { TabList } from '@/components/molecules/TabList';
 import { Tab } from '@/components/atoms/Tab';
 import { TabPanel } from '@/components/atoms/TabPanel';
 import { ObjectDetailContentProps } from './types';
-import { RefinementFlow } from '@/components/organisms/RefinementFlow';
-import { DataGovernmentFlowAR } from '@/components/organisms/DataGovernmentFlowAR';
-import { DataGovernmentFlowCO } from '@/components/organisms/DataGovernmentFlowCO';
-import { DataGovernmentFlowHO } from '@/components/organisms/DataGovernmentFlowHO';
+import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
 import { useAuth } from '@/lib/context/AuthContext';
-import { MERFlow } from '@/components/organisms/MERFlow';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
@@ -38,41 +34,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         Objeto: {objectName}
       </h2>
 
-      {country === 'AR' ? (
-        <TabGroup>
-          <TabList>
-            <Tab>Refinamiento</Tab>
-            <Tab>Gobierno del dato</Tab>
-          </TabList>
-          <TabPanel>
-            <div className="p-4">
-              <RefinementFlow objectId={objectId} />
-            </div>
-          </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <DataGovernmentFlowAR objectId={objectId} />
-            </div>
-          </TabPanel>
-        </TabGroup>
-      ) : country === 'HO' ? (
-        <TabGroup>
-          <TabList>
-            <Tab>Gobierno del dato</Tab>
-            <Tab>Modelo Entidad Relación</Tab>
-          </TabList>
-          <TabPanel>
-            <div className="p-4">
-              <DataGovernmentFlowHO objectId={objectId} />
-            </div>
-          </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <MERFlow objectId={objectId} />
-            </div>
-          </TabPanel>
-        </TabGroup>
-      ) : (
+      {(country === 'CO' || country === 'PE') ? (
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
@@ -80,7 +42,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </TabList>
           <TabPanel>
             <div className="p-4">
-              <DataGovernmentFlowCO objectId={objectId} />
+              <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
             </div>
           </TabPanel>
           <TabPanel>
@@ -89,6 +51,10 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
             </div>
           </TabPanel>
         </TabGroup>
+      ) : (
+        <div className="p-4 text-center text-gray-500">
+          País no soportado: {country}
+        </div>
       )}
     </motion.div>
   );

@@ -1,5 +1,25 @@
 export interface DataGovernmentFlowProps {
   objectId: string;
+  country: 'CO' | 'PE';
+}
+
+export interface CountryConfig {
+  usePreDictionary: boolean;
+  useIngestaOutput: boolean;
+  stepsConfig: StepsConfig;
+  processLabels: ProcessLabels;
+}
+
+export interface StepsConfig {
+  sample: Array<{ label: string; duration: number }>;
+  dictionary: Array<{ label: string; duration: number }>;
+  l1t: Array<{ label: string; duration: number }>;
+}
+
+export interface ProcessLabels {
+  sample: string;
+  dictionary: string;
+  l1t: string;
 }
 
 export interface FileDictionaryJsonHeader {
@@ -37,4 +57,4 @@ export interface FileDictionaryJsonDetail {
   observacion: string;
   obligatorio: string;
   suffix: string;
-} 
+}
