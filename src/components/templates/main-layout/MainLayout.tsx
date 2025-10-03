@@ -1,5 +1,6 @@
 'use client';
 import { ReactNode, useState } from "react";
+import React from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
 import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
@@ -18,6 +19,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const { country, sessionData } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -27,8 +29,34 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  // Verificar si el usuario es admin
-  const isAdmin = sessionData?.role === 'ADMIN';
+  // Obtener rol del usuario desde el backend
+  const fetchUserRole = async (email: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/role/${email}`, {
+        headers: {
+          'X-User': email,
+          'X-Country': country || 'CO'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role);
+      }
+    } catch (error) {
+      console.error('Error obteniendo rol del usuario:', error);
+    }
+  };
+
+  // Efecto para obtener el rol cuando el usuario cambia
+  React.useEffect(() => {
+    if (user?.email) {
+      fetchUserRole(user.email);
+    }
+  }, [user?.email, country]);
+
+  // Verificar si el usuario es admin (desde sessionData o desde userRole)
+  const isAdmin = sessionData?.role === 'ADMIN' || userRole === 'ADMIN';
 
   // Crear lista de navItems base
   const baseNavItems = [
