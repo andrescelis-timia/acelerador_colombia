@@ -2,7 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, Cog6ToothIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -15,7 +15,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [user] = useAuthState(auth);
-  const { country } = useAuth();
+  const { country, sessionData } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -27,44 +27,48 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
+  // Verificar si el usuario es admin
+  const isAdmin = sessionData?.role === 'ADMIN';
+
   // Crear lista de navItems base
   const baseNavItems = [
     { icon: HomeIcon, label: 'Inicio', href: '/' },
     { icon: BeakerIcon, label: 'Proyectos', href: '/project' },
-    { icon: TableCellsIcon, label: 'Objetos', href: '/object' },
-    { icon: Cog6ToothIcon, label: 'Configuración', href: '/configuration' }
+    { icon: TableCellsIcon, label: 'Objetos', href: '/object' }
   ];
 
   // Agregar elementos específicos por país
   let navItems = [...baseNavItems];
-  
+
   if (country === 'HO') {
     navItems = [
-      ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
-      { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' },
-      ...baseNavItems.slice(3) // Configuración
+      ...baseNavItems, // Inicio, Proyectos, Objetos
+      { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' }
     ];
   } else if (country === 'CO') {
     navItems = [
-      ...baseNavItems.slice(0, 3), // Inicio, Proyectos, Objetos
-      { icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' },
-      ...baseNavItems.slice(3) // Configuración
+      ...baseNavItems, // Inicio, Proyectos, Objetos
+      { icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' }
     ];
+  }
+
+  // Agregar Admin solo para usuarios con rol ADMIN
+  if (isAdmin) {
+    navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
   }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar 
+      <Sidebar
         isExpanded={isExpanded}
         onToggle={() => setIsExpanded(!isExpanded)}
-        navItems={navItems} 
+        navItems={navItems}
       />
-      <main className={`flex-1 transition-all duration-300 ${
-        isExpanded ? 'pl-[180px]' : 'pl-[60px]'
-      }`}>
+      <main className={`flex-1 transition-all duration-300 ${isExpanded ? 'pl-[180px]' : 'pl-[60px]'
+        }`}>
         <div className="max-w-7xl mx-auto">
-          <Header 
-            email={user?.email || ''} 
+          <Header
+            email={user?.email || ''}
             onSignOut={handleSignOut}
           />
           <div className="p-6">
@@ -72,7 +76,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           </div>
         </div>
       </main>
-      <ErrorModal 
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />
