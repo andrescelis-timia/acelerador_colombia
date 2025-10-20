@@ -6,13 +6,14 @@ import { ProgressDialog } from '@/components/organisms/ProgressDialog';
 import { PreDictionaryInputForm } from '@/components/organisms/PreDictionaryInputForm';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { DataGovernmentFlowProps, FileDictionaryJsonHeader } from './types';
+import { getCountryConfig } from './config';
 import { getDictionaryJsonHeader } from '@/services/DictionaryJsonHeader';
 import { CreateDictionaryJsonHeader, DictionaryJsonHeaderResponse } from '@/services/DictionaryJsonHeader/types';
 import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDetail';
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
-import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, ArrowDownTrayIcon, EyeIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
@@ -21,8 +22,11 @@ import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
 import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
-export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
-  const { user, country = 'CO' } = useAuth();
+export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProps) => {
+  const { user } = useAuth();
+  const config = getCountryConfig(country);
+
+  // Estados principales
   const [dictionaryJsonHeader, setDictionaryJsonHeader] = useState<DictionaryJsonHeaderResponse | null>(null);
   const [dictionaryJsonDetails, setDictionaryJsonDetails] = useState<DictionaryJsonDetailResponse[]>([]);
   const [sampleFile, setSampleFile] = useState<File | null>(null);
@@ -33,8 +37,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [showSampleProgress, setShowSampleProgress] = useState(false);
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
-  const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
-  const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
+  // Variables removidas: dictionaryFile y dictionaryFileContent no se usaban
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedLinks, setSelectedLinks] = useState<Array<{ label: string; url: string }>>([]);
   const [popupLinksTitle, setPopupLinksTitle] = useState<string>('');
@@ -42,46 +45,19 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [preDictionaryDraft, setPreDictionaryDraft] = useState<CreatePreDictionaryInput | null>(null);
+  const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
+  const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
 
-  const stepsConfig = {
-    sample: [
-      { label: 'Procesando muestra', duration: 500 },
-      { label: 'Validando datos', duration: 500 },
-      { label: 'Finalizando', duration: 500 }
-    ],
-    dictionary: [
-      { label: 'Inicializando acceso a APIs, bases de datos y almacenamiento en la nube', duration: 16500 },
-      { label: 'Cargando archivos de entrada y configuraciones desde la nube', duration: 16500 },
-      { label: 'Verificando y aplicando reglas y formatos específicos del país', duration: 16500 },
-      { label: 'Creando estructura base del diccionario para tablas raw', duration: 16500 },
-      { label: 'Creando estructura base del diccionario para tablas master', duration: 16500 },
-      { label: 'Ejecutando IA para analizar y enriquecer metadatos, nombres y descripciones de campos', duration: 16500 },
-      { label: 'Aplicando formatos estándar y validaciones a todos los campos', duration: 16500 },
-      { label: 'Creando diccionarios de datos detallados y mapeos de campos', duration: 16500 },
-      { label: 'Creando y guardando archivos CSV finales con todos los metadatos y mapeos', duration: 18000 }
-    ],
-    l1t: [
-      { label: 'Extrayendo diccionario Master de objects y fields', duration: 10000 },
-      { label: 'Procesando datos de L1T', duration: 10000 },
-      { label: 'Generando dictionario L1T de objects y fields', duration: 10000 }
-    ]
-  };
-
-  const PROCESS_TITLES = {
-    sample: 'Procesando Muestra',
-    dictionary: 'Generando Diccionario',
-    l1t: 'Generando Diccionario L1T'
-  };
-
+  // Funciones de fetch
   const fetchDictionaryOutput = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user?.email || !config.useIngestaOutput) return;
     try {
       const data = await getIngestaOutputByObjectId(objectId, user.email, country);
       setIngestaOutput(data);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida del diccionario');
     }
-  }, [objectId, user?.email, country]);
+  }, [objectId, user?.email, country, config.useIngestaOutput]);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
@@ -95,7 +71,6 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         const sortedDetails = details.sort((a, b) => a.order_row - b.order_row);
         setDictionaryJsonDetails(sortedDetails);
       }
-
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar los datos del diccionario');
     } finally {
@@ -103,9 +78,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   }, [objectId, user?.email, country]);
 
-
   const fetchPreDictionary = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user?.email || !config.usePreDictionary) return;
     try {
       setLoading(true);
       const data = await getPreDictionaryInputByObjectId(objectId, user.email, country);
@@ -115,8 +89,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     } finally {
       setLoading(false);
     }
-  }, [objectId, user?.email, country]);
-
+  }, [objectId, user?.email, country, config.usePreDictionary]);
 
   const fetchObjectData = useCallback(async () => {
     if (!user?.email) return;
@@ -130,11 +103,16 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
   useEffect(() => {
     fetchData();
-    fetchPreDictionary();
-    fetchDictionaryOutput();
+    if (config.usePreDictionary) {
+      fetchPreDictionary();
+    }
+    if (config.useIngestaOutput) {
+      fetchDictionaryOutput();
+    }
     fetchObjectData();
-  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
+  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData, config]);
 
+  // Handlers
   const handleCloseForm = useCallback((success?: boolean) => {
     if (success) {
       setSuccessMessage('Datos adicionales guardados correctamente');
@@ -142,8 +120,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       setTimeout(() => setSuccessMessage(null), 3000);
     }
     setActiveForm(null);
-    fetchPreDictionary();
-  }, [fetchPreDictionary]);
+    if (config.usePreDictionary) {
+      fetchPreDictionary();
+    }
+  }, [fetchPreDictionary, config.usePreDictionary]);
 
   const handleOpenForm = (formId: string) => {
     setActiveForm(formId);
@@ -161,6 +141,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     };
     input.click();
   };
+
 
   const handleDictionaryFileSelect = () => {
     const input = document.createElement('input');
@@ -181,6 +162,25 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     input.click();
   };
 
+  const handleDownload = () => {
+    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) {
+      setErrorMessage('No hay datos disponibles para descargar');
+      return;
+    }
+
+    const cleanData = cleanDataForDownload(dictionaryJsonHeader, dictionaryJsonDetails);
+    const blob = new Blob([JSON.stringify(cleanData, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `dictionary_${dictionaryJsonHeader.id_dictionary_json_header}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Función para limpiar datos para descarga
   const cleanDataForDownload = (header: DictionaryJsonHeaderResponse, details: DictionaryJsonDetailResponse[]) => {
     const cleanDetails = details.map(detail => ({
       nombre_campo: detail.name_field,
@@ -222,22 +222,57 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     return cleanData;
   };
 
-  const handleDownload = () => {
-    if (!dictionaryJsonHeader || !dictionaryJsonDetails.length) {
-      setErrorMessage('No hay datos disponibles para descargar');
-      return;
+  // Función para calcular progreso
+  const calculateProgress = useCallback((data: unknown | null): string => {
+    if (!data || typeof data !== 'object') {
+      return '0/9';
     }
 
-    const cleanData = cleanDataForDownload(dictionaryJsonHeader, dictionaryJsonDetails);
-    const blob = new Blob([JSON.stringify(cleanData, null, 2)], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `dictionary_${dictionaryJsonHeader.id_dictionary_json_header}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    // Excluir campos que no deben contarse
+    const excludeFields = ['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'];
+    // Si el país es CO, también excluimos los campos de partición y agregación
+    if (country === 'CO') {
+      excludeFields.push('partition_fields_raw', 'partition_fields_master', 'aggregate_fields_raw', 'aggregate_fields_master');
+    }
+
+    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) =>
+      !excludeFields.includes(key)
+    );
+    const totalFields = fields.length;
+    const filledFields = fields.filter(([, value]) =>
+      value !== null && value !== undefined && value !== ''
+    ).length;
+
+    return `${filledFields}/${totalFields}`;
+  }, [country]);
+
+  // Detectar delimitador del archivo
+  const detectDelimiter = async (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const firstLine = content.split('\n')[0];
+
+        const commonDelimiters = ['|', ',', ';', '\t'];
+        const delimiterCounts = commonDelimiters.map(d => ({
+          delimiter: d,
+          count: (firstLine.match(new RegExp(`\\${d}`, 'g')) || []).length
+        }));
+
+        const mostUsedDelimiter = delimiterCounts
+          .filter(d => d.count > 0)
+          .sort((a, b) => b.count - a.count)[0];
+
+        if (mostUsedDelimiter) {
+          resolve(mostUsedDelimiter.delimiter);
+        } else {
+          // Fallback a coma
+          resolve(',');
+        }
+      };
+      reader.readAsText(file);
+    });
   };
 
   const handleGenerateDictionaryJson = async () => {
@@ -249,9 +284,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     setShowSampleProgress(true);
 
     try {
-      // Obtener la extensión del archivo
       const fileExtension = sampleFile.name.split('.').pop() || '';
+      const delimiter = await detectDelimiter(sampleFile);
 
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
       // Extraer el delimitador del archivo
       let delimiter = '';
       try {
@@ -325,25 +361,30 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       // Ejecutar el proceso en paralelo con el progress
       const processPromise = generateDictionaryJson({
+=======
+      const requestData = {
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
         id_object: objectId,
         sample_file_extension: fileExtension,
-        sample_file_delimiter: apiDelimiter
-      }, user.email, country);
+        sample_file_delimiter: delimiter
+      };
 
-      // Esperar a que ambos terminen
-      await Promise.all([
-        processPromise,
-        new Promise(resolve => setTimeout(resolve, totalDuration))
-      ]);
+      await generateDictionaryJson(requestData, user.email, country);
 
-      await fetchData();
+      setTimeout(() => {
+        setShowSampleProgress(false);
+        setSuccessMessage('Diccionario JSON generado correctamente');
+        setTimeout(() => setSuccessMessage(null), 3000);
+        fetchData();
+      }, config.stepsConfig.sample.reduce((acc, step) => acc + step.duration, 0));
+
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario JSON');
-    } finally {
       setShowSampleProgress(false);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al generar el diccionario JSON');
     }
   };
 
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
   const calculateProgress = useCallback((data: unknown | null): string => {
     if (!data || typeof data !== 'object') {
       return '0/9';
@@ -367,6 +408,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     return `${filledFields}/${totalFields}`;
   }, [country]);
 
+=======
+  // Función para generar diccionario base con validación completa
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
   const handleDictionaryGeneration = async () => {
     if (!user?.email) {
       setErrorMessage('Usuario no autenticado');
@@ -374,7 +418,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
 
     setShowDictionaryProgress(true);
-    const totalDuration = stepsConfig.dictionary.reduce((acc, step) => acc + step.duration, 0);
+    const totalDuration = config.stepsConfig.dictionary.reduce((acc, step) => acc + step.duration, 0);
 
     try {
       let headerToUse: CreateDictionaryJsonHeader | null = null;
@@ -421,6 +465,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       if (dictionaryFile && dictionaryFileContent) {
         const jsonData = JSON.parse(dictionaryFileContent) as FileDictionaryJsonHeader;
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
 
         // Validar que existan todos los campos requeridos del header
         const requiredHeaderFields = [
@@ -459,6 +504,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
             return;
           }
         }
+=======
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
 
         headerToUse = {
           id_object: objectId,
@@ -503,7 +550,6 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         return;
       }
 
-      // Reemplazar el error simulado por la llamada real
       const processPromise = generateDictionaryBase({
         header: headerToUse,
         details: detailsToUse
@@ -511,11 +557,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
 
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
       // Esperar al proceso más largo
       await Promise.all([
         processPromise,
         timerPromise
       ]).then(() => processPromise);
+=======
+      await Promise.all([processPromise, timerPromise]);
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
 
       await fetchDictionaryOutput();
 
@@ -526,6 +576,45 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   };
 
+  const handleGenerateL1T = async () => {
+    if (!objectData?.flag_l1t || !user?.email) {
+      setErrorMessage('El objeto no tiene habilitado L1T o falta autenticación');
+      return;
+    }
+
+    setShowL1TProgress(true);
+
+    try {
+      const requestData = { id_object: objectId };
+      const response = await generateDictionaryL1T(requestData, user.email, country);
+
+      setTimeout(() => {
+        setShowL1TProgress(false);
+
+        const links = [
+          { label: 'Dictionary L1T Master Header', url: response.dictionary_l1t_master_header_link },
+          { label: 'Dictionary L1T Master Detail', url: response.dictionary_l1t_master_detail_link }
+        ].filter(link => link.url);
+
+        setSelectedLinks(links);
+        setPopupLinksTitle('Enlaces de Diccionario L1T Generado');
+        setIsLinksPopupOpen(true);
+
+        setSuccessMessage('Diccionario L1T generado correctamente');
+        setTimeout(() => setSuccessMessage(null), 3000);
+
+        if (config.useIngestaOutput) {
+          fetchDictionaryOutput();
+        }
+      }, config.stepsConfig.l1t.reduce((acc, step) => acc + step.duration, 0));
+
+    } catch (error) {
+      setShowL1TProgress(false);
+      setErrorMessage(error instanceof Error ? error.message : 'Error al generar el diccionario L1T');
+    }
+  };
+
+  // Función para obtener controles de cada paso
   const getControls = (stepId: string) => {
     switch (stepId) {
       case 'sample':
@@ -540,7 +629,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
             const remaining = total - filled;
             return `Te faltan llenar ${remaining} campo${remaining === 1 ? '' : 's'} adicional${remaining === 1 ? '' : 'es'}`;
           }
-          return PROCESS_TITLES.sample;
+          return config.processLabels.sample;
         };
 
         return (
@@ -593,8 +682,12 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               disabled: !dictionaryJsonHeader && !dictionaryFile,
               tooltip: !dictionaryJsonHeader && !dictionaryFile ?
                 'Se requiere un diccionario o archivo JSON' :
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
                 PROCESS_TITLES.dictionary,
               readOnlyWrapper: true
+=======
+                config.processLabels.dictionary
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -621,13 +714,13 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           ingestaOutput.dictionary_master_details_link !== null &&
           ingestaOutput.dictionary_master_details_link !== '';
 
-        // El flag_l1t tiene prioridad sobre la lógica existente
         const isL1TDisabled = objectData?.flag_l1t === false;
 
         return (
           <BoxFlowControls
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
               onClick: async () => {
                 if (!user?.email) {
                   setErrorMessage('Usuario no autenticado');
@@ -658,12 +751,19 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                   setShowL1TProgress(false);
                 }
               },
+=======
+              onClick: handleGenerateL1T,
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
               className: "text-green-500 hover:text-green-600",
               disabled: isL1TDisabled || !canExecuteL1T,
               tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
                 !canExecuteL1T ? 'Se requieren los links del diccionario master' :
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
                   PROCESS_TITLES.l1t,
               readOnlyWrapper: true
+=======
+                  config.processLabels.l1t
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -687,7 +787,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
   };
 
-  if (loading) return null;
+  if (loading) {
+    return <div className="p-4">Cargando...</div>;
+  }
 
   return (
     <>
@@ -763,8 +865,13 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           <div className="relative z-10">
             <div className="text-center mb-3">
               <div className={`inline-block border rounded-lg px-3 py-1.5 ${objectData?.flag_l1t === false
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
                 ? 'bg-gray-50 border-gray-200'
                 : 'bg-blue-50 border-blue-200'
+=======
+                  ? 'bg-gray-50 border-gray-200'
+                  : 'bg-blue-50 border-blue-200'
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
                 }`}>
                 <h3 className={`text-sm font-semibold ${objectData?.flag_l1t === false ? 'text-gray-400' : 'text-blue-700'
                   }`}>
@@ -782,20 +889,22 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         </div>
       </div>
 
-      <PreDictionaryInputForm
-        isOpen={activeForm === 'pre-dictionary'}
-        onClose={handleCloseForm}
-        objectId={objectId}
-        initialData={preDictionary || undefined}
-        draftData={preDictionaryDraft}
-        onDraftChange={setPreDictionaryDraft}
-      />
+      {config.usePreDictionary && (
+        <PreDictionaryInputForm
+          isOpen={activeForm === 'pre-dictionary'}
+          onClose={handleCloseForm}
+          objectId={objectId}
+          initialData={preDictionary || undefined}
+          draftData={preDictionaryDraft}
+          onDraftChange={setPreDictionaryDraft}
+        />
+      )}
 
       <PopupLinks
         isOpen={isLinksPopupOpen}
         onClose={() => {
           setIsLinksPopupOpen(false);
-          setSelectedLinks([]); // Limpiar los links seleccionados al cerrar
+          setSelectedLinks([]);
         }}
         links={selectedLinks}
         title={popupLinksTitle}
@@ -803,24 +912,39 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       {showSampleProgress && (
         <ProgressDialog
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
           title={PROCESS_TITLES.sample}
           steps={stepsConfig.sample}
+=======
+          title={config.processLabels.sample}
+          steps={config.stepsConfig.sample}
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
           onComplete={() => { }}
         />
       )}
 
       {showDictionaryProgress && (
         <ProgressDialog
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
           title={PROCESS_TITLES.dictionary}
           steps={stepsConfig.dictionary}
+=======
+          title={config.processLabels.dictionary}
+          steps={config.stepsConfig.dictionary}
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
           onComplete={() => { }}
         />
       )}
 
       {showL1TProgress && (
         <ProgressDialog
+<<<<<<< HEAD:src/components/organisms/DataGovernmentFlowCO/DataGovernmentFlowCO.tsx
           title={PROCESS_TITLES.l1t}
           steps={stepsConfig.l1t}
+=======
+          title={config.processLabels.l1t}
+          steps={config.stepsConfig.l1t}
+>>>>>>> b415b8411905855bad77d1aa426cf3c6a34bc510:src/components/organisms/DataGovernmentFlow/DataGovernmentFlow.tsx
           onComplete={() => { }}
         />
       )}
@@ -831,4 +955,4 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       />
     </>
   );
-}; 
+};
