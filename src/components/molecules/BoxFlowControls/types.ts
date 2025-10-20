@@ -8,6 +8,7 @@ export interface IconConfig {
   className?: string;
   badge?: ReactNode;
   tooltip?: string;
+  readOnlyWrapper?: boolean;
 }
 
 export interface BoxFlowControlsProps {

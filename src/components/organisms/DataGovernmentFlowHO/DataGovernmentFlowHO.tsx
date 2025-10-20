@@ -17,6 +17,7 @@ import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T }
 import { useAuth } from '@/lib/context/AuthContext';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'CO' } = useAuth();
@@ -541,13 +542,15 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
         return (
           <BoxFlowControls
             centerContent={
-              <button
-                onClick={() => handleOpenForm('pre-dictionary')}
-                className="text-sm text-blue-600 hover:text-blue-800"
-                title="Campos adicionales"
-              >
-                {progress}
-              </button>
+              <ReadOnlyWrapper showFallback={false}>
+                <button
+                  onClick={() => handleOpenForm('pre-dictionary')}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                  title="Campos adicionales"
+                >
+                  {progress}
+                </button>
+              </ReadOnlyWrapper>
             }
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
@@ -564,7 +567,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
               },
               className: "text-green-500 hover:text-green-600",
               disabled: !canExecuteSample,
-              tooltip: getPreDictionaryTooltip()
+              tooltip: getPreDictionaryTooltip(),
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
@@ -585,7 +589,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
               disabled: !dictionaryJsonHeader && !dictionaryFile,
               tooltip: !dictionaryJsonHeader && !dictionaryFile ? 
                 'Se requiere un diccionario o archivo JSON' : 
-                PROCESS_TITLES.dictionary
+                PROCESS_TITLES.dictionary,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -652,7 +657,8 @@ export const DataGovernmentFlowHO = ({ objectId }: DataGovernmentFlowProps) => {
               disabled: isL1TDisabled || !canExecuteL1T,
               tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' : 
                       !canExecuteL1T ? 'Se requieren los links del diccionario master' : 
-                      PROCESS_TITLES.l1t
+                      PROCESS_TITLES.l1t,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,

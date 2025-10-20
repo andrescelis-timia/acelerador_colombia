@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { generateTable } from '@/services/MER';
 import { MERFlowProps } from './types';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const MERFlow = ({ objectId }: MERFlowProps) => {
   const { user, country } = useAuth();
@@ -106,7 +107,8 @@ export const MERFlow = ({ objectId }: MERFlowProps) => {
                   disabled: isGenerating,
                   tooltip: isGenerating 
                     ? 'Generando tabla...' 
-                    : 'Generar Tabla'
+                    : 'Generar Tabla',
+                  readOnlyWrapper: true
                 }]}
                 rightIcons={[{
                   icon: <ArrowDownTrayIcon className="h-5 w-5" />,

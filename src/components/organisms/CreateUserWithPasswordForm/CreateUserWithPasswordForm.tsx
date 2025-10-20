@@ -246,7 +246,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
             <select
               id="create-user-country"
               value={formData.country}
-              onChange={(e) => handleInputChange('country', e.target.value as 'CO' | 'AR' | 'HO')}
+              onChange={(e) => handleInputChange('country', e.target.value as 'CO' | 'PE')}
               required
               disabled={isFormDisabled}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
@@ -258,8 +258,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               aria-invalid={!!errors.country}
             >
               <option value="CO">Colombia</option>
-              <option value="AR">Argentina</option>
-              <option value="HO">Holding</option>
+              <option value="PE">Perú</option>
             </select>
             {errors.country && (
               <p id="country-error" className="mt-1 text-sm text-red-600" role="alert">
@@ -292,6 +291,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
             >
               <option value="USER">Usuario</option>
               <option value="ADMIN">Administrador</option>
+              <option value="ADMIN-READONLY">Administrador Solo Lectura</option>
             </select>
             {errors.role && (
               <p id="role-error" className="mt-1 text-sm text-red-600" role="alert">

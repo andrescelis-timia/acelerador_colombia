@@ -1,6 +1,5 @@
 'use client';
 import { ReactNode, useState } from "react";
-import React from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
 import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
@@ -9,6 +8,7 @@ import { signOut } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,10 +16,10 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [user] = useAuthState(auth);
-  const { country, sessionData } = useAuth();
+  const { country } = useAuth();
+  const { isAdmin } = useUserRole();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -29,34 +29,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  // Obtener rol del usuario desde el backend
-  const fetchUserRole = async (email: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/role/${email}`, {
-        headers: {
-          'X-User': email,
-          'X-Country': country || 'CO'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUserRole(data.role);
-      }
-    } catch (error) {
-      console.error('Error obteniendo rol del usuario:', error);
-    }
-  };
-
-  // Efecto para obtener el rol cuando el usuario cambia
-  React.useEffect(() => {
-    if (user?.email) {
-      fetchUserRole(user.email);
-    }
-  }, [user?.email, country]);
-
-  // Verificar si el usuario es admin (desde sessionData o desde userRole)
-  const isAdmin = sessionData?.role === 'ADMIN' || userRole === 'ADMIN';
+  // Solo mostrar Admin para usuarios con rol ADMIN completo (no ADMIN-READONLY)
 
   // Crear lista de navItems base
   const baseNavItems = [
@@ -68,12 +41,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   // Agregar elementos específicos por país
   let navItems = [...baseNavItems];
 
-  if (country === 'HO') {
-    navItems = [
-      ...baseNavItems, // Inicio, Proyectos, Objetos
-      { icon: PencilSquareIcon, label: 'Diseñador', href: '/designer' }
-    ];
-  } else if (country === 'CO') {
+  if (country === 'CO') {
     navItems = [
       ...baseNavItems, // Inicio, Proyectos, Objetos
       { icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' }

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Helper function to decode JWT token (simplified for middleware)
+// Currently unused but kept for future enhancements
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function decodeJWTPayload(token: string) {
   try {
     const parts = token.split('.');

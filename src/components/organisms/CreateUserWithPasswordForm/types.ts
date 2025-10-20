@@ -11,8 +11,8 @@ export interface CreateUserWithPasswordFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  country: 'CO' | 'AR' | 'HO';
-  role: 'ADMIN' | 'USER';
+  country: 'CO' | 'PE';
+  role: 'ADMIN' | 'USER' | 'ADMIN-READONLY';
 }
 
 export interface CreateUserWithPasswordResponse {

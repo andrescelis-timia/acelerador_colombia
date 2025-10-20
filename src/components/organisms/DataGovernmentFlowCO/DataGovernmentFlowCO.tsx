@@ -19,6 +19,7 @@ import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'CO' } = useAuth();
@@ -88,7 +89,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       setLoading(true);
       const dictData = await getDictionaryJsonHeader(objectId, user.email, country);
       setDictionaryJsonHeader(dictData);
-      
+
       if (dictData?.id_dictionary_json_header) {
         const details = await getDictionaryJsonDetailsByHeaderId(dictData.id_dictionary_json_header, user.email, country);
         const sortedDetails = details.sort((a, b) => a.order_row - b.order_row);
@@ -246,7 +247,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     }
 
     setShowSampleProgress(true);
-    
+
     try {
       // Obtener la extensión del archivo
       const fileExtension = sampleFile.name.split('.').pop() || '';
@@ -308,12 +309,12 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       console.log('Delimitador detectado:', {
         value: delimiter,
         charCode: delimiter.charCodeAt(0),
-        representation: delimiter === '\t' ? 'TAB' : 
-                        delimiter === ' ' ? 'SPACE' : 
-                        delimiter === ',' ? 'COMMA' : 
-                        delimiter === ';' ? 'SEMICOLON' : 
-                        delimiter === '|' ? 'PIPE' : 
-                        delimiter
+        representation: delimiter === '\t' ? 'TAB' :
+          delimiter === ' ' ? 'SPACE' :
+            delimiter === ',' ? 'COMMA' :
+              delimiter === ';' ? 'SEMICOLON' :
+                delimiter === '|' ? 'PIPE' :
+                  delimiter
       });
 
       // Convertir el delimitador a un formato seguro para la API
@@ -347,7 +348,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
     if (!data || typeof data !== 'object') {
       return '0/9';
     }
-    
+
     // Excluir campos que no deben contarse
     const excludeFields = ['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'];
     // Si el país es CO, también excluimos los campos de partición y agregación
@@ -355,14 +356,14 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       excludeFields.push('partition_fields_raw', 'partition_fields_master', 'aggregate_fields_raw', 'aggregate_fields_master');
     }
 
-    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) => 
+    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) =>
       !excludeFields.includes(key)
     );
     const totalFields = fields.length;
-    const filledFields = fields.filter(([, value]) => 
+    const filledFields = fields.filter(([, value]) =>
       value !== null && value !== undefined && value !== ''
     ).length;
-    
+
     return `${filledFields}/${totalFields}`;
   }, [country]);
 
@@ -371,7 +372,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       setErrorMessage('Usuario no autenticado');
       return;
     }
-    
+
     setShowDictionaryProgress(true);
     const totalDuration = stepsConfig.dictionary.reduce((acc, step) => acc + step.duration, 0);
 
@@ -403,7 +404,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           aggregate_fields_master: dictionaryJsonHeader.aggregate_fields_master,
           number_records_period_intake: dictionaryJsonHeader.number_records_period_intake
         };
-        
+
         detailsToUse = dictionaryJsonDetails.map(detail => ({
           name_field: detail.name_field,
           logical_format: detail.logical_format,
@@ -420,10 +421,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
       if (dictionaryFile && dictionaryFileContent) {
         const jsonData = JSON.parse(dictionaryFileContent) as FileDictionaryJsonHeader;
-        
+
         // Validar que existan todos los campos requeridos del header
         const requiredHeaderFields = [
-          'pais', 'origen', 'aplicativo_producto', 'nombre_origen', 
+          'pais', 'origen', 'aplicativo_producto', 'nombre_origen',
           'descripción_contenido_tabla_origen', 'claves_primarias_tabla',
           'nombre_tabla_en_datio', 'claves_primarias_datio', 'tabla_en_raw',
           'tabla_en_master', 'information_group_level_2', 'campos_particion_raw',
@@ -515,9 +516,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         processPromise,
         timerPromise
       ]).then(() => processPromise);
-      
+
       await fetchDictionaryOutput();
-      
+
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error desconocido al generar diccionario');
     } finally {
@@ -532,7 +533,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         const [filled, total] = progress.split('/').map(Number);
         const isPreDictionaryComplete = filled === total;
         const canExecuteSample = sampleFile && isPreDictionaryComplete;
-        
+
         const getPreDictionaryTooltip = () => {
           if (!sampleFile) return 'Debe cargar un archivo primero';
           if (!isPreDictionaryComplete) {
@@ -545,13 +546,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         return (
           <BoxFlowControls
             centerContent={
-              <button
-                onClick={() => handleOpenForm('pre-dictionary')}
-                className="text-sm text-blue-600 hover:text-blue-800"
-                title="Campos adicionales"
-              >
-                {progress}
-              </button>
+              <ReadOnlyWrapper showFallback={false}>
+                <button
+                  onClick={() => handleOpenForm('pre-dictionary')}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                  title="Campos adicionales"
+                >
+                  {progress}
+                </button>
+              </ReadOnlyWrapper>
             }
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
@@ -568,7 +571,8 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               },
               className: "text-green-500 hover:text-green-600",
               disabled: !canExecuteSample,
-              tooltip: getPreDictionaryTooltip()
+              tooltip: getPreDictionaryTooltip(),
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
@@ -587,9 +591,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               onClick: handleDictionaryGeneration,
               className: "text-green-500 hover:text-green-600",
               disabled: !dictionaryJsonHeader && !dictionaryFile,
-              tooltip: !dictionaryJsonHeader && !dictionaryFile ? 
-                'Se requiere un diccionario o archivo JSON' : 
-                PROCESS_TITLES.dictionary
+              tooltip: !dictionaryJsonHeader && !dictionaryFile ?
+                'Se requiere un diccionario o archivo JSON' :
+                PROCESS_TITLES.dictionary,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -610,9 +615,9 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           />
         );
       case 'l1t':
-        const canExecuteL1T = ingestaOutput !== null && 
+        const canExecuteL1T = ingestaOutput !== null &&
           ingestaOutput.dictionary_master_header_link !== null &&
-          ingestaOutput.dictionary_master_header_link !== '' && 
+          ingestaOutput.dictionary_master_header_link !== '' &&
           ingestaOutput.dictionary_master_details_link !== null &&
           ingestaOutput.dictionary_master_details_link !== '';
 
@@ -631,7 +636,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
 
                 setShowL1TProgress(true);
                 const totalDuration = stepsConfig.l1t.reduce((acc, step) => acc + step.duration, 0);
-                
+
                 try {
                   const processPromise = generateDictionaryL1T({
                     id_object: objectId
@@ -644,10 +649,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
                     processPromise,
                     timerPromise
                   ]);
-                  
+
                   await fetchDictionaryOutput();
 
-                            } catch (error) {
+                } catch (error) {
                   setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario L1T');
                 } finally {
                   setShowL1TProgress(false);
@@ -655,9 +660,10 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               },
               className: "text-green-500 hover:text-green-600",
               disabled: isL1TDisabled || !canExecuteL1T,
-              tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' : 
-                      !canExecuteL1T ? 'Se requieren los links del diccionario master' : 
-                      PROCESS_TITLES.l1t
+              tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
+                !canExecuteL1T ? 'Se requieren los links del diccionario master' :
+                  PROCESS_TITLES.l1t,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -672,7 +678,7 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
               className: "text-blue-500 hover:text-blue-600",
               disabled: isL1TDisabled || !ingestaOutput,
               tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
-                      !ingestaOutput ? 'No hay links disponibles' : undefined
+                !ingestaOutput ? 'No hay links disponibles' : undefined
             }]}
           />
         );
@@ -694,15 +700,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
       <div className="relative p-8">
         <div className="flex items-center gap-12">
           {/* Líneas de conexión */}
-          <div 
+          <div
             className="absolute h-[2px] bg-[#94B5F0]"
-            style={{ 
+            style={{
               top: 'calc(50% + 12px)',
               transform: 'translateY(-50%)',
               left: '232px',
               width: '48px',
               zIndex: 0
-            }} 
+            }}
           />
 
           {/* BoxFlowCard Muestra */}
@@ -742,28 +748,26 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
           </div>
 
           {/* Línea de conexión para L1T */}
-          <div 
+          <div
             className={`absolute h-[2px] ${objectData?.flag_l1t === false ? 'bg-gray-300' : 'bg-[#94B5F0]'}`}
-            style={{ 
+            style={{
               top: 'calc(50% + 12px)',
               transform: 'translateY(-50%)',
               left: '480px',
               width: '48px',
               zIndex: 0
-            }} 
+            }}
           />
 
           {/* BoxFlowCard L1T */}
           <div className="relative z-10">
             <div className="text-center mb-3">
-              <div className={`inline-block border rounded-lg px-3 py-1.5 ${
-                objectData?.flag_l1t === false 
-                  ? 'bg-gray-50 border-gray-200' 
-                  : 'bg-blue-50 border-blue-200'
-              }`}>
-                <h3 className={`text-sm font-semibold ${
-                  objectData?.flag_l1t === false ? 'text-gray-400' : 'text-blue-700'
+              <div className={`inline-block border rounded-lg px-3 py-1.5 ${objectData?.flag_l1t === false
+                ? 'bg-gray-50 border-gray-200'
+                : 'bg-blue-50 border-blue-200'
                 }`}>
+                <h3 className={`text-sm font-semibold ${objectData?.flag_l1t === false ? 'text-gray-400' : 'text-blue-700'
+                  }`}>
                   Generar Diccionario L1T
                 </h3>
               </div>
@@ -801,15 +805,15 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         <ProgressDialog
           title={PROCESS_TITLES.sample}
           steps={stepsConfig.sample}
-          onComplete={() => {}}
+          onComplete={() => { }}
         />
       )}
-      
+
       {showDictionaryProgress && (
         <ProgressDialog
           title={PROCESS_TITLES.dictionary}
           steps={stepsConfig.dictionary}
-          onComplete={() => {}}
+          onComplete={() => { }}
         />
       )}
 
@@ -817,11 +821,11 @@ export const DataGovernmentFlowCO = ({ objectId }: DataGovernmentFlowProps) => {
         <ProgressDialog
           title={PROCESS_TITLES.l1t}
           steps={stepsConfig.l1t}
-          onComplete={() => {}}
+          onComplete={() => { }}
         />
       )}
 
-      <ErrorModal 
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />

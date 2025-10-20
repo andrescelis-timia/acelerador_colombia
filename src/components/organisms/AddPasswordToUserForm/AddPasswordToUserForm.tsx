@@ -57,7 +57,7 @@ export const AddPasswordToUserForm: React.FC<AddPasswordToUserFormProps> = ({
         };
 
         setUserSearchResult(mockSearchResult);
-      } catch (error) {
+      } catch {
         setUserSearchResult({
           found: false,
           error: 'Error al buscar el usuario'

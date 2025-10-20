@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { BoxFlowControlsProps, IconConfig } from './types';
 import { IconButton } from '@/components/atoms/IconButton';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const BoxFlowControls = ({ 
   leftIcons = [],
@@ -13,13 +14,25 @@ export const BoxFlowControls = ({
       {leftIcons.map((iconConfig: IconConfig, index) => (
         iconConfig.visible !== false && (
           <div key={index} className="flex items-center">
-            <IconButton
-              icon={iconConfig.icon}
-              onClick={iconConfig.onClick}
-              disabled={iconConfig.disabled}
-              className={iconConfig.className}
-              title={iconConfig.tooltip}
-            />
+            {iconConfig.readOnlyWrapper ? (
+              <ReadOnlyWrapper showFallback={false}>
+                <IconButton
+                  icon={iconConfig.icon}
+                  onClick={iconConfig.onClick}
+                  disabled={iconConfig.disabled}
+                  className={iconConfig.className}
+                  title={iconConfig.tooltip}
+                />
+              </ReadOnlyWrapper>
+            ) : (
+              <IconButton
+                icon={iconConfig.icon}
+                onClick={iconConfig.onClick}
+                disabled={iconConfig.disabled}
+                className={iconConfig.className}
+                title={iconConfig.tooltip}
+              />
+            )}
             {iconConfig.badge && (
               <div className="ml-2">{iconConfig.badge}</div>
             )}
@@ -37,14 +50,26 @@ export const BoxFlowControls = ({
     <div className="flex items-center space-x-2">
       {rightIcons.map((iconConfig: IconConfig, index) => (
         iconConfig.visible !== false && (
-          <IconButton
-            key={index}
-            icon={iconConfig.icon}
-            onClick={iconConfig.onClick}
-            disabled={iconConfig.disabled}
-            className={iconConfig.className}
-            title={iconConfig.tooltip}
-          />
+          iconConfig.readOnlyWrapper ? (
+            <ReadOnlyWrapper key={index} showFallback={false}>
+              <IconButton
+                icon={iconConfig.icon}
+                onClick={iconConfig.onClick}
+                disabled={iconConfig.disabled}
+                className={iconConfig.className}
+                title={iconConfig.tooltip}
+              />
+            </ReadOnlyWrapper>
+          ) : (
+            <IconButton
+              key={index}
+              icon={iconConfig.icon}
+              onClick={iconConfig.onClick}
+              disabled={iconConfig.disabled}
+              className={iconConfig.className}
+              title={iconConfig.tooltip}
+            />
+          )
         )
       ))}
     </div>

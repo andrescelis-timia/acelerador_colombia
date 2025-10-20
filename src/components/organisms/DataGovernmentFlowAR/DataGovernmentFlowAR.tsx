@@ -16,6 +16,7 @@ import { CreateDictionaryJsonHeader, DictionaryJsonHeaderResponse } from '@/serv
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 
 import { PopupLinks } from '@/components/molecules/PopupLinks';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
   const { user, country = 'AR' } = useAuth();
@@ -356,7 +357,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
                 ? 'Debe cargar un archivo primero'
                 : !refinement 
                 ? 'No hay refinamiento disponible'
-                : undefined
+                : undefined,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
@@ -379,7 +381,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
               onClick: handleDictionaryGeneration,
               className: "text-green-500 hover:text-green-600",
               disabled: !dictionaryJsonHeader && !dictionaryFile,
-              tooltip: !dictionaryJsonHeader && !dictionaryFile ? 'Se requiere un diccionario o archivo JSON' : undefined
+              tooltip: !dictionaryJsonHeader && !dictionaryFile ? 'Se requiere un diccionario o archivo JSON' : undefined,
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,
@@ -400,7 +403,8 @@ export const DataGovernmentFlowAR = ({ objectId }: DataGovernmentFlowProps) => {
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: () => setErrorMessage('Funcionalidad no implementada'),
-              className: "text-green-500 hover:text-green-600"
+              className: "text-green-500 hover:text-green-600",
+              readOnlyWrapper: true
             }]}
             rightIcons={[{
               icon: <EyeIcon className="h-5 w-5" />,

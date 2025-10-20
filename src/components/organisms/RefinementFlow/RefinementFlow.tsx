@@ -15,6 +15,7 @@ import { RefinementMasterForm } from '@/components/organisms/RefinementMasterFor
 import { flowStepsConfig } from './config';
 import { getAllPossibleFields } from './fields';
 import { useAuth } from '@/lib/context/AuthContext';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
   const { user, country } = useAuth();
@@ -84,12 +85,14 @@ export const RefinementFlow = ({ objectId }: RefinementFlowProps) => {
   const getControls = (stepId: string) => (
     <BoxFlowControls
       centerContent={
-        <button
-          onClick={() => handleOpenForm(stepId)}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
-          {flowSteps.find(step => step.id === stepId)?.progress}
-        </button>
+        <ReadOnlyWrapper showFallback={false}>
+          <button
+            onClick={() => handleOpenForm(stepId)}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            {flowSteps.find(step => step.id === stepId)?.progress}
+          </button>
+        </ReadOnlyWrapper>
       }
     />
   );

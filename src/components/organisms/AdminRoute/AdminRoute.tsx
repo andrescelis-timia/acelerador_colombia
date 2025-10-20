@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, ReactNode, useState } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/context/AuthContext';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase/config';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -12,56 +10,21 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute = ({ children, fallbackPath = '/' }: AdminRouteProps) => {
-  const { sessionData, loading } = useAuth();
-  const [user] = useAuthState(auth);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
+  const { isAdmin, loading } = useUserRole();
   const router = useRouter();
 
-  // Obtener rol del usuario desde el backend
-  const fetchUserRole = async (email: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/role/${email}`, {
-        headers: {
-          'X-User': email,
-          'X-Country': 'CO'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUserRole(data.role);
-      }
-    } catch (error) {
-      console.error('Error obteniendo rol del usuario:', error);
-    } finally {
-      setRoleLoading(false);
-    }
-  };
-
-  // Efecto para obtener el rol cuando el usuario cambia
   useEffect(() => {
-    if (user?.email) {
-      fetchUserRole(user.email);
-    } else {
-      setRoleLoading(false);
-    }
-  }, [user?.email]);
-
-  useEffect(() => {
-    if (!loading && !roleLoading) {
-      const isAdmin = sessionData?.role === 'ADMIN' || userRole === 'ADMIN';
-      
+    if (!loading) {
+      // Solo permitir acceso si es ADMIN completo (no ADMIN-READONLY)
       if (!isAdmin) {
-        // Usuario no es admin, redirigir
         router.push(fallbackPath);
         return;
       }
     }
-  }, [sessionData, userRole, loading, roleLoading, router, fallbackPath]);
+  }, [isAdmin, loading, router, fallbackPath]);
 
   // Mostrar loading mientras se verifica la autenticación
-  if (loading || roleLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -72,17 +35,14 @@ export const AdminRoute = ({ children, fallbackPath = '/' }: AdminRouteProps) =>
     );
   }
 
-  // Verificar si es admin (desde sessionData o desde userRole)
-  const isAdmin = sessionData?.role === 'ADMIN' || userRole === 'ADMIN';
-
-  // Si no es admin, mostrar mensaje de acceso denegado
+  // Si no es ADMIN completo, denegar acceso
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 text-6xl mb-4">🚫</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h1>
-          <p className="text-gray-600 mb-4">No tienes permisos para acceder a esta página.</p>
+          <p className="text-gray-600 mb-4">Solo usuarios con rol ADMIN completo pueden acceder al panel de administración.</p>
           <p className="text-sm text-gray-500">Redirigiendo...</p>
         </div>
       </div>

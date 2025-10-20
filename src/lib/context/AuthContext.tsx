@@ -13,7 +13,6 @@ import {
 } from '@/lib/auth/jwt';
 import { ensureValidToken, refreshToken } from '@/lib/auth/tokenRefresh';
 import { 
-  saveSessionState, 
   restoreSessionState, 
   clearSessionState,
   setupSessionSync,
@@ -30,8 +29,8 @@ export interface LoginResult {
 export interface CreateUserWithPasswordRequest {
   email: string;
   password: string;
-  country: 'CO' | 'AR' | 'HO';
-  role: 'ADMIN' | 'USER';
+  country: 'CO' | 'PE';
+  role: 'ADMIN' | 'USER' | 'ADMIN-READONLY';
 }
 
 export interface CreateUserResult {
@@ -394,8 +393,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               const savedCountry = localStorage.getItem('selectedCountry');
               
-              if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'AR' | 'HO')) {
-                setCountry(savedCountry as 'CO' | 'AR' | 'HO');
+              if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'PE')) {
+                setCountry(savedCountry as 'CO' | 'PE');
               } else {
                 setCountry(userCountries[0]);
                 localStorage.setItem('selectedCountry', userCountries[0]);

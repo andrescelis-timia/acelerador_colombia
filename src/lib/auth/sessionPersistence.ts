@@ -3,7 +3,7 @@
  * Handles session restoration across browser refreshes and tab changes
  */
 
-import { tokenStorage, getUserFromToken, isTokenExpired } from './jwt';
+import { tokenStorage } from './jwt';
 import { ensureValidToken } from './tokenRefresh';
 
 export interface SessionState {

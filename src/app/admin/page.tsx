@@ -1,24 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
-import { AddPasswordToUserForm } from '@/components/organisms/AddPasswordToUserForm';
 import { ResponseUserDto } from '@/services/User/types';
-import { AdminRoute } from '@/components/organisms/AdminRoute';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'create' | 'add'>('create');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const { sessionData, loading } = useAuth();
+  const router = useRouter();
+
+  // Verificar permisos de admin (solo usuarios Google OAuth)
+  useEffect(() => {
+    if (!loading) {
+      // Si hay sessionData = usuario con contraseña = NO admin
+      if (sessionData) {
+        router.push('/');
+        return;
+      }
+    }
+  }, [sessionData, loading, router]);
 
   const handleSuccess = (user: ResponseUserDto) => {
     setErrorMessage('');
-    if (activeTab === 'create') {
-      setSuccessMessage(`Usuario ${user.email} creado exitosamente`);
-    } else {
-      setSuccessMessage(`Contraseña agregada exitosamente al usuario ${user.email}`);
-    }
-    
+    setSuccessMessage(`Usuario ${user.email} creado exitosamente`);
+
     // Clear message after 5 seconds
     setTimeout(() => setSuccessMessage(''), 5000);
   };
@@ -26,24 +34,49 @@ export default function AdminPage() {
   const handleError = (error: string) => {
     setSuccessMessage('');
     setErrorMessage(error);
-    
+
     // Clear message after 5 seconds
     setTimeout(() => setErrorMessage(''), 5000);
   };
 
+  // Mostrar loading mientras se verifica
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0A3977] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando permisos de administrador...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si hay sessionData (usuario con contraseña), denegar acceso
+  if (sessionData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h1>
+          <p className="text-gray-600 mb-4">Solo usuarios con autenticación Google OAuth pueden acceder al panel de administración.</p>
+          <p className="text-sm text-gray-500">Redirigiendo...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AdminRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Administración de Usuarios
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Gestiona usuarios y contraseñas del sistema
-            </p>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Administración de Usuarios
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Crea usuarios con autenticación por contraseña
+          </p>
+        </div>
 
         {/* Success/Error Messages */}
         {successMessage && (
@@ -76,93 +109,48 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="mb-8">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('create')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'create'
-                  ? 'border-[#0A3977] text-[#0A3977]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-              aria-current={activeTab === 'create' ? 'page' : undefined}
-            >
-              Crear Usuario con Contraseña
-            </button>
-            <button
-              onClick={() => setActiveTab('add')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'add'
-                  ? 'border-[#0A3977] text-[#0A3977]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-              aria-current={activeTab === 'add' ? 'page' : undefined}
-            >
-              Agregar Contraseña a Usuario
-            </button>
-          </nav>
-        </div>
-
-        {/* Tab Content */}
+        {/* Main Content */}
         <div className="space-y-6">
-          {activeTab === 'create' && (
-            <div>
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Crear Nuevo Usuario con Contraseña
-                </h2>
-                <p className="mt-1 text-sm text-gray-600">
-                  Crea un nuevo usuario que podrá autenticarse usando email y contraseña.
-                </p>
-              </div>
-              <CreateUserWithPasswordForm
-                onSuccess={handleSuccess}
-                onError={handleError}
-              />
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Crear Nuevo Usuario con Contraseña
+              </h2>
+              <p className="mt-1 text-sm text-gray-600">
+                Crea un nuevo usuario que podrá autenticarse usando email y contraseña.
+              </p>
             </div>
-          )}
-
-          {activeTab === 'add' && (
-            <div>
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Agregar Contraseña a Usuario Existente
-                </h2>
-                <p className="mt-1 text-sm text-gray-600">
-                  Permite que un usuario existente (que usa Google OAuth) también pueda autenticarse con contraseña.
-                </p>
-              </div>
-              <AddPasswordToUserForm
-                onSuccess={handleSuccess}
-                onError={handleError}
-              />
-            </div>
-          )}
+            <CreateUserWithPasswordForm
+              onSuccess={handleSuccess}
+              onError={handleError}
+            />
+          </div>
         </div>
 
         {/* Info Section */}
         <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-medium text-blue-900 mb-3">
-            Información Importante
+            Información del Sistema
           </h3>
           <div className="space-y-2 text-sm text-blue-800">
             <p>
-              • Los usuarios creados con contraseña podrán autenticarse usando email/contraseña
+              • <strong>Administradores:</strong> Solo usuarios con Google OAuth pueden acceder a este panel
             </p>
             <p>
-              • Los usuarios existentes con Google OAuth pueden tener ambos métodos de autenticación
+              • <strong>Usuarios con contraseña:</strong> Tendrán acceso a la funcionalidad regular del sistema
             </p>
             <p>
-              • Las contraseñas deben cumplir con los requisitos de seguridad (8+ caracteres, mayúsculas, minúsculas, números y símbolos)
+              • <strong>Roles disponibles:</strong> ADMIN (completo), USER (regular), ADMIN-READONLY (solo lectura)
             </p>
             <p>
-              • Esta funcionalidad estará completamente disponible cuando se complete la integración del backend
+              • <strong>Requisitos de contraseña:</strong> Mínimo 8 caracteres
             </p>
-          </div>
+            <p>
+              • <strong>Separación de métodos:</strong> Los métodos de autenticación están completamente separados
+            </p>
           </div>
         </div>
       </div>
-    </AdminRoute>
+    </div>
   );
 }
