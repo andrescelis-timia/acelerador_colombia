@@ -126,30 +126,6 @@ export default function AdminPage() {
             />
           </div>
         </div>
-
-        {/* Info Section */}
-        <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-blue-900 mb-3">
-            Información del Sistema
-          </h3>
-          <div className="space-y-2 text-sm text-blue-800">
-            <p>
-              • <strong>Administradores:</strong> Solo usuarios con Google OAuth pueden acceder a este panel
-            </p>
-            <p>
-              • <strong>Usuarios con contraseña:</strong> Tendrán acceso a la funcionalidad regular del sistema
-            </p>
-            <p>
-              • <strong>Roles disponibles:</strong> ADMIN (completo), USER (regular), ADMIN-READONLY (solo lectura)
-            </p>
-            <p>
-              • <strong>Requisitos de contraseña:</strong> Mínimo 8 caracteres
-            </p>
-            <p>
-              • <strong>Separación de métodos:</strong> Los métodos de autenticación están completamente separados
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
