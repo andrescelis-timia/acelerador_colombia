@@ -13,6 +13,7 @@ export interface CreateUserWithPasswordFormData {
   confirmPassword: string;
   country: 'CO' | 'PE';
   role: 'ADMIN' | 'USER' | 'ADMIN-READONLY';
+  authMethod: 'google' | 'password';
 }
 
 export interface CreateUserWithPasswordResponse {
@@ -27,6 +28,7 @@ export interface CreateUserFormErrors {
   confirmPassword?: string;
   country?: string;
   role?: string;
+  authMethod?: string;
   general?: string;
 }
 

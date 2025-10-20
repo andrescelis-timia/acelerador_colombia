@@ -39,16 +39,7 @@ export interface CreateUserResult {
   error?: string;
 }
 
-export interface AddPasswordToUserRequest {
-  userId: string;
-  password: string;
-}
-
-export interface AddPasswordResult {
-  success: boolean;
-  authMethods?: AuthMethods;
-  error?: string;
-}
+// Removed AddPasswordToUserRequest/Result - no longer needed
 
 export interface AuthMethods {
   hasGoogleAuth: boolean;
@@ -63,10 +54,9 @@ export type AuthContextType = {
   setCountry: (country: string) => void;
   signInWithGoogle: () => Promise<void>;
   loading: boolean;
-  // New password authentication methods
+  // Password authentication methods
   loginWithPassword: (email: string, password: string) => Promise<LoginResult>;
   createUserWithPassword: (userData: CreateUserWithPasswordRequest) => Promise<CreateUserResult>;
-  addPasswordToUser: (data: AddPasswordToUserRequest) => Promise<AddPasswordResult>;
   getUserAuthMethods: (email: string) => Promise<AuthMethods>;
   logout: () => Promise<void>;
   // JWT token management
@@ -87,10 +77,9 @@ const AuthContext = createContext<AuthContextType>({
   setCountry: () => {},
   signInWithGoogle: async () => {},
   loading: true,
-  // New password authentication methods
+  // Password authentication methods
   loginWithPassword: async () => ({ success: false, error: 'Not implemented' }),
   createUserWithPassword: async () => ({ success: false, error: 'Not implemented' }),
-  addPasswordToUser: async () => ({ success: false, error: 'Not implemented' }),
   getUserAuthMethods: async () => ({ hasGoogleAuth: false, hasPasswordAuth: false, userId: '' }),
   logout: async () => {},
   // JWT token management
@@ -261,31 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addPasswordToUser = async (data: AddPasswordToUserRequest): Promise<AddPasswordResult> => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/users/add-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-          'X-User': user?.email || '',
-          'X-Country': country,
-        },
-        body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        return { success: false, error: responseData.error || 'Error al agregar contraseña' };
-      }
-
-      return { success: true, authMethods: responseData.authMethods };
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Error de conexión';
-      return { success: false, error: errorMsg };
-    }
-  };
+  // Removed addPasswordToUser - no longer needed in current architecture
 
   const getUserAuthMethods = async (email: string): Promise<AuthMethods> => {
     try {
@@ -512,10 +477,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCountry, 
       signInWithGoogle,
       loading,
-      // New password authentication methods
+      // Password authentication methods
       loginWithPassword,
       createUserWithPassword,
-      addPasswordToUser,
       getUserAuthMethods,
       logout,
       // JWT token management
