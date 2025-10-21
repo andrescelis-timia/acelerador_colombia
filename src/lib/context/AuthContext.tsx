@@ -184,12 +184,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithPassword = async (email: string, password: string): Promise<LoginResult> => {
     try {
       setLoading(true);
+      // Get country from localStorage or default to CO
+      const userCountry = localStorage.getItem('selectedCountry') || 'CO';
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/auth/login-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          country: userCountry 
+        }),
       });
 
       const data = await response.json();
@@ -198,18 +205,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || 'Error al iniciar sesión' };
       }
 
-      if (data.success && data.token && data.user) {
-        // Store JWT token using token storage utility
-        setToken(data.token);
-        tokenStorage.set(data.token);
+      if (data.success && data.user) {
+        // For header-based auth, we don't use JWT tokens
+        // Instead, we store user info and set up the session
+        const mockUser = {
+          uid: data.user.id_user,
+          email: data.user.email,
+          displayName: data.user.email,
+        } as User;
         
-        // Store refresh token if provided
-        if (data.refreshToken) {
-          tokenStorage.setRefresh(data.refreshToken);
-        }
+        setUser(mockUser);
+        setCountries([data.user.country]);
+        setCountry(data.user.country);
+        setAuthMethod('password');
+        setIsAuthenticated(true);
         
-        // Initialize session from JWT token
-        initializeSessionFromToken(data.token);
+        // Store user info for header-based auth
+        localStorage.setItem('auth_user_email', data.user.email);
+        localStorage.setItem('auth_user_country', data.user.country);
+        localStorage.setItem('auth_user_role', data.user.role);
+        localStorage.setItem('selectedCountry', data.user.country);
+        
+        // Set session cookie for middleware compatibility
+        document.cookie = `session=${data.user.id_user}; path=/; secure; samesite=strict`;
         
         return { success: true };
       }

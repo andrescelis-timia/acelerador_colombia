@@ -29,9 +29,8 @@ function LoginContent() {
   };
 
   const handlePasswordLoginSuccess = (token: string, user: ResponseUserDto) => {
-    // TODO: This will be properly implemented in task 5.1 (AuthContext integration)
-    // For now, we'll just redirect to the callback URL
     console.log('Password login successful:', { token, user });
+    // The AuthContext should already be updated by the PasswordLoginForm
     router.push(callbackUrl);
   };
 

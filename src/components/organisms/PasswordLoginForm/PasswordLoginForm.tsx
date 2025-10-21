@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useAuth } from '@/lib/context/AuthContext';
 import { PasswordLoginFormProps, PasswordLoginFormData, FormErrors, PasswordLoginResponse } from './types';
 
 export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
@@ -9,6 +10,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   isLoading = false,
   className = ''
 }) => {
+  const { loginWithPassword } = useAuth();
   const [formData, setFormData] = useState<PasswordLoginFormData>({
     email: '',
     password: ''
@@ -42,13 +44,13 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   // Validate form data
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     const emailError = validateEmail(formData.email);
     if (emailError) newErrors.email = emailError;
-    
+
     const passwordError = validatePassword(formData.password);
     if (passwordError) newErrors.password = passwordError;
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -59,7 +61,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
       ...prev,
       [field]: value
     }));
-    
+
     // Clear field-specific error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -72,7 +74,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -81,35 +83,30 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
     setErrors({});
 
     try {
-      // TODO: This will be implemented when AuthContext is extended (Task 5.1)
-      // For now, we'll simulate the authentication flow
-      console.log('Password login attempt:', { 
-        email: formData.email, 
-        password: '***' 
+      console.log('Password login attempt:', {
+        email: formData.email,
+        password: '***'
       });
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate authentication response
-      const mockResponse: PasswordLoginResponse = {
-        success: false,
-        error: 'La autenticación con contraseña estará disponible cuando se complete la integración del backend (Task 5.1)'
-      };
 
-      if (mockResponse.success && mockResponse.token && mockResponse.user) {
-        // Store JWT token in localStorage (will be moved to proper token management in Task 5.1)
-        localStorage.setItem('auth_token', mockResponse.token);
-        localStorage.setItem('auth_user', JSON.stringify(mockResponse.user));
-        
-        onSuccess(mockResponse.token, mockResponse.user);
+      // Use AuthContext loginWithPassword for proper session management
+      const result = await loginWithPassword(formData.email, formData.password);
+
+      if (result.success) {
+        console.log('Password login successful');
+        // Pass empty token since AuthContext handles session management
+        onSuccess('', {
+          email: formData.email,
+          country: localStorage.getItem('selectedCountry') || 'CO',
+          role: 'USER' // This will be updated by AuthContext
+        } as any);
       } else {
-        const errorMessage = mockResponse.error || 'Error al iniciar sesión';
+        const errorMessage = result.error || 'Error al iniciar sesión';
         setErrors({ general: errorMessage });
         onError(errorMessage);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al iniciar sesión';
+      console.error('Password login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error de conexión al servidor';
       setErrors({ general: errorMessage });
       onError(errorMessage);
     } finally {
@@ -124,8 +121,8 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Field */}
         <div>
-          <label 
-            htmlFor="password-login-email" 
+          <label
+            htmlFor="password-login-email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             Email <span className="text-red-500">*</span>
@@ -137,11 +134,10 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             onChange={(e) => handleInputChange('email', e.target.value)}
             required
             disabled={isFormDisabled}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
-              errors.email 
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                : 'border-gray-300'
-            }`}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.email
+              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+              : 'border-gray-300'
+              }`}
             placeholder="tu@email.com"
             autoComplete="email"
             aria-describedby={errors.email ? 'email-error' : undefined}
@@ -153,11 +149,11 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             </p>
           )}
         </div>
-        
+
         {/* Password Field */}
         <div>
-          <label 
-            htmlFor="password-login-password" 
+          <label
+            htmlFor="password-login-password"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             Contraseña <span className="text-red-500">*</span>
@@ -169,11 +165,10 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             onChange={(e) => handleInputChange('password', e.target.value)}
             required
             disabled={isFormDisabled}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${
-              errors.password 
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                : 'border-gray-300'
-            }`}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.password
+              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+              : 'border-gray-300'
+              }`}
             placeholder="••••••••"
             autoComplete="current-password"
             minLength={8}
@@ -227,21 +222,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
         </button>
       </form>
 
-      {/* Info message about backend integration */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm text-blue-700">
-              La autenticación con contraseña estará disponible cuando se complete la integración del backend.
-            </p>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };
