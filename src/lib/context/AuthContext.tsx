@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { useRouter } from 'next/navigation';
 import { getUserByEmail } from '@/services/User';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { 
@@ -54,6 +55,7 @@ export type AuthContextType = {
   setCountry: (country: string) => void;
   signInWithGoogle: () => Promise<void>;
   loading: boolean;
+  loggingOut: boolean;
   // Password authentication methods
   loginWithPassword: (email: string, password: string) => Promise<LoginResult>;
   createUserWithPassword: (userData: CreateUserWithPasswordRequest) => Promise<CreateUserResult>;
@@ -77,6 +79,7 @@ const AuthContext = createContext<AuthContextType>({
   setCountry: () => {},
   signInWithGoogle: async () => {},
   loading: true,
+  loggingOut: false,
   // Password authentication methods
   loginWithPassword: async () => ({ success: false, error: 'Not implemented' }),
   createUserWithPassword: async () => ({ success: false, error: 'Not implemented' }),
@@ -94,8 +97,10 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
   const [country, setCountry] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -186,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       // Get country from localStorage or default to CO
       const userCountry = localStorage.getItem('selectedCountry') || 'CO';
+
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/auth/login-password`, {
         method: 'POST',
@@ -214,6 +220,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           displayName: data.user.email,
         } as User;
         
+
+        
         setUser(mockUser);
         setCountries([data.user.country]);
         setCountry(data.user.country);
@@ -225,6 +233,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('auth_user_country', data.user.country);
         localStorage.setItem('auth_user_role', data.user.role);
         localStorage.setItem('selectedCountry', data.user.country);
+        
+
         
         // Set session cookie for middleware compatibility
         document.cookie = `session=${data.user.id_user}; path=/; secure; samesite=strict`;
@@ -296,6 +306,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Set logging out state to prevent error messages
+      setLoggingOut(true);
+      
       // Sign out from Firebase if using Google auth
       if (auth.currentUser && authMethod === 'google') {
         await auth.signOut();
@@ -356,6 +369,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               clearSessionState();
             }
           }
+        } else {
+          // No JWT tokens, check for header-based auth session
+          const authUserEmail = localStorage.getItem('auth_user_email');
+          const authUserCountry = localStorage.getItem('auth_user_country');
+          const authUserRole = localStorage.getItem('auth_user_role');
+          
+          if (authUserEmail && authUserCountry && authUserRole) {
+            
+            // Restore password authentication session
+            const mockUser = {
+              uid: authUserEmail,
+              email: authUserEmail,
+              displayName: authUserEmail,
+            } as User;
+            
+            // Crear sessionData para compatibilidad
+            const mockSessionData = {
+              sub: authUserEmail,
+              email: authUserEmail,
+              country: authUserCountry as 'CO' | 'PE',
+              role: authUserRole as 'ADMIN' | 'USER' | 'ADMIN-READONLY',
+              iat: Date.now() / 1000, // issued at (now)
+              exp: Date.now() / 1000 + 86400 // expires at (24 horas)
+            };
+            
+            setUser(mockUser);
+            setCountry(authUserCountry);
+            setCountries([authUserCountry]);
+            setAuthMethod('password');
+            setIsAuthenticated(true);
+            setSessionData(mockSessionData);
+            
+
+          }
         }
       }
 
@@ -411,7 +458,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authMethod, refreshAuthToken, initializeSessionFromToken]);
 
   const handleLogout = useCallback(() => {
-    // Clear all authentication state
+    // Clear all authentication state (but keep loggingOut true for now)
     setUser(null);
     setCountries([]);
     setCountry('');
@@ -422,11 +469,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Clear all storage
     localStorage.removeItem('selectedCountry');
+    localStorage.removeItem('auth_user_email');
+    localStorage.removeItem('auth_user_country');
+    localStorage.removeItem('auth_user_role');
     tokenStorage.remove();
     
     // Clear session cookie
     document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-  }, []);
+    
+    // Add a small delay to show "Cerrando sesión..." message, then redirect
+    setTimeout(() => {
+      setLoggingOut(false);
+      router.push('/login');
+    }, 1000); // 1 second delay
+  }, [router]);
 
   // Save session state whenever authentication state changes
   useEffect(() => {
@@ -495,6 +551,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCountry, 
       signInWithGoogle,
       loading,
+      loggingOut,
       // Password authentication methods
       loginWithPassword,
       createUserWithPassword,

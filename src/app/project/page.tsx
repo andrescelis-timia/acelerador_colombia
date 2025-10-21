@@ -6,9 +6,11 @@ import { getAllData, deleteData } from '@/services/Project';
 import { ProjectTableData } from '@/services/Project/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { AuthStateDisplay } from '@/components/molecules/AuthStateDisplay';
 
-export default function ProjectPage() {
-  const { user, country, loading } = useAuth();
+function ProjectPageContent() {
+  const { user, country } = useAuth();
   const [projects, setProjects] = useState<ProjectTableData[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<ProjectTableData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,13 +18,11 @@ export default function ProjectPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 5;
 
+
+
   const loadProjects = useCallback(async () => {
-    if (loading) return;
-    
+
     if (!user?.email) {
-      if (!loading) {
-        setErrorMessage('Usuario no autenticado');
-      }
       return;
     }
 
@@ -33,7 +33,7 @@ export default function ProjectPage() {
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar proyectos');
     }
-  }, [user?.email, country, loading]);
+  }, [user?.email, country]);
 
   useEffect(() => {
     loadProjects();
@@ -42,13 +42,13 @@ export default function ProjectPage() {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     setCurrentPage(1); // Resetear a la primera página cuando se busca
-    
+
     if (!term.trim()) {
       setFilteredProjects(projects);
       return;
     }
 
-    const filtered = projects.filter(project => 
+    const filtered = projects.filter(project =>
       project.name.toLowerCase().includes(term.toLowerCase()) ||
       project.ticket_jira.toLowerCase().includes(term.toLowerCase())
     );
@@ -57,7 +57,6 @@ export default function ProjectPage() {
 
   const handleDelete = async (id: string) => {
     if (!user?.email) {
-      setErrorMessage('Usuario no autenticado');
       return;
     }
     try {
@@ -68,9 +67,13 @@ export default function ProjectPage() {
     }
   };
 
+
+
+
+
   return (
     <>
-      <ProjectContent 
+      <ProjectContent
         data={filteredProjects}
         onSearch={handleSearch}
         onEdit={loadProjects}
@@ -81,10 +84,20 @@ export default function ProjectPage() {
         itemsPerPage={itemsPerPage}
         totalItems={filteredProjects.length}
       />
-      <ErrorModal 
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />
     </>
   );
+}
+
+export default function ProjectPage() {
+  const { authState } = useAuthGuard();
+
+  if (authState !== 'authenticated') {
+    return <AuthStateDisplay state={authState as 'loading' | 'loggingOut' | 'unauthenticated'} />;
+  }
+
+  return <ProjectPageContent />;
 } 

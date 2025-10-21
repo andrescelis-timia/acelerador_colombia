@@ -178,7 +178,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
         </div>
         
         <div className="flex justify-center">
-          <ReadOnlyWrapper fallbackMessage="Los usuarios de solo lectura no pueden generar schemas.">
+          <ReadOnlyWrapper fallbackMessage="No disponible">
             <button
               onClick={generateSchemas}
               disabled={status.isGenerating}

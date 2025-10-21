@@ -169,34 +169,26 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
     setErrors({});
 
     try {
-      console.log('Create user with password attempt:', {
-        email: formData.email,
-        country: formData.country,
-        role: formData.role,
-        password: '***'
-      });
+
 
       // Get user info from auth context
       let userEmail = '';
       let userCountry = '';
 
-      console.log('Auth debug:', {
-        hasUser: !!user,
-        canGetIdToken: !!(user?.getIdToken)
-      });
+
 
       if (user?.email) {
         // Google OAuth user
         userEmail = user.email;
         // Get country from localStorage or default to CO
         userCountry = localStorage.getItem('selectedCountry') || 'CO';
-        console.log('Using Google OAuth user');
+
       } else {
-        console.error('No authenticated user available');
+
         throw new Error('No se encontró usuario autenticado. Por favor, inicia sesión nuevamente.');
       }
 
-      console.log('User:', userEmail, 'Country:', userCountry);
+
 
       // Make API call to create user
       const endpoint = formData.authMethod === 'password' 
@@ -226,10 +218,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status, response.statusText);
-
       const result = await response.json();
-      console.log('Response body:', result);
 
       if (response.ok && result.success && result.user) {
         onSuccess(result.user);

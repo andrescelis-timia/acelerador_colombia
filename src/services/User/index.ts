@@ -9,7 +9,6 @@ async function getUserByEmail(email: string): Promise<ResponseUserDto[]> {
     
     if (!response.ok) {
       if (response.status === 404) {
-        console.log('Usuario no encontrado (404)');
         return []; // Devolver array vacío en lugar de null
       }
       throw new Error(`Error al obtener usuario: ${response.status} - ${response.statusText}`);

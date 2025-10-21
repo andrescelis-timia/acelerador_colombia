@@ -12,6 +12,7 @@ import { Button } from '@/components/atoms/Button';
 import { SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 import { PipelineProgressBar } from '@/components/molecules/PipelineProgressBar';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const SchemaUploadSection = ({
   rawSchema,
@@ -38,14 +39,14 @@ export const SchemaUploadSection = ({
     }
 
     // Primero guardamos el archivo inmediatamente
-    console.log('Subiendo archivo:', file.name);
+
     onSchemaUpload(type, file);
 
     // Luego validamos de manera opcional (no bloqueante)
     try {
       const validation = await pipelineGeneratorService.validateSchema(file, type);
       
-      console.log('Validation result:', validation);
+
       
       const errors: ValidationError[] = [
         ...validation.errors.map(error => ({ 
@@ -61,11 +62,11 @@ export const SchemaUploadSection = ({
       setValidationErrors(errors);
 
       if (!validation.isValid) {
-        console.log('Advertencias de validación:', validation.errors);
+        // Validation errors are already handled in the UI
       }
       
     } catch (error) {
-      console.log('Error de validación (no crítico):', error);
+      // Error de validación (no crítico)
       setValidationErrors([{ 
         message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`, 
         severity: 'warning' 
@@ -88,34 +89,36 @@ export const SchemaUploadSection = ({
         {/* Component Type Selection */}
         <div className="mb-4 pb-3 border-b border-gray-200">
           <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Componente</label>
-          <div className="flex space-x-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tabla"
-                checked={componentType === 'tabla'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tabla (Raw + Master)
-              </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tablon"
-                checked={componentType === 'tablon'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tablón (Solo Master)
-              </span>
-            </label>
-          </div>
+          <ReadOnlyWrapper showFallback={false}>
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="componentType"
+                  value="tabla"
+                  checked={componentType === 'tabla'}
+                  onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
+                  className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">
+                  Tabla (Raw + Master)
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="componentType"
+                  value="tablon"
+                  checked={componentType === 'tablon'}
+                  onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
+                  className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">
+                  Tablón (Solo Master)
+                </span>
+              </label>
+            </div>
+          </ReadOnlyWrapper>
         </div>
 
         {/* Schema Upload Section */}
@@ -124,24 +127,26 @@ export const SchemaUploadSection = ({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Schema Raw</label>
               {!rawSchema ? (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                  <ArrowUpTrayIcon className="mx-auto h-6 w-6 text-gray-400" />
-                  <div className="mt-2">
-                    <label htmlFor="file-raw" className="cursor-pointer">
-                      <span className="block text-xs font-medium text-gray-900">
-                        Subir archivo .schema
-                      </span>
-                      <input
-                        id="file-raw"
-                        name="file-raw"
-                        type="file"
-                        accept=".schema"
-                        className="sr-only"
-                        onChange={(e) => handleFileUpload('raw', e)}
-                      />
-                    </label>
+                <ReadOnlyWrapper showFallback={false}>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                    <ArrowUpTrayIcon className="mx-auto h-6 w-6 text-gray-400" />
+                    <div className="mt-2">
+                      <label htmlFor="file-raw" className="cursor-pointer">
+                        <span className="block text-xs font-medium text-gray-900">
+                          Subir archivo .schema
+                        </span>
+                        <input
+                          id="file-raw"
+                          name="file-raw"
+                          type="file"
+                          accept=".schema"
+                          className="sr-only"
+                          onChange={(e) => handleFileUpload('raw', e)}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
+                </ReadOnlyWrapper>
               ) : (
                 <div className="border border-gray-300 rounded-lg p-2">
                   <div className="flex items-center justify-between">
@@ -152,15 +157,17 @@ export const SchemaUploadSection = ({
                         <p className="text-xs text-gray-500">{(rawSchema.size / 1024).toFixed(2)} KB</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveFile('raw')}
-                      className="p-1"
-                      title="Remover archivo"
-                    >
-                      <XMarkIcon className="h-3 w-3" />
-                    </Button>
+                    <ReadOnlyWrapper showFallback={false}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveFile('raw')}
+                        className="p-1"
+                        title="Remover archivo"
+                      >
+                        <XMarkIcon className="h-3 w-3" />
+                      </Button>
+                    </ReadOnlyWrapper>
                   </div>
                 </div>
               )}
@@ -169,24 +176,26 @@ export const SchemaUploadSection = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Schema Master</label>
             {!masterSchema ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                <ArrowUpTrayIcon className="mx-auto h-6 w-6 text-gray-400" />
-                <div className="mt-2">
-                  <label htmlFor="file-master" className="cursor-pointer">
-                    <span className="block text-xs font-medium text-gray-900">
-                      Subir archivo .schema
-                    </span>
-                    <input
-                      id="file-master"
-                      name="file-master"
-                      type="file"
-                      accept=".schema"
-                      className="sr-only"
-                      onChange={(e) => handleFileUpload('master', e)}
-                    />
-                  </label>
+              <ReadOnlyWrapper showFallback={false}>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                  <ArrowUpTrayIcon className="mx-auto h-6 w-6 text-gray-400" />
+                  <div className="mt-2">
+                    <label htmlFor="file-master" className="cursor-pointer">
+                      <span className="block text-xs font-medium text-gray-900">
+                        Subir archivo .schema
+                      </span>
+                      <input
+                        id="file-master"
+                        name="file-master"
+                        type="file"
+                        accept=".schema"
+                        className="sr-only"
+                        onChange={(e) => handleFileUpload('master', e)}
+                      />
+                    </label>
+                  </div>
                 </div>
-              </div>
+              </ReadOnlyWrapper>
             ) : (
               <div className="border border-gray-300 rounded-lg p-2">
                 <div className="flex items-center justify-between">
@@ -197,15 +206,17 @@ export const SchemaUploadSection = ({
                       <p className="text-xs text-gray-500">{(masterSchema.size / 1024).toFixed(2)} KB</p>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveFile('master')}
-                    className="p-1"
-                    title="Remover archivo"
-                  >
-                    <XMarkIcon className="h-3 w-3" />
-                  </Button>
+                  <ReadOnlyWrapper showFallback={false}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRemoveFile('master')}
+                      className="p-1"
+                      title="Remover archivo"
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </Button>
+                  </ReadOnlyWrapper>
                 </div>
               </div>
             )}

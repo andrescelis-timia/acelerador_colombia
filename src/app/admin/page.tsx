@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
-import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
+
 import { useAuth } from '@/lib/context/AuthContext';
 
 interface UserListItem {
@@ -63,10 +63,10 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (!loading && (isAdmin || isAdminReadonly)) {
+    if (!loading && isAdmin) {
       fetchUsers();
     }
-  }, [loading, isAdmin, isAdminReadonly, user]);
+  }, [loading, isAdmin, user]);
 
   const handleSuccess = (user: ResponseUserDto) => {
     setErrorMessage('');
@@ -117,6 +117,42 @@ export default function AdminPage() {
     }
   };
 
+  // Validación de acceso: solo usuarios ADMIN completos pueden acceder
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg text-gray-600">Cargando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="mb-4">
+            <svg className="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Acceso Denegado</h2>
+          <p className="text-gray-600 mb-4">
+            Solo los administradores completos pueden acceder a esta página.
+          </p>
+          <p className="text-sm text-gray-500">
+            {isAdminReadonly 
+              ? 'Los usuarios ADMIN-READONLY no tienen acceso a la administración de usuarios.'
+              : 'Necesitas permisos de administrador para ver esta página.'
+            }
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -126,10 +162,7 @@ export default function AdminPage() {
             Administración de Usuarios
           </h1>
           <p className="mt-2 text-gray-600">
-            {isAdminReadonly
-              ? 'Vista de solo lectura - Consulta usuarios del sistema'
-              : 'Gestiona usuarios y crea nuevos usuarios'
-            }
+            Gestiona usuarios y crea nuevos usuarios del sistema
           </p>
         </div>
 
@@ -177,17 +210,15 @@ export default function AdminPage() {
               >
                 Lista de Usuarios
               </button>
-              <ReadOnlyWrapper showFallback={false}>
-                <button
-                  onClick={() => setActiveTab('create')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'create'
-                    ? 'border-[#0A3977] text-[#0A3977]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                >
-                  Crear Usuario
-                </button>
-              </ReadOnlyWrapper>
+              <button
+                onClick={() => setActiveTab('create')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'create'
+                  ? 'border-[#0A3977] text-[#0A3977]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Crear Usuario
+              </button>
             </nav>
           </div>
         </div>
@@ -256,22 +287,20 @@ export default function AdminPage() {
         )}
 
         {activeTab === 'create' && (
-          <ReadOnlyWrapper fallbackMessage="Los usuarios de solo lectura no pueden crear usuarios.">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  Crear Nuevo Usuario
-                </h3>
-                <p className="mt-1 text-sm text-gray-600 mb-6">
-                  Crea un nuevo usuario que podrá autenticarse usando Google OAuth o email y contraseña.
-                </p>
-                <CreateUserWithPasswordForm
-                  onSuccess={handleSuccess}
-                  onError={handleError}
-                />
-              </div>
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                Crear Nuevo Usuario
+              </h3>
+              <p className="mt-1 text-sm text-gray-600 mb-6">
+                Crea un nuevo usuario que podrá autenticarse usando Google OAuth o email y contraseña.
+              </p>
+              <CreateUserWithPasswordForm
+                onSuccess={handleSuccess}
+                onError={handleError}
+              />
             </div>
-          </ReadOnlyWrapper>
+          </div>
         )}
       </div>
     </div>

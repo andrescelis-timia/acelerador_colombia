@@ -131,20 +131,6 @@ function LoginContent() {
             />
           )}
         </div>
-
-        {/* Switch Auth Method Link */}
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={toggleAuthMethod}
-            className="text-sm text-[#0A3977] hover:text-[#082f5f] font-medium transition-colors duration-200"
-          >
-            {authMethod === 'google' 
-              ? '¿Prefieres usar email y contraseña?' 
-              : '¿Prefieres continuar con Google?'
-            }
-          </button>
-        </div>
       </div>
     </div>
   );

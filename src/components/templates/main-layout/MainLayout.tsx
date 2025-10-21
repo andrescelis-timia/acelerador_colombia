@@ -3,9 +3,7 @@ import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
 import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { auth } from '@/lib/firebase/config';
-import { signOut } from 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
+
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -15,15 +13,14 @@ interface MainLayoutProps {
 }
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
-  const [user] = useAuthState(auth);
-  const { country } = useAuth();
+  const { user, country, logout } = useAuth();
   const { isAdmin } = useUserRole();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await logout();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cerrar sesión');
     }

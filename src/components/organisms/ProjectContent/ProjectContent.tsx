@@ -135,7 +135,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
-        <ReadOnlyWrapper fallbackMessage="Los usuarios de solo lectura no pueden crear proyectos.">
+        <ReadOnlyWrapper fallbackMessage="No disponible">
           <button
             onClick={() => setIsEditFormOpen(true)}
             className="bg-[#0A3977] text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
@@ -166,26 +166,30 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
                 Añadir Objeto
               </button>
             </ReadOnlyWrapper>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit(item.id);
-              }}
-              className="text-indigo-600 hover:text-indigo-900 mr-4"
-              title="Editar Proyecto"
-            >
-              <PencilIcon className="h-5 w-5 inline" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleArchiveClick(item.id);
-              }}
-              className="text-gray-600 hover:text-gray-900"
-              title="Archivar Proyecto"
-            >
-              <ArchiveBoxIcon className="h-5 w-5 inline" />
-            </button>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item.id);
+                }}
+                className="text-indigo-600 hover:text-indigo-900 mr-4"
+                title="Editar Proyecto"
+              >
+                <PencilIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchiveClick(item.id);
+                }}
+                className="text-gray-600 hover:text-gray-900"
+                title="Archivar Proyecto"
+              >
+                <ArchiveBoxIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
           </div>
         )}
       />

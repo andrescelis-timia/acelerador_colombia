@@ -14,6 +14,7 @@ import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const SmartCleanerGeneratorPanel = ({
   masterSchema,
@@ -89,7 +90,7 @@ export const SmartCleanerGeneratorPanel = ({
   };
 
   const downloadFile = (type: string) => {
-    console.log(`Descargando archivo ${type} de SmartCleaner`);
+    // Placeholder para descarga de SmartCleaner
   };
 
   return (
@@ -189,14 +190,16 @@ export const SmartCleanerGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <Button
-            onClick={handleGenerate}
-            disabled={!canGenerate || isGenerating}
-            className="flex items-center"
-          >
-            <PlayIcon className="h-5 w-5 mr-2" />
-            {isGenerating ? 'Generando...' : 'Generar Configuraciones de Limpieza'}
-          </Button>
+          <ReadOnlyWrapper fallbackMessage="No disponible">
+            <Button
+              onClick={handleGenerate}
+              disabled={!canGenerate || isGenerating}
+              className="flex items-center"
+            >
+              <PlayIcon className="h-5 w-5 mr-2" />
+              {isGenerating ? 'Generando...' : 'Generar Configuraciones de Limpieza'}
+            </Button>
+          </ReadOnlyWrapper>
           
           {!canGenerate && (
             <span className="text-sm text-red-600">

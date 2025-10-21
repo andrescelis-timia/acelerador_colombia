@@ -83,21 +83,18 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
     setErrors({});
 
     try {
-      console.log('Password login attempt:', {
-        email: formData.email,
-        password: '***'
-      });
+
 
       // Use AuthContext loginWithPassword for proper session management
       const result = await loginWithPassword(formData.email, formData.password);
 
       if (result.success) {
-        console.log('Password login successful');
-        // Pass empty token since AuthContext handles session management
+
+        // AuthContext has already set up the session, just call onSuccess
         onSuccess('', {
           email: formData.email,
-          country: localStorage.getItem('selectedCountry') || 'CO',
-          role: 'USER' // This will be updated by AuthContext
+          country: 'CO', // This will be overridden by AuthContext
+          role: 'USER' // This will be overridden by AuthContext
         } as any);
       } else {
         const errorMessage = result.error || 'Error al iniciar sesión';

@@ -12,7 +12,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
-  const { country } = useAuth();
+  const { country, loading } = useAuth();
 
   return (
     <motion.div
@@ -34,7 +34,21 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         Objeto: {objectName}
       </h2>
 
-      {(country === 'CO' || country === 'PE') ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A3977]"></div>
+          <span className="ml-2 text-gray-600">Cargando...</span>
+        </div>
+      ) : !country ? (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <p className="text-sm text-yellow-700">
+            No se ha detectado un país válido. Por favor, verifica tu sesión.
+          </p>
+          <p className="text-xs text-yellow-600 mt-1">
+            País actual: "{country}" (vacío o inválido)
+          </p>
+        </div>
+      ) : (country === 'CO' || country === 'PE') ? (
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>

@@ -8,6 +8,8 @@ import { getObjectsById } from '@/services/Project';
 import { ObjectTableData } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { AuthStateDisplay } from '@/components/molecules/AuthStateDisplay';
 
 function ObjectPageContent() {
   const { user, country } = useAuth();
@@ -19,6 +21,8 @@ function ObjectPageContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 5;
+
+
 
   const loadObjects = useCallback(async () => {
     if (!user?.email) return;
@@ -55,7 +59,6 @@ function ObjectPageContent() {
 
   const handleDelete = async (id: string) => {
     if (!user?.email) {
-      setErrorMessage('Usuario no autenticado');
       return;
     }
     try {
@@ -65,6 +68,8 @@ function ObjectPageContent() {
       setErrorMessage(error instanceof Error ? error.message : 'Error al eliminar objeto');
     }
   };
+
+
 
   return (
     <>
@@ -87,10 +92,20 @@ function ObjectPageContent() {
   );
 }
 
+function ObjectPageWithAuth() {
+  const { authState } = useAuthGuard();
+  
+  if (authState !== 'authenticated') {
+    return <AuthStateDisplay state={authState as 'loading' | 'loggingOut' | 'unauthenticated'} />;
+  }
+  
+  return <ObjectPageContent />;
+}
+
 export default function ObjectPage() {
   return (
     <Suspense fallback={<div>Cargando...</div>}>
-      <ObjectPageContent />
+      <ObjectPageWithAuth />
     </Suspense>
   );
 } 

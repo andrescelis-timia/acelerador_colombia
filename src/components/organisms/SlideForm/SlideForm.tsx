@@ -6,14 +6,14 @@ import { Button } from '@/components/atoms/Button';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { SlideFormProps } from './types';
 
-export const SlideForm = <T extends Record<string, unknown>>({ 
-  isOpen, 
-  onClose, 
-  title, 
-  fields, 
-  initialData, 
-  service, 
-  docId, 
+export const SlideForm = <T extends Record<string, unknown>>({
+  isOpen,
+  onClose,
+  title,
+  fields,
+  initialData,
+  service,
+  docId,
   mode = 'create',
   onFormChange
 }: SlideFormProps<T>) => {
@@ -33,7 +33,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
 
     fields.forEach(field => {
       const value = (formData as Record<string, unknown>)[field.name];
-      
+
       if (field.required) {
         if (value === undefined || value === null || value === '') {
           errors[field.name] = `El campo ${field.label} es requerido`;
@@ -60,7 +60,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       setErrorMessage('Por favor complete todos los campos requeridos correctamente');
       return;
@@ -87,7 +87,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
       [name]: value
     };
     setFormData(newFormData);
-    
+
     // Limpiar el error de validación cuando el campo se modifica
     if (validationErrors[name]) {
       setValidationErrors(prev => {
@@ -96,7 +96,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
         return updated;
       });
     }
-    
+
     onFormChange?.(newFormData);
   };
 
@@ -138,8 +138,8 @@ export const SlideForm = <T extends Record<string, unknown>>({
                               <FormField
                                 {...field}
                                 value={
-                                  (formData as Record<string, unknown>)[field.name] === 0 
-                                    ? '0' 
+                                  (formData as Record<string, unknown>)[field.name] === 0
+                                    ? '0'
                                     : String((formData as Record<string, unknown>)[field.name] || '')
                                 }
                                 onChange={(name, value) => handleChange(name, value)}
@@ -171,7 +171,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
           </div>
         </div>
       </Dialog>
-      <ErrorModal 
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />
