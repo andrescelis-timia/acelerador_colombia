@@ -16,6 +16,7 @@ import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { FormField } from '@/components/molecules/FormField';
 import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { ControlMGeneratorPanelProps } from '../types';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 interface XMLFile {
   file: File;
@@ -471,14 +472,16 @@ export const ControlMGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <Button
-            onClick={handleGenerate}
-            disabled={!canGenerateControlM || isGenerating}
-            className="flex items-center"
-          >
-            <PlayIcon className="h-5 w-5 mr-2" />
-            {isGenerating ? 'Generando...' : 'Generar Mallas Control-M'}
-          </Button>
+          <ReadOnlyWrapper fallbackMessage="No disponible">
+            <Button
+              onClick={handleGenerate}
+              disabled={!canGenerateControlM || isGenerating}
+              className="flex items-center"
+            >
+              <PlayIcon className="h-5 w-5 mr-2" />
+              {isGenerating ? 'Generando...' : 'Generar Mallas Control-M'}
+            </Button>
+          </ReadOnlyWrapper>
           
           {!canGenerateControlM && (
             <span className="text-sm text-red-600">

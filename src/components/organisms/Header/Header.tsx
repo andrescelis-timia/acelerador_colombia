@@ -5,18 +5,13 @@ import { UserInfo } from '@/components/molecules/UserInfo';
 import { UserMenu } from '@/components/molecules/UserMenu';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { HeaderProps } from './types';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
 
-export const Header = ({ email }: HeaderProps) => {
-  const router = useRouter();
+export const Header = ({ email, onSignOut }: HeaderProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      router.push('/login');
+      await onSignOut();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cerrar sesión');
     }
@@ -31,7 +26,7 @@ export const Header = ({ email }: HeaderProps) => {
         </div>
       </header>
 
-      <ErrorModal 
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />

@@ -10,6 +10,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -171,26 +172,30 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
         onDelete={handleArchiveClick}
         renderActions={(item) => (
           <div key={`actions-${item.id}`}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit(item.id);
-              }}
-              className="text-indigo-600 hover:text-indigo-900 mr-4"
-              title="Editar Objeto"
-            >
-              <PencilIcon className="h-5 w-5 inline" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleArchiveClick(item.id);
-              }}
-              className="text-gray-600 hover:text-gray-900"
-              title="Archivar Objeto"
-            >
-              <ArchiveBoxIcon className="h-5 w-5 inline" />
-            </button>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item.id);
+                }}
+                className="text-indigo-600 hover:text-indigo-900 mr-4"
+                title="Editar Objeto"
+              >
+                <PencilIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchiveClick(item.id);
+                }}
+                className="text-gray-600 hover:text-gray-900"
+                title="Archivar Objeto"
+              >
+                <ArchiveBoxIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
           </div>
         )}
       />

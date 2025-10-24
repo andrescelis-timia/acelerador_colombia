@@ -1,6 +1,6 @@
 export interface ResponseUserDto {
   id_user: string;
   email: string;
-  country: 'CO' | 'AR' | 'HO';
-  role: 'ADMIN' | 'USER';
+  country: 'CO' | 'PE';
+  role: 'ADMIN' | 'USER' | 'ADMIN-READONLY';
 } 

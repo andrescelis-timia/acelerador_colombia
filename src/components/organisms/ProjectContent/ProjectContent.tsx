@@ -14,6 +14,7 @@ import { ObjectForm } from '@/components/organisms/ObjectForm';
 import { ObjectCreate } from '@/services/Object/types';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 
 const columns: Column[] = [
@@ -134,13 +135,15 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
-        <button
-          onClick={() => setIsEditFormOpen(true)}
-          className="bg-[#0A3977] text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
-        >
-          <span className="mr-2">+</span>
-          Crear Proyecto
-        </button>
+        <ReadOnlyWrapper fallbackMessage="No disponible">
+          <button
+            onClick={() => setIsEditFormOpen(true)}
+            className="bg-[#0A3977] text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+          >
+            <span className="mr-2">+</span>
+            Crear Proyecto
+          </button>
+        </ReadOnlyWrapper>
       </div>
 
       <DataTable
@@ -150,37 +153,43 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
         onDelete={handleArchiveClick}
         renderActions={(item) => (
           <div key={`actions-${item.id}`} className="flex items-center justify-end">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddObject(item.id);
-              }}
-              className="bg-[#00A3FF] text-white px-2 py-1 rounded hover:bg-blue-600 mr-4 inline-flex items-center text-xs font-medium"
-              title="Añadir Objeto"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Añadir Objeto
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit(item.id);
-              }}
-              className="text-indigo-600 hover:text-indigo-900 mr-4"
-              title="Editar Proyecto"
-            >
-              <PencilIcon className="h-5 w-5 inline" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleArchiveClick(item.id);
-              }}
-              className="text-gray-600 hover:text-gray-900"
-              title="Archivar Proyecto"
-            >
-              <ArchiveBoxIcon className="h-5 w-5 inline" />
-            </button>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddObject(item.id);
+                }}
+                className="bg-[#00A3FF] text-white px-2 py-1 rounded hover:bg-blue-600 mr-4 inline-flex items-center text-xs font-medium"
+                title="Añadir Objeto"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Añadir Objeto
+              </button>
+            </ReadOnlyWrapper>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item.id);
+                }}
+                className="text-indigo-600 hover:text-indigo-900 mr-4"
+                title="Editar Proyecto"
+              >
+                <PencilIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
+            <ReadOnlyWrapper showFallback={false}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchiveClick(item.id);
+                }}
+                className="text-gray-600 hover:text-gray-900"
+                title="Archivar Proyecto"
+              >
+                <ArchiveBoxIcon className="h-5 w-5 inline" />
+              </button>
+            </ReadOnlyWrapper>
           </div>
         )}
       />

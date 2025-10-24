@@ -15,6 +15,7 @@ import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
 import { usePipelineGeneratorService, GenerateKirbyResponse } from '@/services/PipelineGenerator';
 import { useFileOperations } from '@/hooks/useFileOperations';
+import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export const KirbyGeneratorPanel = ({
   rawSchema,
@@ -71,11 +72,7 @@ export const KirbyGeneratorPanel = ({
         include_l1t: true
       };
       
-      console.log('Sending Kirby request:', requestData);
-      
       const response = await pipelineGeneratorService.generateKirby(requestData);
-      
-      console.log('Kirby response received:', response);
 
       if (response.success) {
         setGenerationResults(response.data);
@@ -251,14 +248,16 @@ export const KirbyGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <Button
-            onClick={handleGenerate}
-            disabled={!canGenerate || isGenerating}
-            className="flex items-center"
-          >
-            <PlayIcon className="h-5 w-5 mr-2" />
-            {isGenerating ? 'Generando...' : 'Generar Configuraciones'}
-          </Button>
+          <ReadOnlyWrapper fallbackMessage="No disponible">
+            <Button
+              onClick={handleGenerate}
+              disabled={!canGenerate || isGenerating}
+              className="flex items-center"
+            >
+              <PlayIcon className="h-5 w-5 mr-2" />
+              {isGenerating ? 'Generando...' : 'Generar Configuraciones'}
+            </Button>
+          </ReadOnlyWrapper>
           
           {!canGenerate && (
             <span className="text-sm text-red-600">
@@ -287,14 +286,16 @@ export const KirbyGeneratorPanel = ({
               <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
               <span className="text-sm text-green-800">Archivos generados exitosamente</span>
             </div>
-            <Button
-              onClick={downloadAllAsZip}
-              className="flex items-center"
-              variant="primary"
-            >
-              <ArchiveBoxArrowDownIcon className="h-4 w-4 mr-2" />
-              Descargar Todo
-            </Button>
+            <ReadOnlyWrapper showFallback={false}>
+              <Button
+                onClick={downloadAllAsZip}
+                className="flex items-center"
+                variant="primary"
+              >
+                <ArchiveBoxArrowDownIcon className="h-4 w-4 mr-2" />
+                Descargar Todo
+              </Button>
+            </ReadOnlyWrapper>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
