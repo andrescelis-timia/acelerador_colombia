@@ -208,11 +208,12 @@ export const createRetryFetcher = (user: string | null | undefined, country: str
       try {
         const unifiedFetcher = createUnifiedFetcher(user, country, authMethod, token);
         return await unifiedFetcher(url, options);
-      } catch (error: any) {
-        lastError = error;
+      } catch (error: unknown) {
+        const errorWithStatus = error as { status?: number; message?: string };
+        lastError = error as Error;
         
         // Only retry on authentication errors for password auth
-        if (authMethod === 'password' && error.status === 401 && attempt < maxRetries) {
+        if (authMethod === 'password' && errorWithStatus.status === 401 && attempt < maxRetries) {
           // Try to refresh token and retry
           try {
             const validToken = await ensureValidToken();
@@ -220,7 +221,7 @@ export const createRetryFetcher = (user: string | null | undefined, country: str
               token = validToken; // Update token for next attempt
               continue;
             }
-          } catch (refreshError) {
+          } catch {
             // If refresh fails, don't retry
             break;
           }
@@ -262,11 +263,12 @@ export const createSafeFetcher = (user: string | null | undefined, country: stri
         success: true,
         data: data as T
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorWithDetails = error as { message?: string; status?: number };
       return {
         success: false,
-        error: error.message || 'Error desconocido',
-        status: error.status
+        error: errorWithDetails.message || 'Error desconocido',
+        status: errorWithDetails.status
       };
     }
   };

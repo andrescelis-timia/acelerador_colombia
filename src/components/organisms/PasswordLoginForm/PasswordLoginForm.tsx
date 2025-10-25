@@ -2,7 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
-import { PasswordLoginFormProps, PasswordLoginFormData, FormErrors, PasswordLoginResponse } from './types';
+import { PasswordLoginFormProps, PasswordLoginFormData, FormErrors } from './types';
+import { ResponseUserDto } from '@/services/User/types';
 
 export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   onSuccess,
@@ -95,7 +96,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
           email: formData.email,
           country: 'CO', // This will be overridden by AuthContext
           role: 'USER' // This will be overridden by AuthContext
-        } as any);
+        } as ResponseUserDto);
       } else {
         const errorMessage = result.error || 'Error al iniciar sesión';
         setErrors({ general: errorMessage });

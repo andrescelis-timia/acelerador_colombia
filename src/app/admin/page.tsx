@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -25,7 +25,7 @@ export default function AdminPage() {
   const { isAdmin, isAdminReadonly, loading } = useUserRole();
   const { user } = useAuth();
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoadingUsers(true);
 
@@ -60,13 +60,13 @@ export default function AdminPage() {
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [user?.email]);
 
   useEffect(() => {
     if (!loading && isAdmin) {
       fetchUsers();
     }
-  }, [loading, isAdmin, user]);
+  }, [loading, isAdmin, user, fetchUsers]);
 
   const handleSuccess = (user: ResponseUserDto) => {
     setErrorMessage('');

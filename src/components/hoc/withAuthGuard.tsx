@@ -13,7 +13,7 @@ export function withAuthGuard<T extends object>(
   }
 ) {
   return function AuthGuardedComponent(props: T) {
-    const { authState, user } = useAuthGuard();
+    const { authState } = useAuthGuard();
     const { country } = useAuth();
     const { isAdmin } = useUserRole();
 

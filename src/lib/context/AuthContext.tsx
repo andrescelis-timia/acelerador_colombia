@@ -4,6 +4,7 @@ import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'f
 import { auth } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
 import { getUserByEmail } from '@/services/User';
+import { ResponseUserDto } from '@/services/User/types';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { 
   tokenStorage, 
@@ -36,7 +37,7 @@ export interface CreateUserWithPasswordRequest {
 
 export interface CreateUserResult {
   success: boolean;
-  user?: any;
+  user?: ResponseUserDto;
   error?: string;
 }
 
@@ -541,7 +542,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     
     return cleanup;
-  }, [authMethod, handleLogout]);
+  }, [authMethod]);
 
   return (
     <AuthContext.Provider value={{ 
