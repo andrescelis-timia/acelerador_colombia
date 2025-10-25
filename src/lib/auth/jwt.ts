@@ -14,7 +14,7 @@ export interface JWTPayload {
 }
 
 export interface DecodedJWT {
-  header: any;
+  header: Record<string, unknown>;
   payload: JWTPayload;
   signature: string;
 }

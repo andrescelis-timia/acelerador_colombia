@@ -25,23 +25,7 @@ import { ObjectUpdateWithId } from '@/services/Object/types';
 export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProps) => {
   const { user } = useAuth();
 
-  // Validar país antes de obtener configuración
-  if (!country || (country !== 'CO' && country !== 'PE')) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <p className="text-sm text-red-700">
-          País no soportado: "{country || '(vacío)'}"
-        </p>
-        <p className="text-xs text-red-600 mt-1">
-          Solo se soportan los países CO (Colombia) y PE (Perú).
-        </p>
-      </div>
-    );
-  }
-
-  const config = getCountryConfig(country);
-
-  // Estados principales
+  // Estados principales - DEBEN estar antes de cualquier return
   const [dictionaryJsonHeader, setDictionaryJsonHeader] = useState<DictionaryJsonHeaderResponse | null>(null);
   const [dictionaryJsonDetails, setDictionaryJsonDetails] = useState<DictionaryJsonDetailResponse[]>([]);
   const [sampleFile, setSampleFile] = useState<File | null>(null);
@@ -62,8 +46,9 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
   const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
 
-  // Funciones de fetch
+  // TODOS los hooks deben estar aquí antes de cualquier return
   const fetchDictionaryOutput = useCallback(async () => {
+    const config = getCountryConfig(country);
     if (!user?.email || !config.useIngestaOutput) return;
     try {
       const data = await getIngestaOutputByObjectId(objectId, user.email, country);
@@ -71,7 +56,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al cargar la salida del diccionario');
     }
-  }, [objectId, user?.email, country, config.useIngestaOutput]);
+  }, [objectId, user?.email, country]);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
@@ -92,7 +77,9 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     }
   }, [objectId, user?.email, country]);
 
+
   const fetchPreDictionary = useCallback(async () => {
+    const config = getCountryConfig(country);
     if (!user?.email || !config.usePreDictionary) return;
     try {
       setLoading(true);
@@ -103,7 +90,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     } finally {
       setLoading(false);
     }
-  }, [objectId, user?.email, country, config.usePreDictionary]);
+  }, [objectId, user?.email, country]);
 
   const fetchObjectData = useCallback(async () => {
     if (!user?.email) return;
@@ -117,14 +104,10 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
 
   useEffect(() => {
     fetchData();
-    if (config.usePreDictionary) {
-      fetchPreDictionary();
-    }
-    if (config.useIngestaOutput) {
-      fetchDictionaryOutput();
-    }
+    fetchPreDictionary();
+    fetchDictionaryOutput();
     fetchObjectData();
-  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData, config]);
+  }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
 
   // Handlers
   const handleCloseForm = useCallback((success?: boolean) => {
@@ -134,10 +117,47 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
       setTimeout(() => setSuccessMessage(null), 3000);
     }
     setActiveForm(null);
-    if (config.usePreDictionary) {
-      fetchPreDictionary();
+    fetchPreDictionary();
+  }, [fetchPreDictionary]);
+
+  const calculateProgress = useCallback((data: unknown | null): string => {
+    if (!data || typeof data !== 'object') {
+      return '0/9';
     }
-  }, [fetchPreDictionary, config.usePreDictionary]);
+
+    // Excluir campos que no deben contarse
+    const excludeFields = ['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'];
+    // Si el país es CO, también excluimos los campos de partición y agregación
+    if (country === 'CO') {
+      excludeFields.push('partition_fields_raw', 'partition_fields_master', 'aggregate_fields_raw', 'aggregate_fields_master');
+    }
+
+    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) =>
+      !excludeFields.includes(key)
+    );
+    const totalFields = fields.length;
+    const filledFields = fields.filter(([, value]) =>
+      value !== null && value !== undefined && value !== ''
+    ).length;
+
+    return `${filledFields}/${totalFields}`;
+  }, [country]);
+
+  // Validar país después de todos los hooks
+  if (!country || (country !== 'CO' && country !== 'PE')) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <p className="text-sm text-red-700">
+          País no soportado: &quot;{country || '(vacío)'}&quot;
+        </p>
+        <p className="text-xs text-red-600 mt-1">
+          Solo se soportan los países CO (Colombia) y PE (Perú).
+        </p>
+      </div>
+    );
+  }
+
+  const config = getCountryConfig(country);
 
   const handleOpenForm = (formId: string) => {
     setActiveForm(formId);
@@ -235,29 +255,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     return cleanData;
   };
 
-  // Función para calcular progreso
-  const calculateProgress = useCallback((data: unknown | null): string => {
-    if (!data || typeof data !== 'object') {
-      return '0/9';
-    }
 
-    // Excluir campos que no deben contarse
-    const excludeFields = ['id_pre_dictionary_input', 'id_object', 'creation_date', 'creation_user', 'update_date', 'update_user', 'owner_country'];
-    // Si el país es CO, también excluimos los campos de partición y agregación
-    if (country === 'CO') {
-      excludeFields.push('partition_fields_raw', 'partition_fields_master', 'aggregate_fields_raw', 'aggregate_fields_master');
-    }
-
-    const fields = Object.entries(data as Record<string, unknown>).filter(([key]) =>
-      !excludeFields.includes(key)
-    );
-    const totalFields = fields.length;
-    const filledFields = fields.filter(([, value]) =>
-      value !== null && value !== undefined && value !== ''
-    ).length;
-
-    return `${filledFields}/${totalFields}`;
-  }, [country]);
 
   // Detectar delimitador del archivo
   const detectDelimiter = async (file: File): Promise<string> => {

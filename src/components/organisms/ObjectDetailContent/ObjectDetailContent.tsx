@@ -45,7 +45,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
             No se ha detectado un país válido. Por favor, verifica tu sesión.
           </p>
           <p className="text-xs text-yellow-600 mt-1">
-            País actual: "{country}" (vacío o inválido)
+            País actual: &quot;{country}&quot; (vacío o inválido)
           </p>
         </div>
       ) : (country === 'CO' || country === 'PE') ? (

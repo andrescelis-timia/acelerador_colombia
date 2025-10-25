@@ -89,7 +89,7 @@ export const SmartCleanerGeneratorPanel = ({
     }
   };
 
-  const downloadFile = (type: string) => {
+  const downloadFile = () => {
     // Placeholder para descarga de SmartCleaner
   };
 
@@ -190,7 +190,7 @@ export const SmartCleanerGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <ReadOnlyWrapper fallbackMessage="No disponible">
+          <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
             <Button
               onClick={handleGenerate}
               disabled={!canGenerate || isGenerating}
@@ -258,7 +258,7 @@ export const SmartCleanerGeneratorPanel = ({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => downloadFile('raw-config')}
+                      onClick={() => downloadFile()}
                     >
                       <DocumentArrowDownIcon className="h-4 w-4" />
                     </Button>
@@ -269,7 +269,7 @@ export const SmartCleanerGeneratorPanel = ({
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => downloadFile('master-config')}
+                    onClick={() => downloadFile()}
                   >
                     <DocumentArrowDownIcon className="h-4 w-4" />
                   </Button>
@@ -280,7 +280,7 @@ export const SmartCleanerGeneratorPanel = ({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => downloadFile('l1t-config')}
+                      onClick={() => downloadFile()}
                     >
                       <DocumentArrowDownIcon className="h-4 w-4" />
                     </Button>
@@ -299,7 +299,7 @@ export const SmartCleanerGeneratorPanel = ({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => downloadFile('raw-job')}
+                      onClick={() => downloadFile()}
                     >
                       <DocumentArrowDownIcon className="h-4 w-4" />
                     </Button>
@@ -310,7 +310,7 @@ export const SmartCleanerGeneratorPanel = ({
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => downloadFile('master-job')}
+                    onClick={() => downloadFile()}
                   >
                     <DocumentArrowDownIcon className="h-4 w-4" />
                   </Button>
@@ -321,7 +321,7 @@ export const SmartCleanerGeneratorPanel = ({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => downloadFile('l1t-job')}
+                      onClick={() => downloadFile()}
                     >
                       <DocumentArrowDownIcon className="h-4 w-4" />
                     </Button>

@@ -109,9 +109,10 @@ export const withTokenRefresh = async <T>(
 
   try {
     return await apiCall(token);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorWithStatus = error as { status?: number };
     // If we get a 401, try to refresh token once and retry
-    if (error.status === 401) {
+    if (errorWithStatus.status === 401) {
       const refreshResult = await refreshToken();
       if (refreshResult.success && refreshResult.token) {
         return await apiCall(refreshResult.token);

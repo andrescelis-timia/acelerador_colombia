@@ -38,12 +38,6 @@ function LoginContent() {
     setError(errorMessage);
   };
 
-  const toggleAuthMethod = () => {
-    setAuthMethod(authMethod === 'google' ? 'password' : 'google');
-    setError(null);
-    setIsLoading(false);
-  };
-
   const handleAuthMethodChange = (method: 'google' | 'password') => {
     if (method !== authMethod) {
       setAuthMethod(method);

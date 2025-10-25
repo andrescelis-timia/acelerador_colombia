@@ -6,7 +6,7 @@ import {
   CreateUserWithPasswordFormProps,
   CreateUserWithPasswordFormData,
   CreateUserFormErrors,
-  CreateUserWithPasswordResponse,
+
   PasswordStrength
 } from './types';
 

@@ -2,7 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, PencilSquareIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { useAuth } from '@/lib/context/AuthContext';
