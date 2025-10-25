@@ -290,7 +290,7 @@ export const HammurabiGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <ReadOnlyWrapper fallbackMessage="No disponible">
+          <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
             <Button
               onClick={handleGenerate}
               disabled={!canGenerate || isGenerating}

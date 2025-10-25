@@ -135,7 +135,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
-        <ReadOnlyWrapper fallbackMessage="No disponible">
+        <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
           <button
             onClick={() => setIsEditFormOpen(true)}
             className="bg-[#0A3977] text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"

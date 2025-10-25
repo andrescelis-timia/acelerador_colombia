@@ -178,7 +178,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
         </div>
         
         <div className="flex justify-center">
-          <ReadOnlyWrapper fallbackMessage="No disponible">
+          <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
             <button
               onClick={generateSchemas}
               disabled={status.isGenerating}
