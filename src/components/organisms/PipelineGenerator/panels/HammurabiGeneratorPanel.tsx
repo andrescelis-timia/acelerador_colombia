@@ -15,7 +15,7 @@ import { InfoPanel } from '@/components/molecules/InfoPanel';
 import { GeneratorPanelProps } from '../types';
 import { usePipelineGeneratorService, GenerateHammurabiResponse } from '@/services/PipelineGenerator';
 import { useFileOperations } from '@/hooks/useFileOperations';
-import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
+
 
 export const HammurabiGeneratorPanel = ({
   rawSchema,
@@ -290,16 +290,14 @@ export const HammurabiGeneratorPanel = ({
       {/* Generation Controls */}
       <InfoPanel title="Controles de Generación" variant="neutral">
         <div className="flex items-center justify-between mb-4">
-          <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
-            <Button
-              onClick={handleGenerate}
-              disabled={!canGenerate || isGenerating}
-              className="flex items-center"
-            >
-              <PlayIcon className="h-5 w-5 mr-2" />
-              {isGenerating ? 'Generando...' : 'Generar Reglas de Calidad'}
-            </Button>
-          </ReadOnlyWrapper>
+          <Button
+            onClick={handleGenerate}
+            disabled={!canGenerate || isGenerating}
+            className="flex items-center"
+          >
+            <PlayIcon className="h-5 w-5 mr-2" />
+            {isGenerating ? 'Generando...' : 'Generar Reglas de Calidad'}
+          </Button>
           
           {!canGenerate && (
             <span className="text-sm text-red-600">
@@ -328,16 +326,14 @@ export const HammurabiGeneratorPanel = ({
               <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
               <span className="text-sm text-green-800">Reglas generadas exitosamente</span>
             </div>
-            <ReadOnlyWrapper showFallback={false}>
-              <Button
-                onClick={downloadAllAsZip}
-                className="flex items-center"
-                variant="primary"
-              >
-                <ArchiveBoxArrowDownIcon className="h-4 w-4 mr-2" />
-                Descargar Todo
-              </Button>
-            </ReadOnlyWrapper>
+            <Button
+              onClick={downloadAllAsZip}
+              className="flex items-center"
+              variant="primary"
+            >
+              <ArchiveBoxArrowDownIcon className="h-4 w-4 mr-2" />
+              Descargar Todo
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
