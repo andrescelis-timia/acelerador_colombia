@@ -126,6 +126,7 @@ export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
 
             {activeTab === 'smartcleaner' && (
               <SmartCleanerGeneratorPanel
+                rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate()}

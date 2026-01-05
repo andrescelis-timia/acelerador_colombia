@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  PlayIcon, 
-  DocumentArrowDownIcon, 
+import {
+  PlayIcon,
+  DocumentArrowDownIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
   CheckCircleIcon,
-  ArchiveBoxArrowDownIcon 
+  ArchiveBoxArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
@@ -33,14 +33,14 @@ export const KirbyGeneratorPanel = ({
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
-    
+
     setIsGenerating(true);
     setProgress(0);
     setError(null);
-    
+
     try {
       const steps = pipelineGeneratorService.generateProgressSteps('kirby');
-      
+
       for (let i = 0; i < steps.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 800));
         setProgress(((i + 1) / steps.length) * 100);
@@ -56,7 +56,7 @@ export const KirbyGeneratorPanel = ({
           throw new Error(`Error parseando schema Raw: ${parseError instanceof Error ? parseError.message : 'JSON inválido'}`);
         }
       }
-      
+
       let masterSchemaData;
       try {
         const masterContent = await masterSchema!.text();
@@ -71,7 +71,7 @@ export const KirbyGeneratorPanel = ({
         component_type: componentType,
         include_l1t: true
       };
-      
+
       const response = await pipelineGeneratorService.generateKirby(requestData);
 
       if (response.success) {
@@ -80,7 +80,7 @@ export const KirbyGeneratorPanel = ({
       } else {
         throw new Error(response.message || 'Error en la generación');
       }
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error en la generación');
     } finally {
@@ -93,45 +93,28 @@ export const KirbyGeneratorPanel = ({
     if (!generationResults) return;
 
     try {
-      // Importación dinámica para evitar problemas con SSR/Turbopack
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
-      
-      // Crear estructura de carpetas kirby/
+
       const kirbyFolder = zip.folder('kirby');
       const confsFolder = kirbyFolder!.folder('confs');
       const jobsFolder = kirbyFolder!.folder('jobs');
 
-      // Agregar archivos de configuración
-      if (componentType === 'tabla' && generationResults.configs.raw) {
-        const rawFolder = confsFolder!.folder('raw');
-        rawFolder.file(generationResults.configs.raw.file_name, generationResults.configs.raw.content);
-      }
-      
-      if (generationResults.configs.master) {
-        const masterFolder = confsFolder!.folder('master');
-        masterFolder.file(generationResults.configs.master.file_name, generationResults.configs.master.content);
-        
-        // Agregar archivo L1T en la misma carpeta master si existe
-        if (generationResults.configs.l1t) {
-          masterFolder.file(generationResults.configs.l1t.file_name, generationResults.configs.l1t.content);
+      // Agregar archivos de configuración dinámicamente
+      Object.entries(generationResults.configs).forEach(([key, file]) => {
+        if (file) {
+          const folder = confsFolder!.folder(key);
+          folder.file(file.file_name, file.content);
         }
-      }
+      });
 
-      // Agregar archivos de jobs
-      if (componentType === 'tabla' && generationResults.jobs.raw) {
-        jobsFolder!.file(generationResults.jobs.raw.file_name, generationResults.jobs.raw.content);
-      }
+      // Agregar archivos de jobs dinámicamente
+      Object.entries(generationResults.jobs).forEach(([, file]) => {
+        if (file) {
+          jobsFolder!.file(file.file_name, file.content);
+        }
+      });
 
-      if (generationResults.jobs.master) {
-        jobsFolder!.file(generationResults.jobs.master.file_name, generationResults.jobs.master.content);
-      }
-
-      if (generationResults.jobs.l1t) {
-        jobsFolder!.file(generationResults.jobs.l1t.file_name, generationResults.jobs.l1t.content);
-      }
-
-      // Generar y descargar el ZIP
       const content = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(content);
       const link = document.createElement('a');
@@ -141,9 +124,8 @@ export const KirbyGeneratorPanel = ({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generando ZIP:', error);
-      // Fallback: descargar archivos individuales
+    } catch (zipError) {
+      console.error('Error generando ZIP:', zipError);
       await downloadAllIndividually();
     }
   };
@@ -151,34 +133,54 @@ export const KirbyGeneratorPanel = ({
   const downloadAllIndividually = async () => {
     if (!generationResults) return;
 
-    const files = [];
+    const allFiles = [
+      ...Object.values(generationResults.configs),
+      ...Object.values(generationResults.jobs)
+    ].filter(Boolean);
 
-    // Recopilar todos los archivos disponibles
-    if (componentType === 'tabla' && generationResults.configs.raw) {
-      files.push({ ...generationResults.configs.raw, file_name: `kirby_${generationResults.configs.raw.file_name}` });
-    }
-    if (generationResults.configs.master) {
-      files.push({ ...generationResults.configs.master, file_name: `kirby_${generationResults.configs.master.file_name}` });
-    }
-    if (generationResults.configs.l1t) {
-      files.push({ ...generationResults.configs.l1t, file_name: `kirby_${generationResults.configs.l1t.file_name}` });
-    }
-    if (componentType === 'tabla' && generationResults.jobs.raw) {
-      files.push({ ...generationResults.jobs.raw, file_name: `kirby_${generationResults.jobs.raw.file_name}` });
-    }
-    if (generationResults.jobs.master) {
-      files.push({ ...generationResults.jobs.master, file_name: `kirby_${generationResults.jobs.master.file_name}` });
-    }
-    if (generationResults.jobs.l1t) {
-      files.push({ ...generationResults.jobs.l1t, file_name: `kirby_${generationResults.jobs.l1t.file_name}` });
-    }
-
-    // Descargar cada archivo con un pequeño delay
-    for (const file of files) {
-      downloadFile(file);
-      await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay entre descargas
+    for (const file of allFiles) {
+      if (file) {
+        downloadFile(file);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
     }
   };
+
+  // Helper para renderizar lista de archivos
+  const renderFileList = (files: Record<string, { file_name: string; content: string } | undefined>, title: string) => (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <h4 className="font-medium text-gray-900 mb-3">{title}</h4>
+      <div className="space-y-2">
+        {Object.entries(files).map(([key, file]) => {
+          if (!file) return null;
+          return (
+            <div key={key} className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 flex-1 pr-2">{file.file_name}</span>
+              <div className="flex gap-1 flex-shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => viewFileContent(file)}
+                  className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
+                >
+                  Ver contenido
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadFile(file)}
+                  className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
+                  title="Descargar"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6">
@@ -207,7 +209,7 @@ export const KirbyGeneratorPanel = ({
               </ul>
             </div>
           )}
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <InformationCircleIcon className="h-4 w-4 text-blue-700 mr-2" />
@@ -219,7 +221,7 @@ export const KirbyGeneratorPanel = ({
               <li>• Trim operations</li>
             </ul>
           </div>
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <InformationCircleIcon className="h-4 w-4 text-blue-700 mr-2" />
@@ -238,9 +240,8 @@ export const KirbyGeneratorPanel = ({
         <div className="flex items-start">
           <ExclamationTriangleIcon className="h-6 w-6 text-amber-500 mt-1 mr-3 flex-shrink-0" />
           <div className="text-sm text-amber-800 space-y-1">
-            <div><strong>Archivos CSV:</strong> Validar propiedades (header, delimitador, encoding)
-</div>
-            <div><strong>Jobs:</strong> Reemplazar `&lt;PROJECT&gt;` en archivos JSON generados</div>
+            <div><strong>Archivos CSV:</strong> Validar propiedades (header, delimitador, encoding)</div>
+            <div><strong>Jobs:</strong> Reemplazar `&lt;PROJECT&gt;` y `&lt;REPO_NAME&gt;` en archivos JSON generados</div>
           </div>
         </div>
       </InfoPanel>
@@ -256,11 +257,11 @@ export const KirbyGeneratorPanel = ({
             <PlayIcon className="h-5 w-5 mr-2" />
             {isGenerating ? 'Generando...' : 'Generar Configuraciones'}
           </Button>
-          
+
           {!canGenerate && (
             <span className="text-sm text-red-600">
-              {componentType === 'tabla' 
-                ? 'Se requieren schemas Raw y Master' 
+              {componentType === 'tabla'
+                ? 'Se requieren schemas Raw y Master'
                 : 'Se requiere schema Master'}
             </span>
           )}
@@ -268,8 +269,8 @@ export const KirbyGeneratorPanel = ({
 
         {isGenerating && (
           <div>
-            <ProgressBar 
-              progress={progress} 
+            <ProgressBar
+              progress={progress}
               className="mb-2"
             />
             <p className="text-sm text-gray-600">Procesando configuraciones Kirby...</p>
@@ -293,165 +294,35 @@ export const KirbyGeneratorPanel = ({
               Descargar Todo
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Configuration Files */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3">Archivos de Configuración</h4>
-              <div className="space-y-2">
-                {generationResults.configs.raw && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.configs.raw.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.configs.raw)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.configs.raw)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {generationResults.configs.master && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.configs.master.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.configs.master)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.configs.master)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {generationResults.configs.l1t && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.configs.l1t.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.configs.l1t)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.configs.l1t)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Job Files */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3">Archivos de Jobs</h4>
-              <div className="space-y-2">
-                {generationResults.jobs.raw && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.jobs.raw.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.jobs.raw)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.jobs.raw)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {generationResults.jobs.master && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.jobs.master.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.jobs.master)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.jobs.master)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {generationResults.jobs.l1t && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 flex-1 pr-2">{generationResults.jobs.l1t.file_name}</span>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => viewFileContent(generationResults.jobs.l1t)}
-                        className="text-xs px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                      >
-                        Ver contenido
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => downloadFile(generationResults.jobs.l1t)}
-                        className="px-2 py-1 border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50"
-                        title="Descargar"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
+          {/* Metadata Info */}
+          {generationResults.metadata && (
+            <div className="mb-4 bg-white border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Información de Generación</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">Componente:</span>
+                  <span className="ml-2 text-blue-600 capitalize">{generationResults.metadata.componentType}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Nivel Seguridad:</span>
+                  <span className="ml-2 text-blue-600">{generationResults.metadata.masterSecurityLevel}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Alias:</span>
+                  <span className="ml-2 text-blue-600">{generationResults.metadata.extractedInfo.alias}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Namespace:</span>
+                  <span className="ml-2 text-blue-600">{generationResults.metadata.extractedInfo.namespace}</span>
+                </div>
               </div>
             </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderFileList(generationResults.configs, 'Archivos de Configuración')}
+            {renderFileList(generationResults.jobs, 'Archivos de Jobs')}
           </div>
         </InfoPanel>
       )}
