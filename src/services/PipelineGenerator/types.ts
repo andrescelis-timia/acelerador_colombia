@@ -76,20 +76,17 @@ export interface GenerateKirbyResponse {
   success: boolean;
   message: string;
   data?: {
-    configs: {
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
-    };
-    jobs: {
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
-    };
+    configs: Record<string, GeneratedFile>;
+    jobs: Record<string, GeneratedFile>;
     metadata: {
       shouldGenerateL1T: boolean;
       masterSecurityLevel: string;
       detectedTransformations: string[];
+      componentType: 'tabla' | 'tablon';
+      extractedInfo: {
+        alias: string;
+        namespace: string;
+      };
     };
   };
 }
@@ -98,27 +95,18 @@ export interface GenerateHammurabiResponse {
   success: boolean;
   message: string;
   data?: {
-    configs: {
-      staging?: GeneratedFile;
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
+    configs: Record<string, GeneratedFile>;
+    jobs: Record<string, GeneratedFile>;
+    metadata: {
+      componentType: 'tabla' | 'tablon';
+      generatedPhases: string[];
+      includeL1T: boolean;
+      extractedInfo: {
+        alias: string;
+        namespace: string;
+      };
+      fieldAnalysis: FieldAnalysis;
     };
-    jobs: {
-      staging?: GeneratedFile;
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
-    };
-    rules: {
-      '2.1'?: RuleInfo; // CompletenessRule
-      '2.2'?: RuleInfo; // BasicPerimeterCompletenessRule
-      '2.3'?: RuleInfo; // ConditionalPerimeterCompletenessRule
-      '3.1'?: RuleInfo[]; // NotNullValidationRule (multiple)
-      '3.2'?: RuleInfo[]; // FormatValidationRule (multiple)
-      '4.2'?: RuleInfo; // DuplicateRule
-    };
-    validationWarnings: ValidationWarning[];
   };
 }
 
@@ -126,20 +114,16 @@ export interface GenerateSmartCleanerResponse {
   success: boolean;
   message: string;
   data?: {
-    configs: {
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
-    };
-    jobs: {
-      raw?: GeneratedFile;
-      master: GeneratedFile;
-      l1t?: GeneratedFile;
-    };
-    retentionRules: {
-      frequency: 'daily' | 'monthly' | 'annual';
-      rawRetention: string; // ej: "45D", "2M"
-      masterRetention: string; // ej: "365D", "5Y", "8Y"
+    configs: Record<string, GeneratedFile>;
+    jobs: Record<string, GeneratedFile>;
+    metadata: {
+      shouldGenerateL1T: boolean;
+      masterSecurityLevel: string;
+      componentType: 'tabla' | 'tablon';
+      extractedInfo: {
+        alias: string;
+        namespace: string;
+      };
     };
   };
 }
