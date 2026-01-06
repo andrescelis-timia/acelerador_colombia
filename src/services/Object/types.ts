@@ -4,6 +4,22 @@ export enum ObjectStatus {
   COMPLETED = 'completed'
 }
 
+export type PipelineStageStatus = 'pending' | 'in_progress' | 'completed' | 'error';
+
+export interface PipelineStageState {
+  status: PipelineStageStatus;
+  message?: string;
+  updated_at?: string;
+}
+
+export interface PipelineStatus {
+  gobierno: PipelineStageState;
+  kirby: PipelineStageState;
+  hammurabi: PipelineStageState;
+  smartcleaner: PipelineStageState;
+  controlm: PipelineStageState;
+}
+
 export interface ObjectCreate extends Record<string, unknown> {
   name: string;
   alias: string;
@@ -42,6 +58,7 @@ export interface ObjectResponse {
   flag_l1t: boolean;
   active: boolean;
   project_name: string;
+  pipeline_status?: PipelineStatus;
 }
 
 export interface ObjectTableData {
@@ -52,4 +69,5 @@ export interface ObjectTableData {
   url_document: string;
   creation_date: string;
   project_name: string;
+  pipeline_status?: PipelineStatus;
 } 

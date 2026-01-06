@@ -49,8 +49,8 @@ export const DataTable = <T extends Record<string, unknown> & { id: string }>({
               <tr key={item.id} onClick={() => onEdit?.(item.id)} className="hover:bg-gray-50 cursor-pointer">
                 {columns.map((column) => (
                   <td key={`${item.id}-${column.accessor}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {column.render 
-                      ? column.render(item[column.accessor])
+                    {column.render
+                      ? column.render(item[column.accessor], item as Record<string, unknown>)
                       : item[column.accessor]?.toString()}
                   </td>
                 ))}

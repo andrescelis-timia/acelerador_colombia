@@ -6,16 +6,15 @@ import { HammurabiGeneratorPanel } from './panels/HammurabiGeneratorPanel';
 import { SmartCleanerGeneratorPanel } from './panels/SmartCleanerGeneratorPanel';
 import { ControlMGeneratorPanel } from './panels/ControlMGeneratorPanel';
 import { SchemaUploadSection } from './components/SchemaUploadSection';
-import { PipelineGeneratorProps } from './types';
-import { 
-  CubeIcon, 
-  ShieldCheckIcon, 
-  TrashIcon, 
+import {
+  CubeIcon,
+  ShieldCheckIcon,
+  TrashIcon,
   Cog6ToothIcon,
-  DocumentTextIcon 
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
-export const PipelineGenerator = ({ }: PipelineGeneratorProps) => {
+export const PipelineGenerator = () => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
   const [masterSchema, setMasterSchema] = useState<File | null>(null);
   const [componentType, setComponentType] = useState<'tabla' | 'tablon'>('tabla');

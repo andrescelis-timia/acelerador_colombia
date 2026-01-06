@@ -3,7 +3,7 @@ import { ObjectContentProps } from './types';
 import { PencilIcon, ArchiveBoxIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import { ObjectForm } from '@/components/organisms/ObjectForm';
-import { ObjectUpdateWithId } from '@/services/Object/types';
+import { ObjectUpdateWithId, PipelineStatus } from '@/services/Object/types';
 import { getById, archiveData } from '@/services/Object';
 import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
+import { PipelineStatusIndicator } from '@/components/molecules/PipelineStatusIndicator';
+import { PipelineStatusModal } from '@/components/molecules/PipelineStatusModal';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -21,40 +23,14 @@ const getStatusLabel = (status: string) => {
   return statusMap[status] || status;
 };
 
-const columns: Column[] = [
-  { header: 'Nombre del Objeto', accessor: 'name' },
-  { header: 'Proyecto', accessor: 'project_name'},
-  { 
-    header: 'Estado', 
-    accessor: 'status',
-    render: (value: unknown) => getStatusLabel(value as string)
-  },
-  { 
-    header: 'Pre-diccionario',
-    accessor: 'url_document',
-    render: (value: unknown) => (
-      <a 
-        href={value as string} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 underline"
-        onClick={(e) => e.stopPropagation()}
-      >
-        Ver Documento
-      </a>
-    )
-  },
-  {
-    header: 'Fecha de Creación',
-    accessor: 'creation_date',
-    render: (value: unknown) => 
-      new Date(value as string).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      })
-  }
-];
+// Estado por defecto cuando no hay pipeline_status
+const DEFAULT_PIPELINE_STATUS: PipelineStatus = {
+  gobierno: { status: 'pending' },
+  kirby: { status: 'pending' },
+  hammurabi: { status: 'pending' },
+  smartcleaner: { status: 'pending' },
+  controlm: { status: 'pending' }
+};
 
 export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
   const { user, country } = useAuth();
@@ -66,6 +42,54 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   const [objectToArchive, setObjectToArchive] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPipelineModalOpen, setIsPipelineModalOpen] = useState(false);
+  const [selectedPipelineObject, setSelectedPipelineObject] = useState<{ name: string; status: PipelineStatus } | null>(null);
+
+  const handlePipelineClick = (objectName: string, pipelineStatus: PipelineStatus | undefined) => {
+    setSelectedPipelineObject({
+      name: objectName,
+      status: pipelineStatus || DEFAULT_PIPELINE_STATUS
+    });
+    setIsPipelineModalOpen(true);
+  };
+
+  const columns: Column[] = [
+    { header: 'Nombre del Objeto', accessor: 'name' },
+    { header: 'Proyecto', accessor: 'project_name' },
+    {
+      header: 'Estado',
+      accessor: 'status',
+      render: (value) => getStatusLabel(value as string)
+    },
+    {
+      header: 'Pipeline E2E',
+      accessor: 'pipeline_status',
+      render: (value, row) => {
+        const pipelineStatus = value as PipelineStatus | undefined;
+        return (
+          <PipelineStatusIndicator
+            status={pipelineStatus || DEFAULT_PIPELINE_STATUS}
+            onClick={() => handlePipelineClick(row?.name as string, pipelineStatus)}
+          />
+        );
+      }
+    },
+    {
+      header: 'Pre-diccionario',
+      accessor: 'url_document',
+      render: (value) => (
+        <a
+          href={value as string}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Ver Documento
+        </a>
+      )
+    }
+  ];
 
   useEffect(() => {
     setObjects(data);
@@ -263,6 +287,18 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
           </Dialog.Panel>
         </div>
       </Dialog>
+
+      {selectedPipelineObject && (
+        <PipelineStatusModal
+          isOpen={isPipelineModalOpen}
+          onClose={() => {
+            setIsPipelineModalOpen(false);
+            setSelectedPipelineObject(null);
+          }}
+          objectName={selectedPipelineObject.name}
+          status={selectedPipelineObject.status}
+        />
+      )}
     </>
   );
 }; 

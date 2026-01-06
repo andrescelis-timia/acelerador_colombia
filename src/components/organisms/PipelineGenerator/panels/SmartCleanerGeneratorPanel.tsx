@@ -26,6 +26,7 @@ export const SmartCleanerGeneratorPanel = ({
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState<string>('');
   const [generationResults, setGenerationResults] = useState<GenerateSmartCleanerResponse['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pipelineGeneratorService = usePipelineGeneratorService();
@@ -42,6 +43,7 @@ export const SmartCleanerGeneratorPanel = ({
       const steps = pipelineGeneratorService.generateProgressSteps('smartcleaner');
 
       for (let i = 0; i < steps.length; i++) {
+        setCurrentStep(steps[i]);
         await new Promise(resolve => setTimeout(resolve, 800));
         setProgress(((i + 1) / steps.length) * 100);
       }
@@ -272,7 +274,7 @@ export const SmartCleanerGeneratorPanel = ({
               progress={progress}
               className="mb-2"
             />
-            <p className="text-sm text-gray-600">Procesando configuraciones de limpieza...</p>
+            <p className="text-sm text-gray-600">{currentStep || 'Iniciando...'}</p>
           </div>
         )}
       </InfoPanel>

@@ -1,4 +1,5 @@
-import { 
+import { useAuth } from '@/lib/context/AuthContext';
+import {
   ProcessSchemaRequest,
   ProcessSchemaResponse,
   GenerateKirbyRequest,
@@ -9,8 +10,6 @@ import {
   GenerateSmartCleanerResponse,
   GenerateControlMRequest,
   GenerateControlMResponse,
-  BatchGenerationRequest,
-  BatchGenerationResponse,
   PipelineGeneratorException,
   GeneratorType
 } from './types';
@@ -166,36 +165,6 @@ class PipelineGeneratorService {
   }
 
   // ========================
-  // GENERACIÓN BATCH
-  // ========================
-
-  async generateBatch(request: BatchGenerationRequest): Promise<BatchGenerationResponse> {
-    const formData = new FormData();
-    
-    // Datos de schema
-    if (request.rawSchemaData) {
-      formData.append('raw_schema_data', JSON.stringify(request.rawSchemaData));
-    }
-    formData.append('master_schema_data', JSON.stringify(request.masterSchemaData));
-    formData.append('component_type', request.componentType);
-    formData.append('selected_generators', JSON.stringify(request.selectedGenerators));
-    
-    // Datos específicos de Control-M si está incluido
-    if (request.controlMData) {
-      if (request.controlMData.xml1) {
-        formData.append('controlm_xml1', request.controlMData.xml1);
-      }
-      if (request.controlMData.xml2) {
-        formData.append('controlm_xml2', request.controlMData.xml2);
-      }
-      formData.append('controlm_jobs_list', JSON.stringify(request.controlMData.jobsList));
-      formData.append('controlm_datax_config', JSON.stringify(request.controlMData.dataxConfig));
-    }
-
-    return this.makeFormDataRequest<BatchGenerationResponse>('/generators/batch', formData);
-  }
-
-  // ========================
   // UTILIDADES
   // ========================
 
@@ -223,21 +192,6 @@ class PipelineGeneratorService {
     }
   }
 
-  async downloadMultipleFiles(files: { downloadUrl: string; fileName: string }[]): Promise<void> {
-    const downloadPromises = files.map(file => 
-      this.downloadFile(file.downloadUrl, file.fileName)
-    );
-
-    try {
-      await Promise.all(downloadPromises);
-    } catch (error) {
-      throw new PipelineGeneratorException(
-        'BATCH_DOWNLOAD_ERROR',
-        `Error en descarga masiva: ${error instanceof Error ? error.message : 'Error desconocido'}`
-      );
-    }
-  }
-
   // ========================
   // HELPERS PARA COMPONENTES
   // ========================
@@ -245,7 +199,7 @@ class PipelineGeneratorService {
   generateProgressSteps(generator: GeneratorType): string[] {
     const baseSteps = [
       'Validando schemas',
-      'Analizando estructura de datos', 
+      'Analizando estructura de datos',
       'Generando configuraciones'
     ];
 
@@ -258,7 +212,7 @@ class PipelineGeneratorService {
           'Generando archivos Master',
           'Configurando L1T (si aplica)'
         ];
-      
+
       case 'hammurabi':
         return [
           ...baseSteps,
@@ -268,7 +222,7 @@ class PipelineGeneratorService {
           'Generando reglas 4.x (Duplicados)',
           'Creando configuraciones por fase'
         ];
-      
+
       case 'smartcleaner':
         return [
           ...baseSteps,
@@ -277,7 +231,7 @@ class PipelineGeneratorService {
           'Configurando limpieza Master',
           'Generando jobs de mantenimiento'
         ];
-      
+
       case 'controlm':
         return [
           'Validando archivos XML',
@@ -289,82 +243,10 @@ class PipelineGeneratorService {
           'Generando malla Ingesta Producción',
           'Validando secuencias'
         ];
-      
+
       default:
         return baseSteps;
     }
-  }
-
-  getGeneratorDescription(generator: GeneratorType): string {
-    switch (generator) {
-      case 'kirby':
-        return 'Genera configuraciones de ingesta para transformar datos CSV → Avro → Parquet';
-      case 'hammurabi':
-        return 'Crea reglas de calidad de datos (completitud, validación, duplicados)';
-      case 'smartcleaner':
-        return 'Configura limpieza automática con políticas de retención inteligentes';
-      case 'controlm':
-        return 'Genera mallas de orquestación para Control-M en todos los ambientes';
-      default:
-        return 'Generador de configuraciones';
-    }
-  }
-
-  getGeneratorColor(generator: GeneratorType): string {
-    switch (generator) {
-      case 'kirby': return 'blue';
-      case 'hammurabi': return 'orange';
-      case 'smartcleaner': return 'purple';
-      case 'controlm': return 'green';
-      default: return 'gray';
-    }
-  }
-
-  // ========================
-  // VALIDACIONES CLIENT-SIDE
-  // ========================
-
-  validateGeneratorRequirements(
-    generator: GeneratorType,
-    rawSchema: File | null,
-    masterSchema: File | null,
-    componentType: 'tabla' | 'tablon'
-  ): { isValid: boolean; message?: string } {
-    switch (generator) {
-      case 'kirby':
-      case 'hammurabi':
-      case 'smartcleaner':
-        if (componentType === 'tabla') {
-          if (!rawSchema || !masterSchema) {
-            return {
-              isValid: false,
-              message: 'Para componentes tipo "tabla" se requieren ambos schemas (Raw y Master)'
-            };
-          }
-        } else {
-          if (!masterSchema) {
-            return {
-              isValid: false,
-              message: 'Para componentes tipo "tablón" se requiere el schema Master'
-            };
-          }
-        }
-        break;
-      
-      case 'controlm':
-        if (!rawSchema || !masterSchema) {
-          return {
-            isValid: false,
-            message: 'Control-M requiere ambos schemas para generar las mallas completas'
-          };
-        }
-        break;
-      
-      default:
-        return { isValid: false, message: 'Generador no reconocido' };
-    }
-
-    return { isValid: true };
   }
 }
 
@@ -374,8 +256,6 @@ export const createPipelineGeneratorService = (user: string | null, country: str
 };
 
 // Hook para usar con AuthContext
-import { useAuth } from '@/lib/context/AuthContext';
-
 export const usePipelineGeneratorService = () => {
   const { user, country } = useAuth();
   return createPipelineGeneratorService(user?.email || null, country);

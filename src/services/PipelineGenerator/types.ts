@@ -198,13 +198,6 @@ export interface GeneratedFile {
   download_url?: string;
 }
 
-export interface RuleInfo {
-  ruleId: string;
-  className: string;
-  config: Record<string, unknown>;
-  fields?: string[];
-}
-
 export interface ValidationWarning {
   type: 'warning' | 'error' | 'info';
   field?: string;
@@ -230,41 +223,6 @@ export interface ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
-}
-
-// ========================
-// TIPOS DE BATCH PROCESSING
-// ========================
-
-export interface BatchGenerationRequest {
-  rawSchemaData?: Record<string, unknown>;
-  masterSchemaData: Record<string, unknown>;
-  componentType: 'tabla' | 'tablon';
-  selectedGenerators: GeneratorType[];
-  controlMData?: {
-    xml1?: File;
-    xml2?: File;
-    jobsList: JobEntry[];
-    dataxConfig: DataxConfig;
-  };
-}
-
-export interface BatchGenerationResponse {
-  success: boolean;
-  message: string;
-  results: {
-    kirby?: GenerateKirbyResponse;
-    hammurabi?: GenerateHammurabiResponse;
-    smartcleaner?: GenerateSmartCleanerResponse;
-    controlm?: GenerateControlMResponse;
-  };
-  summary: {
-    totalConfigs: number;
-    totalJobs: number;
-    generatedFiles: GeneratedFile[];
-    errors: string[];
-    warnings: string[];
-  };
 }
 
 export type GeneratorType = 'kirby' | 'hammurabi' | 'smartcleaner' | 'controlm';

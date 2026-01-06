@@ -1,7 +1,11 @@
-export interface PipelineGeneratorProps {
-  objectId: string;
-  initialComponentType?: 'tabla' | 'tablon';
-}
+import { SchemaField, GeneratorType } from '@/services/PipelineGenerator/types';
+
+// Re-exportar tipos centralizados para uso en componentes
+export type { SchemaField, GeneratorType };
+
+// PipelineGeneratorProps vacío - el componente no recibe props externos
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface PipelineGeneratorProps {}
 
 export interface GeneratorPanelProps {
   rawSchema: File | null;
@@ -32,13 +36,6 @@ export interface SchemaFile {
   fields: SchemaField[];
 }
 
-export interface SchemaField {
-  name: string;
-  type: string;
-  nullable?: boolean;
-  logicalFormat?: string;
-  legacyName?: string;
-}
 
 export interface GenerationResult {
   success: boolean;
@@ -65,4 +62,3 @@ export interface GeneratorConfig {
   supportedTypes: ('tabla' | 'tablon')[];
 }
 
-export type GeneratorType = 'kirby' | 'hammurabi' | 'smartcleaner' | 'controlm';

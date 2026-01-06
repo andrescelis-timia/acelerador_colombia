@@ -47,6 +47,7 @@ export const ControlMGeneratorPanel = ({
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState<string>('');
   const [generationResults, setGenerationResults] = useState<{
     success: boolean;
     uuaa: string;
@@ -220,6 +221,7 @@ export const ControlMGeneratorPanel = ({
       ];
 
       for (let i = 0; i < steps.length; i++) {
+        setCurrentStep(steps[i]);
         await new Promise(resolve => setTimeout(resolve, 1500));
         setProgress(((i + 1) / steps.length) * 100);
       }
@@ -353,7 +355,7 @@ export const ControlMGeneratorPanel = ({
                   <div className="w-40">
                     <select
                       value={job.type}
-                      onChange={(e) => updateJob(index, 'type', e.target.value as 'T04' | 'T02')}
+                      onChange={(e) => updateJob(index, 'type', e.target.value as JobEntry['type'])}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="datax">Datax</option>
@@ -490,11 +492,11 @@ export const ControlMGeneratorPanel = ({
 
         {isGenerating && (
           <div>
-            <ProgressBar 
-              progress={progress} 
+            <ProgressBar
+              progress={progress}
               className="mb-2"
             />
-            <p className="text-sm text-gray-600">Procesando mallas Control-M...</p>
+            <p className="text-sm text-gray-600">{currentStep || 'Iniciando...'}</p>
           </div>
         )}
       </InfoPanel>
