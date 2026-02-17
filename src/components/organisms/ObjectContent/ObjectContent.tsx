@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 import { PipelineStatusIndicator } from '@/components/molecules/PipelineStatusIndicator';
 import { PipelineStatusModal } from '@/components/molecules/PipelineStatusModal';
+import { usePipelineGeneratorService, ArtifactsStatus } from '@/services/PipelineGenerator';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -32,9 +33,23 @@ const DEFAULT_PIPELINE_STATUS: PipelineStatus = {
   controlm: { status: 'pending' }
 };
 
+// Deriva PipelineStatus desde ArtifactsStatus
+const derivePipelineStatus = (artifactsStatus: ArtifactsStatus | undefined): PipelineStatus => {
+  if (!artifactsStatus) return DEFAULT_PIPELINE_STATUS;
+
+  return {
+    gobierno: { status: artifactsStatus.gobierno ? 'completed' : 'pending' },
+    kirby: { status: artifactsStatus.kirby ? 'completed' : 'pending' },
+    hammurabi: { status: artifactsStatus.hammurabi ? 'completed' : 'pending' },
+    smartcleaner: { status: artifactsStatus.smartcleaner ? 'completed' : 'pending' },
+    controlm: { status: artifactsStatus.controlm ? 'completed' : 'pending' }
+  };
+};
+
 export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
   const { user, country } = useAuth();
   const router = useRouter();
+  const pipelineService = usePipelineGeneratorService();
   const [objects, setObjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedObject, setSelectedObject] = useState<ObjectUpdateWithId | undefined>(undefined);
@@ -44,11 +59,38 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPipelineModalOpen, setIsPipelineModalOpen] = useState(false);
   const [selectedPipelineObject, setSelectedPipelineObject] = useState<{ name: string; status: PipelineStatus } | null>(null);
+  const [artifactsStatusMap, setArtifactsStatusMap] = useState<Map<string, ArtifactsStatus>>(new Map());
 
-  const handlePipelineClick = (objectName: string, pipelineStatus: PipelineStatus | undefined) => {
+  // Calcular objetos visibles en la página actual
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const visibleObjects = Array.isArray(objects) ? objects.slice(startIndex, endIndex) : [];
+  const visibleObjectIds = visibleObjects.map(obj => obj.id_object).join(',');
+
+  // Fetch artifacts status para los objetos visibles
+  useEffect(() => {
+    const fetchArtifactsStatus = async () => {
+      if (!user?.email || visibleObjects.length === 0) return;
+
+      const objectIds = visibleObjects.map(obj => obj.id_object);
+      try {
+        const statusMap = await pipelineService.getArtifactsStatusForObjects(objectIds);
+        setArtifactsStatusMap(statusMap);
+      } catch (error) {
+        console.error('Error fetching artifacts status:', error);
+      }
+    };
+
+    fetchArtifactsStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleObjectIds, user?.email]);
+
+  const handlePipelineClick = (objectId: string, objectName: string) => {
+    const artifactsStatus = artifactsStatusMap.get(objectId);
+    const derivedStatus = derivePipelineStatus(artifactsStatus);
     setSelectedPipelineObject({
       name: objectName,
-      status: pipelineStatus || DEFAULT_PIPELINE_STATUS
+      status: derivedStatus
     });
     setIsPipelineModalOpen(true);
   };
@@ -63,13 +105,15 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
     },
     {
       header: 'Pipeline E2E',
-      accessor: 'pipeline_status',
+      accessor: 'id_object',
       render: (value, row) => {
-        const pipelineStatus = value as PipelineStatus | undefined;
+        const objectId = value as string;
+        const artifactsStatus = artifactsStatusMap.get(objectId);
+        const derivedStatus = derivePipelineStatus(artifactsStatus);
         return (
           <PipelineStatusIndicator
-            status={pipelineStatus || DEFAULT_PIPELINE_STATUS}
-            onClick={() => handlePipelineClick(row?.name as string, pipelineStatus)}
+            status={derivedStatus}
+            onClick={() => handlePipelineClick(objectId, row?.name as string)}
           />
         );
       }
@@ -140,15 +184,12 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
     }
   };
 
-  const handleRowClick = (id: string) => {    
+  const handleRowClick = (id: string) => {
     const selectedObj = objects.find(obj => obj.id_object === id);
     if (selectedObj) {
       router.push(`/object-detail/${id}?name=${encodeURIComponent(selectedObj.name)}`);
     }
   };
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
 
   return (
     <>
@@ -190,7 +231,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
       </div>
 
       <DataTable
-        data={Array.isArray(objects) ? objects.slice(startIndex, endIndex).map(obj => ({ ...obj, id: obj.id_object })) : []}
+        data={visibleObjects.map(obj => ({ ...obj, id: obj.id_object }))}
         columns={columns}
         onEdit={handleRowClick}
         onDelete={handleArchiveClick}

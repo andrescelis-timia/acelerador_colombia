@@ -7,6 +7,7 @@ export interface ProcessSchemaRequest {
 }
 
 export interface GenerateKirbyRequest {
+  object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
@@ -14,6 +15,7 @@ export interface GenerateKirbyRequest {
 }
 
 export interface GenerateHammurabiRequest {
+  object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
@@ -21,6 +23,7 @@ export interface GenerateHammurabiRequest {
 }
 
 export interface GenerateSmartCleanerRequest {
+  object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
@@ -28,11 +31,46 @@ export interface GenerateSmartCleanerRequest {
 }
 
 export interface GenerateControlMRequest {
-  xml1?: File;
-  xml2?: File;
+  object_id?: string;
   jobsList: JobEntry[];
   componentType: 'tabla' | 'tablon';
   dataxConfig: DataxConfig;
+  uuaa: string;
+  transferName: string;
+  generatedJobs?: ControlMJobGenerated[];
+  existingT04Xml?: string;
+  existingT02Xml?: string;
+}
+
+export interface AnalyzeSequencesRequest {
+  t04_xml?: string;
+  t02_xml?: string;
+  uuaa: string;
+  temporality_code: string;
+}
+
+export interface AnalyzeSequencesResponse {
+  next_sequences: {
+    T: number;
+    C: number;
+    D: number;
+  };
+  folder_info: Record<string, {
+    folderName: string;
+    uuaa: string;
+    normalizedUuaa: string;
+    temporality: string;
+    mallaType: string;
+  }>;
+}
+
+export interface ControlMJobGenerated {
+  jobName: string;
+  type: 'T' | 'C' | 'D';
+  description: string;
+  phase: string;
+  originalJob?: string;
+  order: number;
 }
 
 export interface JobEntry {
@@ -48,6 +86,11 @@ export interface DataxConfig {
   isCyclic: boolean;
   intervalHours?: number;
   monthDay?: number;
+  weekDay?: number;
+  businessDayDirection?: 'D' | 'L';
+  businessDayNumber?: number;
+  annualMonth?: number;
+  annualDay?: number;
 }
 
 // ========================
@@ -89,6 +132,7 @@ export interface GenerateKirbyResponse {
       };
     };
   };
+  s3_urls?: Record<string, string>;
 }
 
 export interface GenerateHammurabiResponse {
@@ -108,6 +152,7 @@ export interface GenerateHammurabiResponse {
       fieldAnalysis: FieldAnalysis;
     };
   };
+  s3_urls?: Record<string, string>;
 }
 
 export interface GenerateSmartCleanerResponse {
@@ -126,43 +171,29 @@ export interface GenerateSmartCleanerResponse {
       };
     };
   };
+  s3_urls?: Record<string, string>;
 }
 
 export interface GenerateControlMResponse {
   success: boolean;
   message: string;
   data?: {
-    mallas: {
-      dataxDesarrollo: GeneratedFile;
-      dataxProduccion: GeneratedFile;
-      ingestaDesarrollo: GeneratedFile;
-      ingestaProduccion: GeneratedFile;
-    };
-    jobsSequence: {
-      datax: ControlMJob[];
-      ingesta: ControlMJob[];
+    jobs_sequence: ControlMJobGenerated[];
+    config: {
+      uuaa: string;
+      transfer_name: string;
+      datax_config: DataxConfig;
+      component_type: string;
     };
     statistics: {
-      uuaa: string;
-      temporality: string;
-      temporalityCode: string;
-      totalJobs: number;
-      sequenceStats: {
-        datax: { total: number; transferencias: number };
-        ingesta: { 
-          total: number; 
-          calidad: number; 
-          borrado: number;
-          phases: { staging: number; raw: number; master: number; masterL1T: number };
-        };
-      };
+      total_jobs: number;
+      transfer_jobs: number;
+      ingesta_jobs: number;
+      borrado_jobs: number;
     };
-    validations: {
-      xmlValidation: ValidationResult;
-      jobsValidation: ValidationResult;
-      sequenceValidation: ValidationResult;
-    };
+    mallas?: string[];
   };
+  s3_urls?: Record<string, string>;
 }
 
 // ========================
@@ -226,6 +257,66 @@ export interface ValidationResult {
 }
 
 export type GeneratorType = 'kirby' | 'hammurabi' | 'smartcleaner' | 'controlm';
+
+// ========================
+// GENERATED ARTIFACTS (Persistencia)
+// ========================
+
+export interface GeneratedArtifactBase {
+  id_generated_artifact: string;
+  id_object: string;
+  s3_urls?: Record<string, string>;
+  creation_date?: string;
+  creation_user?: string;
+  update_date?: string;
+}
+
+export interface KirbyArtifact extends GeneratedArtifactBase {
+  generator_type: 'kirby';
+  artifacts_data: GenerateKirbyResponse['data'];
+}
+
+export interface HammurabiArtifact extends GeneratedArtifactBase {
+  generator_type: 'hammurabi';
+  artifacts_data: GenerateHammurabiResponse['data'];
+}
+
+export interface SmartCleanerArtifact extends GeneratedArtifactBase {
+  generator_type: 'smartcleaner';
+  artifacts_data: GenerateSmartCleanerResponse['data'];
+}
+
+export interface ControlMArtifact extends GeneratedArtifactBase {
+  generator_type: 'controlm';
+  artifacts_data: GenerateControlMResponse['data'];
+}
+
+export type GeneratedArtifact = KirbyArtifact | HammurabiArtifact | SmartCleanerArtifact | ControlMArtifact;
+
+export interface GeneratedArtifactsResponse {
+  object_id: string;
+  artifacts: {
+    kirby?: KirbyArtifact;
+    hammurabi?: HammurabiArtifact;
+    smartcleaner?: SmartCleanerArtifact;
+    controlm?: ControlMArtifact;
+  };
+}
+
+// Estado de artefactos generados para un objeto
+export interface ArtifactsStatus {
+  gobierno: boolean;
+  kirby: boolean;
+  hammurabi: boolean;
+  smartcleaner: boolean;
+  controlm: boolean;
+}
+
+// Response del endpoint ligero /status
+export interface ArtifactsStatusResponse {
+  object_id: string;
+  status: ArtifactsStatus;
+}
 
 // ========================
 // TIPOS DE ERROR

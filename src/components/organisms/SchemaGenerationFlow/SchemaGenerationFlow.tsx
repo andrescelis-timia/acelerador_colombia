@@ -3,8 +3,8 @@
 import { useState, useCallback } from 'react';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
-import { 
-  PlayIcon,  
+import {
+  PlayIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -14,6 +14,10 @@ import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
   const { user, country } = useAuth();
+  // Estado para modo de generación (solo Colombia tiene ambos modos)
+  const [schemaMode, setSchemaMode] = useState<'lite_co' | 'full'>(
+    country === 'CO' ? 'lite_co' : 'full'
+  );
   const [status, setStatus] = useState<GenerationStatus>({
     isGenerating: false,
     isGenerated: false,
@@ -27,17 +31,22 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
       return;
     }
 
-    setStatus(prev => ({ 
-      ...prev, 
-      isGenerating: true, 
-      error: null, 
-      isGenerated: false 
+    setStatus(prev => ({
+      ...prev,
+      isGenerating: true,
+      error: null,
+      isGenerated: false
     }));
 
     try {
+      // Determinar endpoint según modo
+      const endpoint = schemaMode === 'lite_co'
+        ? `${API_CONFIG.BASE_URL}/schema-generator/object/${objectId}/schemas-from-sheets`
+        : `${API_CONFIG.BASE_URL}/schema-generator/object/${objectId}/schemas`;
+
       // Ejecutar la API call y esperar mínimo 5 segundos para mostrar el progreso
       const [response] = await Promise.all([
-        fetch(`${API_CONFIG.BASE_URL}/schema-generator/object/${objectId}/schemas`, {
+        fetch(endpoint, {
           method: 'GET',
           headers: {
             'X-User': user.email,
@@ -54,22 +63,22 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
       }
 
       const result: SchemaGenerationResponse = await response.json();
-      
-      setStatus(prev => ({ 
-        ...prev, 
-        isGenerating: false, 
-        isGenerated: true, 
-        generatedSchemas: result 
+
+      setStatus(prev => ({
+        ...prev,
+        isGenerating: false,
+        isGenerated: true,
+        generatedSchemas: result
       }));
 
     } catch (error) {
-      setStatus(prev => ({ 
-        ...prev, 
-        isGenerating: false, 
-        error: error instanceof Error ? error.message : 'Error desconocido' 
+      setStatus(prev => ({
+        ...prev,
+        isGenerating: false,
+        error: error instanceof Error ? error.message : 'Error desconocido'
       }));
     }
-  }, [objectId, user?.email, country]);
+  }, [objectId, user?.email, country, schemaMode]);
 
   const formatSchemaJson = useCallback((schema: Record<string, unknown>) => {
     // Reordenar manualmente el schema para garantizar el orden correcto
@@ -170,11 +179,44 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
 
   return (
     <div className="space-y-6">
+      {/* Selector de modo - Solo visible para Colombia */}
+      {country === 'CO' && (
+        <div className="px-2">
+          <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setSchemaMode('lite_co')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                schemaMode === 'lite_co'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Formato diccionario
+            </button>
+            <button
+              onClick={() => setSchemaMode('full')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                schemaMode === 'full'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Formato DATUM
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Panel principal */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="text-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-2">Generación de Schemas</h3>
-          <p className="text-sm text-gray-600">Genera archivos .schema (RAW, MASTER, L1T) desde diccionarios base</p>
+          <p className="text-sm text-gray-600">
+            {schemaMode === 'lite_co'
+              ? 'Genera archivos .schema (RAW, MASTER) desde Google Sheets'
+              : 'Genera archivos .schema (RAW, MASTER, L1T) desde diccionarios base'
+            }
+          </p>
         </div>
         
         <div className="flex justify-center">
@@ -247,7 +289,12 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
       {status.isGenerating && (
         <ProgressDialog
           title="Generando Schemas"
-          steps={[
+          steps={schemaMode === 'lite_co' ? [
+            { label: "Leyendo diccionario desde Google Sheets", duration: 2000 },
+            { label: "Procesando campos y metadatos", duration: 1500 },
+            { label: "Generando schema RAW", duration: 700 },
+            { label: "Generando schema MASTER", duration: 700 }
+          ] : [
             { label: "Extrayendo metadatos del objeto", duration: 1500 },
             { label: "Generando schema RAW", duration: 700 },
             { label: "Generando schema MASTER", duration: 700 },

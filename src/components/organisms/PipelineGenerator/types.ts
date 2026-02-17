@@ -1,18 +1,21 @@
-import { SchemaField, GeneratorType } from '@/services/PipelineGenerator/types';
+import { SchemaField, GeneratorType, GeneratedArtifact } from '@/services/PipelineGenerator/types';
 
 // Re-exportar tipos centralizados para uso en componentes
 export type { SchemaField, GeneratorType };
 
-// PipelineGeneratorProps vacío - el componente no recibe props externos
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface PipelineGeneratorProps {}
+// PipelineGeneratorProps - props para el componente principal
+export interface PipelineGeneratorProps {
+  objectId?: string;
+}
 
 export interface GeneratorPanelProps {
+  objectId?: string;
   rawSchema: File | null;
   masterSchema: File | null;
   componentType: 'tabla' | 'tablon';
   canGenerate: boolean;
   onGenerationComplete?: () => void;
+  initialData?: GeneratedArtifact | null;
 }
 
 // ControlM y otros generadores usan la misma interfaz base

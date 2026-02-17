@@ -21,14 +21,16 @@ export interface GenerateDictionaryJsonResponse {
 export interface GenerateDictionaryBaseRequest {
   header: CreateDictionaryJsonHeader;
   details: CreateDictionaryJsonDetail[];
+  output_mode?: 'full' | 'reduced_co';
 }
 
 export interface GenerateDictionaryBaseResponse {
-  raw: {
+  // Campos para modo full
+  raw?: {
     header: DictionaryBaseRawHeaderResponse;
     details: DictionaryBaseRawDetailResponse[];
   };
-  master: {
+  master?: {
     header: DictionaryBaseMasterHeaderResponse;
     details: DictionaryBaseMasterDetailResponse[];
   };
@@ -37,6 +39,14 @@ export interface GenerateDictionaryBaseResponse {
     dictionary_raw_details_link: string;
     dictionary_master_header_link: string;
     dictionary_master_details_link: string;
+  };
+  // Campos para modo reduced_co
+  success?: boolean;
+  message?: string;
+  data?: {
+    mode?: 'full' | 'reduced_co';
+    rows_updated?: number;
+    sheet_url?: string;
   };
 }
 
@@ -47,4 +57,19 @@ export interface GenerateDictionaryL1TRequest {
 export interface GenerateDictionaryL1TResponse {
   dictionary_l1t_master_header_link: string;
   dictionary_l1t_master_detail_link: string;
+}
+
+export interface GenerateDictionaryLiteCoRequest {
+  object_id: string;
+  periodicity: 'daily' | 'weekly' | 'monthly' | 'yearly';
+}
+
+export interface GenerateDictionaryLiteCoResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    mode: 'lite_co';
+    rows_updated: number;
+    sheet_url: string;
+  };
 } 

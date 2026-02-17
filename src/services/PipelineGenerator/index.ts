@@ -11,7 +11,13 @@ import {
   GenerateControlMRequest,
   GenerateControlMResponse,
   PipelineGeneratorException,
-  GeneratorType
+  GeneratorType,
+  GeneratedArtifactsResponse,
+  GeneratedArtifact,
+  ArtifactsStatus,
+  ArtifactsStatusResponse,
+  AnalyzeSequencesRequest,
+  AnalyzeSequencesResponse
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -146,22 +152,92 @@ class PipelineGeneratorService {
   }
 
   async generateControlM(request: GenerateControlMRequest): Promise<GenerateControlMResponse> {
-    const formData = new FormData();
-    
-    // Agregar archivos XML si existen
-    if (request.xml1) {
-      formData.append('xml1', request.xml1);
-    }
-    if (request.xml2) {
-      formData.append('xml2', request.xml2);
-    }
-    
-    // Agregar datos JSON
-    formData.append('jobs_list', JSON.stringify(request.jobsList));
-    formData.append('component_type', request.componentType);
-    formData.append('datax_config', JSON.stringify(request.dataxConfig));
+    return this.makeRequest<GenerateControlMResponse>('/generators/controlm', {
+      method: 'POST',
+      body: JSON.stringify({
+        object_id: request.object_id,
+        jobs_list: request.jobsList,
+        component_type: request.componentType,
+        datax_config: {
+          periodicity: request.dataxConfig.periodicity,
+          periodicity_type: request.dataxConfig.periodicityType,
+          start_time: request.dataxConfig.startTime,
+          timezone: request.dataxConfig.timezone,
+          is_cyclic: request.dataxConfig.isCyclic,
+          interval_hours: request.dataxConfig.intervalHours,
+          month_day: request.dataxConfig.monthDay,
+          week_day: request.dataxConfig.weekDay,
+          business_day_direction: request.dataxConfig.businessDayDirection,
+          business_day_number: request.dataxConfig.businessDayNumber,
+          annual_month: request.dataxConfig.annualMonth,
+          annual_day: request.dataxConfig.annualDay
+        },
+        uuaa: request.uuaa,
+        transfer_name: request.transferName,
+        generated_jobs: request.generatedJobs,
+        existing_t04_xml: request.existingT04Xml,
+        existing_t02_xml: request.existingT02Xml
+      }),
+    });
+  }
 
-    return this.makeFormDataRequest<GenerateControlMResponse>('/generators/controlm', formData);
+  async analyzeControlMSequences(request: AnalyzeSequencesRequest): Promise<AnalyzeSequencesResponse> {
+    return this.makeRequest<AnalyzeSequencesResponse>('/generators/controlm/analyze-sequences', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  // ========================
+  // ARTEFACTOS GENERADOS
+  // ========================
+
+  async getGeneratedArtifacts(objectId: string): Promise<GeneratedArtifactsResponse> {
+    return this.makeRequest<GeneratedArtifactsResponse>(`/artifacts/${objectId}`, {
+      method: 'GET',
+    });
+  }
+
+  async getGeneratedArtifact(objectId: string, generatorType: GeneratorType): Promise<GeneratedArtifact> {
+    return this.makeRequest<GeneratedArtifact>(`/artifacts/${objectId}/${generatorType}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Obtiene el estado ligero de artefactos para un objeto (solo booleanos)
+   */
+  async getArtifactsStatus(objectId: string): Promise<ArtifactsStatusResponse> {
+    return this.makeRequest<ArtifactsStatusResponse>(`/artifacts/${objectId}/status`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Obtiene el estado de artefactos para múltiples objetos en paralelo
+   * Usa el endpoint ligero /status que solo devuelve booleanos
+   */
+  async getArtifactsStatusForObjects(objectIds: string[]): Promise<Map<string, ArtifactsStatus>> {
+    const results = new Map<string, ArtifactsStatus>();
+
+    const promises = objectIds.map(async (objectId) => {
+      try {
+        const response = await this.getArtifactsStatus(objectId);
+        results.set(objectId, response.status);
+      } catch {
+        // Si falla, significa que no hay artefactos - todos false
+        results.set(objectId, {
+          gobierno: false,
+          kirby: false,
+          hammurabi: false,
+          smartcleaner: false,
+          controlm: false
+        });
+      }
+    });
+
+    await Promise.all(promises);
+    return results;
   }
 
   // ========================
@@ -190,6 +266,25 @@ class PipelineGeneratorService {
         `Error al descargar ${fileName}: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
+  }
+
+  /**
+   * Obtiene URL presigned para descargar un archivo de artefacto
+   */
+  async getArtifactDownloadUrl(objectId: string, generatorType: string, fileName: string): Promise<string> {
+    const response = await this.makeRequest<{ download_url: string; file_name: string }>(
+      `/artifacts/${objectId}/download/${generatorType}/${encodeURIComponent(fileName)}`,
+      { method: 'GET' }
+    );
+    return response.download_url;
+  }
+
+  /**
+   * Descarga un archivo de artefacto usando URL presigned
+   */
+  async downloadArtifactFile(objectId: string, generatorType: string, fileName: string): Promise<void> {
+    const downloadUrl = await this.getArtifactDownloadUrl(objectId, generatorType, fileName);
+    await this.downloadFile(downloadUrl, fileName);
   }
 
   // ========================

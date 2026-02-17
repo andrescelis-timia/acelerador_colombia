@@ -1,25 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { KirbyGeneratorPanel } from './panels/KirbyGeneratorPanel';
 import { HammurabiGeneratorPanel } from './panels/HammurabiGeneratorPanel';
 import { SmartCleanerGeneratorPanel } from './panels/SmartCleanerGeneratorPanel';
-import { ControlMGeneratorPanel } from './panels/ControlMGeneratorPanel';
 import { SchemaUploadSection } from './components/SchemaUploadSection';
+import { PipelineGeneratorProps } from './types';
+import { usePipelineGeneratorService, GeneratedArtifactsResponse } from '@/services/PipelineGenerator';
 import {
   CubeIcon,
   ShieldCheckIcon,
-  TrashIcon,
-  Cog6ToothIcon,
-  DocumentTextIcon
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
-export const PipelineGenerator = () => {
+export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
   const [masterSchema, setMasterSchema] = useState<File | null>(null);
   const [componentType, setComponentType] = useState<'tabla' | 'tablon'>('tabla');
   const [completedGenerators, setCompletedGenerators] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('kirby');
+  const [savedArtifacts, setSavedArtifacts] = useState<GeneratedArtifactsResponse['artifacts'] | null>(null);
+  const [loadingArtifacts, setLoadingArtifacts] = useState(false);
+
+  const pipelineService = usePipelineGeneratorService();
+
+  // Cargar artefactos guardados cuando hay objectId
+  useEffect(() => {
+    const loadSavedArtifacts = async () => {
+      if (!objectId) return;
+
+      setLoadingArtifacts(true);
+      try {
+        const response = await pipelineService.getGeneratedArtifacts(objectId);
+        setSavedArtifacts(response.artifacts);
+
+        // Marcar como completados los generadores que tienen artefactos
+        const completed: string[] = [];
+        if (response.artifacts.kirby) completed.push('kirby');
+        if (response.artifacts.hammurabi) completed.push('hammurabi');
+        if (response.artifacts.smartcleaner) completed.push('smartcleaner');
+        setCompletedGenerators(completed);
+      } catch (error) {
+        // No hay artefactos guardados, es normal
+        console.log('No hay artefactos guardados para este objeto');
+      } finally {
+        setLoadingArtifacts(false);
+      }
+    };
+
+    loadSavedArtifacts();
+  }, [objectId]);
 
   const handleSchemaUpload = (type: 'raw' | 'master', file: File | null) => {
     if (type === 'raw') {
@@ -46,23 +76,11 @@ export const PipelineGenerator = () => {
   const tabs = [
     { id: 'kirby', name: '🔵 Kirby', icon: CubeIcon, color: 'blue' },
     { id: 'hammurabi', name: '🟡 Hammurabi', icon: ShieldCheckIcon, color: 'orange' },
-    { id: 'smartcleaner', name: '🟣 SmartCleaner', icon: TrashIcon, color: 'purple' },
-    { id: 'controlm', name: '🎯 Control-M', icon: Cog6ToothIcon, color: 'green' }
+    { id: 'smartcleaner', name: '🟣 SmartCleaner', icon: TrashIcon, color: 'purple' }
   ];
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex items-center">
-          <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Pipeline Generator</h1>
-            <p className="text-sm text-gray-600">Generación automática de componentes de ingesta</p>
-          </div>
-        </div>
-      </div>
-
       {/* Schema Upload Section */}
       <SchemaUploadSection
         rawSchema={rawSchema}
@@ -103,40 +121,45 @@ export const PipelineGenerator = () => {
 
           {/* Tab Content */}
           <div>
-            {activeTab === 'kirby' && (
+            {loadingArtifacts && (
+              <div className="p-6 text-center text-gray-500">
+                Cargando artefactos guardados...
+              </div>
+            )}
+
+            {!loadingArtifacts && activeTab === 'kirby' && (
               <KirbyGeneratorPanel
+                objectId={objectId}
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('kirby')}
+                initialData={savedArtifacts?.kirby}
               />
             )}
 
-            {activeTab === 'hammurabi' && (
+            {!loadingArtifacts && activeTab === 'hammurabi' && (
               <HammurabiGeneratorPanel
+                objectId={objectId}
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
+                initialData={savedArtifacts?.hammurabi}
               />
             )}
 
-            {activeTab === 'smartcleaner' && (
+            {!loadingArtifacts && activeTab === 'smartcleaner' && (
               <SmartCleanerGeneratorPanel
+                objectId={objectId}
                 rawSchema={rawSchema}
                 masterSchema={masterSchema}
                 componentType={componentType}
                 canGenerate={canGenerate()}
                 onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
-              />
-            )}
-
-            {activeTab === 'controlm' && (
-              <ControlMGeneratorPanel
-                canGenerate={canGenerate()}
-                onGenerationComplete={() => handleGeneratorComplete('controlm')}
+                initialData={savedArtifacts?.smartcleaner}
               />
             )}
           </div>
