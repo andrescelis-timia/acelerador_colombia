@@ -21,7 +21,6 @@ export interface GenerateDictionaryJsonResponse {
 export interface GenerateDictionaryBaseRequest {
   header: CreateDictionaryJsonHeader;
   details: CreateDictionaryJsonDetail[];
-  output_mode?: 'full' | 'reduced_co';
 }
 
 export interface GenerateDictionaryBaseResponse {
@@ -39,14 +38,6 @@ export interface GenerateDictionaryBaseResponse {
     dictionary_raw_details_link: string;
     dictionary_master_header_link: string;
     dictionary_master_details_link: string;
-  };
-  // Campos para modo reduced_co
-  success?: boolean;
-  message?: string;
-  data?: {
-    mode?: 'full' | 'reduced_co';
-    rows_updated?: number;
-    sheet_url?: string;
   };
 }
 

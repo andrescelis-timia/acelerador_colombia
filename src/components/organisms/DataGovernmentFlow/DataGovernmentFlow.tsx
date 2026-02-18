@@ -122,7 +122,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   // Inicializar liteSheetUrl desde objectData cuando se carga
   useEffect(() => {
     if (objectData?.url_document) {
-      setLiteSheetUrl(objectData.url_document);
+      setLiteSheetUrl(objectData.url_document as string);
     }
   }, [objectData?.url_document]);
 
@@ -440,8 +440,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
 
       const processPromise = generateDictionaryBase({
         header: headerToUse,
-        details: detailsToUse,
-        output_mode: dictionaryMode
+        details: detailsToUse
       }, user.email, country);
 
       const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));

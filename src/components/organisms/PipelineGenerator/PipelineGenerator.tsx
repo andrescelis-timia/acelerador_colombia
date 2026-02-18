@@ -40,7 +40,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
         if (response.artifacts.hammurabi) completed.push('hammurabi');
         if (response.artifacts.smartcleaner) completed.push('smartcleaner');
         setCompletedGenerators(completed);
-      } catch (error) {
+      } catch {
         // No hay artefactos guardados, es normal
         console.log('No hay artefactos guardados para este objeto');
       } finally {

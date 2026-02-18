@@ -12,7 +12,6 @@ import {
   ArrowPathIcon,
   DocumentPlusIcon
 } from '@heroicons/react/24/outline';
-import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 
@@ -95,6 +94,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [currentStep, setCurrentStep] = useState('');
   const [generatedJobs, setGeneratedJobs] = useState<ControlMJob[]>([]);
   const [generatedMallas, setGeneratedMallas] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [s3Urls, setS3Urls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [uuaaMismatchWarning, setUuaaMismatchWarning] = useState<string | null>(null);
@@ -172,8 +172,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
       // Intentar extraer UUAA del metadata primero
       if (artifacts.kirby?.artifacts_data?.metadata?.extractedInfo?.alias) {
-        const alias = artifacts.kirby.artifacts_data.metadata.extractedInfo.alias;
-        // El alias puede ser parte de la UUAA
         const namespace = artifacts.kirby.artifacts_data.metadata.extractedInfo?.namespace || '';
         const uuaaMatch = namespace.match(/([a-z]{3,4})\.co\./i);
         if (uuaaMatch) {
