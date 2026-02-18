@@ -1,14 +1,21 @@
+import { SchemaField, GeneratorType, GeneratedArtifact } from '@/services/PipelineGenerator/types';
+
+// Re-exportar tipos centralizados para uso en componentes
+export type { SchemaField, GeneratorType };
+
+// PipelineGeneratorProps - props para el componente principal
 export interface PipelineGeneratorProps {
-  objectId: string;
-  initialComponentType?: 'tabla' | 'tablon';
+  objectId?: string;
 }
 
 export interface GeneratorPanelProps {
+  objectId?: string;
   rawSchema: File | null;
   masterSchema: File | null;
   componentType: 'tabla' | 'tablon';
   canGenerate: boolean;
   onGenerationComplete?: () => void;
+  initialData?: GeneratedArtifact | null;
 }
 
 // ControlM y otros generadores usan la misma interfaz base
@@ -32,13 +39,6 @@ export interface SchemaFile {
   fields: SchemaField[];
 }
 
-export interface SchemaField {
-  name: string;
-  type: string;
-  nullable?: boolean;
-  logicalFormat?: string;
-  legacyName?: string;
-}
 
 export interface GenerationResult {
   success: boolean;
@@ -65,4 +65,3 @@ export interface GeneratorConfig {
   supportedTypes: ('tabla' | 'tablon')[];
 }
 
-export type GeneratorType = 'kirby' | 'hammurabi' | 'smartcleaner' | 'controlm';

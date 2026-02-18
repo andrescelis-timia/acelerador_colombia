@@ -14,7 +14,7 @@ import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/serv
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
 import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T } from '@/services/DictionaryGenerator';
+import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T, generateDictionaryLiteCo } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
@@ -45,6 +45,16 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   const [preDictionaryDraft, setPreDictionaryDraft] = useState<CreatePreDictionaryInput | null>(null);
   const [dictionaryFile, setDictionaryFile] = useState<File | null>(null);
   const [dictionaryFileContent, setDictionaryFileContent] = useState<string | null>(null);
+  // Estado para el modo de generación de diccionario (solo visible para Colombia)
+  const [dictionaryMode, setDictionaryMode] = useState<'full' | 'lite_co'>(
+    country === 'CO' ? 'lite_co' : 'full'
+  );
+  // Estado para periodicidad (solo modo lite)
+  const [periodicity, setPeriodicity] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  // Estado para loading del modo lite
+  const [isLiteLoading, setIsLiteLoading] = useState(false);
+  // Estado para guardar URL del sheet generado en modo lite
+  const [liteSheetUrl, setLiteSheetUrl] = useState<string | null>(null);
 
   // TODOS los hooks deben estar aquí antes de cualquier return
   const fetchDictionaryOutput = useCallback(async () => {
@@ -108,6 +118,13 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     fetchDictionaryOutput();
     fetchObjectData();
   }, [fetchData, fetchPreDictionary, fetchDictionaryOutput, fetchObjectData]);
+
+  // Inicializar liteSheetUrl desde objectData cuando se carga
+  useEffect(() => {
+    if (objectData?.url_document) {
+      setLiteSheetUrl(objectData.url_document as string);
+    }
+  }, [objectData?.url_document]);
 
   // Handlers
   const handleCloseForm = useCallback((success?: boolean) => {
@@ -225,7 +242,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
       descripcion: detail.description,
       observacion: detail.observation,
       obligatorio: detail.required ? 'true' : 'false',
-      suffix: detail.suffix || ''
+      tipo_dato: detail.data_type || '',
+      catalogo: detail.catalog || ''
     }));
 
     const cleanData: FileDictionaryJsonHeader = {
@@ -368,7 +386,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
           description: detail.description,
           observation: detail.observation,
           required: detail.required,
-          suffix: detail.suffix
+          data_type: detail.data_type,
+          catalog: detail.catalog
         }));
       }
 
@@ -409,7 +428,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
           description: campo.descripcion,
           observation: campo.observacion,
           required: campo.obligatorio === 'true',
-          suffix: campo.suffix
+          data_type: campo.tipo_dato,
+          catalog: campo.catalogo
         })) as CreateDictionaryJsonDetail[];
       }
 
@@ -610,6 +630,41 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     return <div className="p-4">Cargando...</div>;
   }
 
+  // Handler para modo lite - solo espera respuesta del backend
+  const handleGenerateLiteCo = async () => {
+    if (!user?.email) {
+      setErrorMessage('Usuario no autenticado');
+      return;
+    }
+
+    setIsLiteLoading(true);
+
+    try {
+      const response = await generateDictionaryLiteCo({
+        object_id: objectId,
+        periodicity: periodicity
+      }, user.email, country);
+
+      // Guardar URL del sheet para habilitar el botón de ver
+      if (response.data?.sheet_url) {
+        setLiteSheetUrl(response.data.sheet_url);
+      }
+      setSuccessMessage('Diccionario generado correctamente');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
+    } finally {
+      setIsLiteLoading(false);
+    }
+  };
+
+  // Handler para ver el sheet generado en modo lite
+  const handleViewLiteSheet = () => {
+    if (liteSheetUrl) {
+      window.open(liteSheetUrl, '_blank');
+    }
+  };
+
   return (
     <>
       {successMessage && (
@@ -618,90 +673,164 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
         </div>
       )}
 
-      <div className="relative p-8">
-        <div className="flex items-center gap-12">
-          {/* Líneas de conexión */}
-          <div
-            className="absolute h-[2px] bg-[#94B5F0]"
-            style={{
-              top: 'calc(50% + 12px)',
-              transform: 'translateY(-50%)',
-              left: '232px',
-              width: '48px',
-              zIndex: 0
-            }}
-          />
-
-          {/* BoxFlowCard Muestra */}
-          <div className="relative z-10">
-            <div className="text-center mb-3">
-              <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                <h3 className="text-sm font-semibold text-blue-700">Procesar Pre-diccionario</h3>
-              </div>
-            </div>
-            <BoxFlowCard
-              title="Muestra"
-              isStatic={false}
-              schema="txt, csv"
-              selectedFile={sampleFile}
-              onFileClick={handleSampleFileSelect}
-              className="border-2 border-[#94B5F0]"
-              controls={getControls('sample')}
-            />
-          </div>
-
-          {/* BoxFlowCard Diccionario */}
-          <div className="relative z-10">
-            <div className="text-center mb-3">
-              <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                <h3 className="text-sm font-semibold text-blue-700">Generar Diccionarios</h3>
-              </div>
-            </div>
-            <BoxFlowCard
-              title="Pre-diccionario"
-              isStatic={false}
-              schema="json"
-              selectedFile={dictionaryFile}
-              onFileClick={handleDictionaryFileSelect}
-              className="border-2 border-[#94B5F0]"
-              controls={getControls('dictionary')}
-            />
-          </div>
-
-          {/* Línea de conexión para L1T */}
-          <div
-            className={`absolute h-[2px] ${objectData?.flag_l1t === false ? 'bg-gray-300' : 'bg-[#94B5F0]'}`}
-            style={{
-              top: 'calc(50% + 12px)',
-              transform: 'translateY(-50%)',
-              left: '480px',
-              width: '48px',
-              zIndex: 0
-            }}
-          />
-
-          {/* BoxFlowCard L1T */}
-          <div className="relative z-10">
-            <div className="text-center mb-3">
-              <div className={`inline-block border rounded-lg px-3 py-1.5 ${objectData?.flag_l1t === false
-                ? 'bg-gray-50 border-gray-200'
-                : 'bg-blue-50 border-blue-200'
-                }`}>
-                <h3 className={`text-sm font-semibold ${objectData?.flag_l1t === false ? 'text-gray-400' : 'text-blue-700'
-                  }`}>
-                  Generar Diccionario L1T
-                </h3>
-              </div>
-            </div>
-            <BoxFlowCard
-              title="L1T"
-              isStatic={true}
-              className={`border-2 ${objectData?.flag_l1t === false ? 'border-gray-300' : 'border-[#94B5F0]'}`}
-              controls={getControls('l1t')}
-            />
+      {/* Selector de modo - Solo visible para Colombia - AL INICIO */}
+      {country === 'CO' && (
+        <div className="px-8 pt-2">
+          <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setDictionaryMode('lite_co')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                dictionaryMode === 'lite_co'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Formato diccionario
+            </button>
+            <button
+              onClick={() => setDictionaryMode('full')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                dictionaryMode === 'full'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Formato DATUM
+            </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Modo Lite: UI simplificada - Mismo formato que DATUM */}
+      {country === 'CO' && dictionaryMode === 'lite_co' ? (
+        <div className="relative p-8">
+          <div className="flex items-center">
+            {/* Card principal - Formato BoxFlowCard */}
+            <div className="relative z-10">
+              <div className="text-center mb-3">
+                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-blue-700">Generar Diccionario</h3>
+                </div>
+              </div>
+              <div className="w-[200px] h-[150px] flex-shrink-0 rounded-lg border-2 border-[#94B5F0]">
+                <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
+                  <div className="border-b border-[#94B5F0] p-2 bg-white h-[40px] flex items-center">
+                    <BoxFlowControls
+                      leftIcons={[{
+                        icon: <PlayIcon className="h-5 w-5" />,
+                        onClick: handleGenerateLiteCo,
+                        className: "text-green-500 hover:text-green-600",
+                        disabled: isLiteLoading,
+                        tooltip: 'Generar diccionario',
+                        readOnlyWrapper: true
+                      }]}
+                      rightIcons={[{
+                        icon: <EyeIcon className="h-5 w-5" />,
+                        onClick: handleViewLiteSheet,
+                        className: "text-blue-500 hover:text-blue-600",
+                        disabled: !liteSheetUrl,
+                        tooltip: !liteSheetUrl ? 'Genera el diccionario primero' : 'Ver en Google Sheets'
+                      }]}
+                    />
+                  </div>
+                  <div className="flex-1 px-4 flex flex-col items-center justify-center gap-1">
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wide">Periodicidad</span>
+                    <select
+                      value={periodicity}
+                      onChange={(e) => setPeriodicity(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
+                      disabled={isLiteLoading}
+                      className="w-28 text-xs text-center font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer appearance-none"
+                    >
+                      <option value="daily">Diario</option>
+                      <option value="weekly">Semanal</option>
+                      <option value="monthly">Mensual</option>
+                      <option value="yearly">Anual</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Modo Completo: UI original con L1T */
+        <div className="relative p-8">
+          <div className="flex items-center gap-12">
+            {/* Líneas de conexión */}
+            <div
+              className="absolute h-[2px] bg-[#94B5F0]"
+              style={{
+                top: 'calc(50% + 12px)',
+                transform: 'translateY(-50%)',
+                left: '232px',
+                width: '48px',
+                zIndex: 0
+              }}
+            />
+            <div
+              className="absolute h-[2px] bg-[#94B5F0]"
+              style={{
+                top: 'calc(50% + 12px)',
+                transform: 'translateY(-50%)',
+                left: '480px',
+                width: '48px',
+                zIndex: 0
+              }}
+            />
+
+            {/* BoxFlowCard Muestra */}
+            <div className="relative z-10">
+              <div className="text-center mb-3">
+                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-blue-700">Procesar Pre-diccionario</h3>
+                </div>
+              </div>
+              <BoxFlowCard
+                title="Muestra"
+                isStatic={false}
+                schema="txt, csv"
+                selectedFile={sampleFile}
+                onFileClick={handleSampleFileSelect}
+                className="border-2 border-[#94B5F0]"
+                controls={getControls('sample')}
+              />
+            </div>
+
+            {/* BoxFlowCard Diccionario */}
+            <div className="relative z-10">
+              <div className="text-center mb-3">
+                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-blue-700">Generar Diccionarios</h3>
+                </div>
+              </div>
+              <BoxFlowCard
+                title="Pre-diccionario"
+                isStatic={false}
+                schema="json"
+                selectedFile={dictionaryFile}
+                onFileClick={handleDictionaryFileSelect}
+                className="border-2 border-[#94B5F0]"
+                controls={getControls('dictionary')}
+              />
+            </div>
+
+            {/* BoxFlowCard L1T */}
+            <div className="relative z-10">
+              <div className="text-center mb-3">
+                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-blue-700">Generar L1T</h3>
+                </div>
+              </div>
+              <BoxFlowCard
+                title="Diccionario L1T"
+                isStatic={true}
+                className="border-2 border-[#94B5F0]"
+                controls={getControls('l1t')}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {config.usePreDictionary && (
         <PreDictionaryInputForm
@@ -746,6 +875,19 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
           steps={config.stepsConfig.l1t}
           onComplete={() => { }}
         />
+      )}
+
+      {/* Modal simple de carga para modo lite */}
+      {isLiteLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
+            <svg className="animate-spin h-8 w-8 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <span className="text-sm font-medium text-gray-700">Generando diccionario...</span>
+          </div>
+        </div>
       )}
 
       <ErrorModal

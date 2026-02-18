@@ -14,12 +14,14 @@ export interface StepsConfig {
   sample: Array<{ label: string; duration: number }>;
   dictionary: Array<{ label: string; duration: number }>;
   l1t: Array<{ label: string; duration: number }>;
+  lite?: Array<{ label: string; duration: number }>;
 }
 
 export interface ProcessLabels {
   sample: string;
   dictionary: string;
   l1t: string;
+  lite?: string;
 }
 
 export interface FileDictionaryJsonHeader {
@@ -56,5 +58,6 @@ export interface FileDictionaryJsonDetail {
   descripcion: string;
   observacion: string;
   obligatorio: string;
-  suffix: string;
+  tipo_dato: string;
+  catalogo: string;
 }

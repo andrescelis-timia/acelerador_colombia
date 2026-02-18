@@ -46,8 +46,6 @@ export const SchemaUploadSection = ({
     try {
       const validation = await pipelineGeneratorService.validateSchema(file, type);
 
-
-
       const errors: ValidationError[] = [
         ...validation.errors.map(error => ({
           message: error,
@@ -60,11 +58,6 @@ export const SchemaUploadSection = ({
       ];
 
       setValidationErrors(errors);
-
-      if (!validation.isValid) {
-        // Validation errors are already handled in the UI
-      }
-
     } catch (error) {
       // Error de validación (no crítico)
       setValidationErrors([{

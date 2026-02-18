@@ -1,7 +1,7 @@
 export interface Column {
   header: string;
   accessor: string;
-  render?: (value: unknown) => React.ReactNode;
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
 }
 
 export interface DataTableProps<T extends { id: string }> {

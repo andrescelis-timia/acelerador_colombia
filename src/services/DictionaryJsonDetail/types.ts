@@ -9,7 +9,8 @@ export interface CreateDictionaryJsonDetail {
   description?: string;
   observation?: string;
   required?: boolean;
-  suffix?: string;
+  data_type?: string;
+  catalog?: string;
 }
 
 export interface DictionaryJsonDetailResponse {
@@ -24,7 +25,8 @@ export interface DictionaryJsonDetailResponse {
   description: string;
   observation: string;
   required: boolean;
-  suffix?: string;
+  data_type: string;
+  catalog: string;
   owner_country: string;
   creation_date: string;
   creation_user: string;

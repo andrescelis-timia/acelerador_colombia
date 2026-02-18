@@ -10,8 +10,7 @@ export const PipelineProgressBar = ({
   const generators = [
     { id: 'kirby', name: '🔵 Kirby' },
     { id: 'hammurabi', name: '🟡 Hammurabi' },
-    { id: 'smartcleaner', name: '🟣 SmartCleaner' },
-    { id: 'controlm', name: '🎯 Control-M' }
+    { id: 'smartcleaner', name: '🟣 SmartCleaner' }
   ];
 
   const getOverallProgress = () => {
@@ -38,7 +37,7 @@ export const PipelineProgressBar = ({
       </div>
 
       {/* Generators Status */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {generators.map((generator) => {
           const isCompleted = completedGenerators.includes(generator.id);
           

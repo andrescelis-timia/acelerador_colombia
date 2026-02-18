@@ -23,7 +23,7 @@ const columns: Column[] = [
   {
     header: 'Fecha de Creación',
     accessor: 'creation_date',
-    render: (value: unknown) => 
+    render: (value) =>
       new Date(value as string).toLocaleDateString('es-ES', {
         day: '2-digit',
         month: '2-digit',

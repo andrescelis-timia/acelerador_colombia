@@ -10,6 +10,8 @@ import { ObjectDetailContentProps } from './types';
 import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
 import { useAuth } from '@/lib/context/AuthContext';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
+import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
+import { ControlMFlow } from '@/components/organisms/ControlMFlow';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
@@ -53,6 +55,8 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           <TabList>
             <Tab>Gobierno del dato</Tab>
             <Tab>Generación de Schemas</Tab>
+            <Tab>Pipeline Generator</Tab>
+            <Tab>Control-M</Tab>
           </TabList>
           <TabPanel>
             <div className="p-4">
@@ -62,6 +66,16 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           <TabPanel>
             <div className="p-4">
               <SchemaGenerationFlow objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <PipelineGenerator objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <ControlMFlow objectId={objectId} />
             </div>
           </TabPanel>
         </TabGroup>

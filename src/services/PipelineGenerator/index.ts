@@ -1,4 +1,5 @@
-import { 
+import { useAuth } from '@/lib/context/AuthContext';
+import {
   ProcessSchemaRequest,
   ProcessSchemaResponse,
   GenerateKirbyRequest,
@@ -9,10 +10,14 @@ import {
   GenerateSmartCleanerResponse,
   GenerateControlMRequest,
   GenerateControlMResponse,
-  BatchGenerationRequest,
-  BatchGenerationResponse,
   PipelineGeneratorException,
-  GeneratorType
+  GeneratorType,
+  GeneratedArtifactsResponse,
+  GeneratedArtifact,
+  ArtifactsStatus,
+  ArtifactsStatusResponse,
+  AnalyzeSequencesRequest,
+  AnalyzeSequencesResponse
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -147,52 +152,92 @@ class PipelineGeneratorService {
   }
 
   async generateControlM(request: GenerateControlMRequest): Promise<GenerateControlMResponse> {
-    const formData = new FormData();
-    
-    // Agregar archivos XML si existen
-    if (request.xml1) {
-      formData.append('xml1', request.xml1);
-    }
-    if (request.xml2) {
-      formData.append('xml2', request.xml2);
-    }
-    
-    // Agregar datos JSON
-    formData.append('jobs_list', JSON.stringify(request.jobsList));
-    formData.append('component_type', request.componentType);
-    formData.append('datax_config', JSON.stringify(request.dataxConfig));
+    return this.makeRequest<GenerateControlMResponse>('/generators/controlm', {
+      method: 'POST',
+      body: JSON.stringify({
+        object_id: request.object_id,
+        jobs_list: request.jobsList,
+        component_type: request.componentType,
+        datax_config: {
+          periodicity: request.dataxConfig.periodicity,
+          periodicity_type: request.dataxConfig.periodicityType,
+          start_time: request.dataxConfig.startTime,
+          timezone: request.dataxConfig.timezone,
+          is_cyclic: request.dataxConfig.isCyclic,
+          interval_hours: request.dataxConfig.intervalHours,
+          month_day: request.dataxConfig.monthDay,
+          week_day: request.dataxConfig.weekDay,
+          business_day_direction: request.dataxConfig.businessDayDirection,
+          business_day_number: request.dataxConfig.businessDayNumber,
+          annual_month: request.dataxConfig.annualMonth,
+          annual_day: request.dataxConfig.annualDay
+        },
+        uuaa: request.uuaa,
+        transfer_name: request.transferName,
+        generated_jobs: request.generatedJobs,
+        existing_t04_xml: request.existingT04Xml,
+        existing_t02_xml: request.existingT02Xml
+      }),
+    });
+  }
 
-    return this.makeFormDataRequest<GenerateControlMResponse>('/generators/controlm', formData);
+  async analyzeControlMSequences(request: AnalyzeSequencesRequest): Promise<AnalyzeSequencesResponse> {
+    return this.makeRequest<AnalyzeSequencesResponse>('/generators/controlm/analyze-sequences', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
   }
 
   // ========================
-  // GENERACIÓN BATCH
+  // ARTEFACTOS GENERADOS
   // ========================
 
-  async generateBatch(request: BatchGenerationRequest): Promise<BatchGenerationResponse> {
-    const formData = new FormData();
-    
-    // Datos de schema
-    if (request.rawSchemaData) {
-      formData.append('raw_schema_data', JSON.stringify(request.rawSchemaData));
-    }
-    formData.append('master_schema_data', JSON.stringify(request.masterSchemaData));
-    formData.append('component_type', request.componentType);
-    formData.append('selected_generators', JSON.stringify(request.selectedGenerators));
-    
-    // Datos específicos de Control-M si está incluido
-    if (request.controlMData) {
-      if (request.controlMData.xml1) {
-        formData.append('controlm_xml1', request.controlMData.xml1);
-      }
-      if (request.controlMData.xml2) {
-        formData.append('controlm_xml2', request.controlMData.xml2);
-      }
-      formData.append('controlm_jobs_list', JSON.stringify(request.controlMData.jobsList));
-      formData.append('controlm_datax_config', JSON.stringify(request.controlMData.dataxConfig));
-    }
+  async getGeneratedArtifacts(objectId: string): Promise<GeneratedArtifactsResponse> {
+    return this.makeRequest<GeneratedArtifactsResponse>(`/artifacts/${objectId}`, {
+      method: 'GET',
+    });
+  }
 
-    return this.makeFormDataRequest<BatchGenerationResponse>('/generators/batch', formData);
+  async getGeneratedArtifact(objectId: string, generatorType: GeneratorType): Promise<GeneratedArtifact> {
+    return this.makeRequest<GeneratedArtifact>(`/artifacts/${objectId}/${generatorType}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Obtiene el estado ligero de artefactos para un objeto (solo booleanos)
+   */
+  async getArtifactsStatus(objectId: string): Promise<ArtifactsStatusResponse> {
+    return this.makeRequest<ArtifactsStatusResponse>(`/artifacts/${objectId}/status`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Obtiene el estado de artefactos para múltiples objetos en paralelo
+   * Usa el endpoint ligero /status que solo devuelve booleanos
+   */
+  async getArtifactsStatusForObjects(objectIds: string[]): Promise<Map<string, ArtifactsStatus>> {
+    const results = new Map<string, ArtifactsStatus>();
+
+    const promises = objectIds.map(async (objectId) => {
+      try {
+        const response = await this.getArtifactsStatus(objectId);
+        results.set(objectId, response.status);
+      } catch {
+        // Si falla, significa que no hay artefactos - todos false
+        results.set(objectId, {
+          gobierno: false,
+          kirby: false,
+          hammurabi: false,
+          smartcleaner: false,
+          controlm: false
+        });
+      }
+    });
+
+    await Promise.all(promises);
+    return results;
   }
 
   // ========================
@@ -223,19 +268,23 @@ class PipelineGeneratorService {
     }
   }
 
-  async downloadMultipleFiles(files: { downloadUrl: string; fileName: string }[]): Promise<void> {
-    const downloadPromises = files.map(file => 
-      this.downloadFile(file.downloadUrl, file.fileName)
+  /**
+   * Obtiene URL presigned para descargar un archivo de artefacto
+   */
+  async getArtifactDownloadUrl(objectId: string, generatorType: string, fileName: string): Promise<string> {
+    const response = await this.makeRequest<{ download_url: string; file_name: string }>(
+      `/artifacts/${objectId}/download/${generatorType}/${encodeURIComponent(fileName)}`,
+      { method: 'GET' }
     );
+    return response.download_url;
+  }
 
-    try {
-      await Promise.all(downloadPromises);
-    } catch (error) {
-      throw new PipelineGeneratorException(
-        'BATCH_DOWNLOAD_ERROR',
-        `Error en descarga masiva: ${error instanceof Error ? error.message : 'Error desconocido'}`
-      );
-    }
+  /**
+   * Descarga un archivo de artefacto usando URL presigned
+   */
+  async downloadArtifactFile(objectId: string, generatorType: string, fileName: string): Promise<void> {
+    const downloadUrl = await this.getArtifactDownloadUrl(objectId, generatorType, fileName);
+    await this.downloadFile(downloadUrl, fileName);
   }
 
   // ========================
@@ -245,7 +294,7 @@ class PipelineGeneratorService {
   generateProgressSteps(generator: GeneratorType): string[] {
     const baseSteps = [
       'Validando schemas',
-      'Analizando estructura de datos', 
+      'Analizando estructura de datos',
       'Generando configuraciones'
     ];
 
@@ -258,7 +307,7 @@ class PipelineGeneratorService {
           'Generando archivos Master',
           'Configurando L1T (si aplica)'
         ];
-      
+
       case 'hammurabi':
         return [
           ...baseSteps,
@@ -268,7 +317,7 @@ class PipelineGeneratorService {
           'Generando reglas 4.x (Duplicados)',
           'Creando configuraciones por fase'
         ];
-      
+
       case 'smartcleaner':
         return [
           ...baseSteps,
@@ -277,7 +326,7 @@ class PipelineGeneratorService {
           'Configurando limpieza Master',
           'Generando jobs de mantenimiento'
         ];
-      
+
       case 'controlm':
         return [
           'Validando archivos XML',
@@ -289,82 +338,10 @@ class PipelineGeneratorService {
           'Generando malla Ingesta Producción',
           'Validando secuencias'
         ];
-      
+
       default:
         return baseSteps;
     }
-  }
-
-  getGeneratorDescription(generator: GeneratorType): string {
-    switch (generator) {
-      case 'kirby':
-        return 'Genera configuraciones de ingesta para transformar datos CSV → Avro → Parquet';
-      case 'hammurabi':
-        return 'Crea reglas de calidad de datos (completitud, validación, duplicados)';
-      case 'smartcleaner':
-        return 'Configura limpieza automática con políticas de retención inteligentes';
-      case 'controlm':
-        return 'Genera mallas de orquestación para Control-M en todos los ambientes';
-      default:
-        return 'Generador de configuraciones';
-    }
-  }
-
-  getGeneratorColor(generator: GeneratorType): string {
-    switch (generator) {
-      case 'kirby': return 'blue';
-      case 'hammurabi': return 'orange';
-      case 'smartcleaner': return 'purple';
-      case 'controlm': return 'green';
-      default: return 'gray';
-    }
-  }
-
-  // ========================
-  // VALIDACIONES CLIENT-SIDE
-  // ========================
-
-  validateGeneratorRequirements(
-    generator: GeneratorType,
-    rawSchema: File | null,
-    masterSchema: File | null,
-    componentType: 'tabla' | 'tablon'
-  ): { isValid: boolean; message?: string } {
-    switch (generator) {
-      case 'kirby':
-      case 'hammurabi':
-      case 'smartcleaner':
-        if (componentType === 'tabla') {
-          if (!rawSchema || !masterSchema) {
-            return {
-              isValid: false,
-              message: 'Para componentes tipo "tabla" se requieren ambos schemas (Raw y Master)'
-            };
-          }
-        } else {
-          if (!masterSchema) {
-            return {
-              isValid: false,
-              message: 'Para componentes tipo "tablón" se requiere el schema Master'
-            };
-          }
-        }
-        break;
-      
-      case 'controlm':
-        if (!rawSchema || !masterSchema) {
-          return {
-            isValid: false,
-            message: 'Control-M requiere ambos schemas para generar las mallas completas'
-          };
-        }
-        break;
-      
-      default:
-        return { isValid: false, message: 'Generador no reconocido' };
-    }
-
-    return { isValid: true };
   }
 }
 
@@ -374,8 +351,6 @@ export const createPipelineGeneratorService = (user: string | null, country: str
 };
 
 // Hook para usar con AuthContext
-import { useAuth } from '@/lib/context/AuthContext';
-
 export const usePipelineGeneratorService = () => {
   const { user, country } = useAuth();
   return createPipelineGeneratorService(user?.email || null, country);
