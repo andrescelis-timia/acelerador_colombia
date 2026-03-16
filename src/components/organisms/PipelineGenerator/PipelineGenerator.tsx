@@ -67,9 +67,18 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
     }
   };
 
-  const handleGeneratorComplete = (generatorId: string) => {
+  const handleGeneratorComplete = async (generatorId: string) => {
     if (!completedGenerators.includes(generatorId)) {
       setCompletedGenerators(prev => [...prev, generatorId]);
+    }
+    // Refrescar artefactos guardados para que al cambiar de tab se muestren los datos actualizados
+    if (objectId) {
+      try {
+        const response = await pipelineService.getGeneratedArtifacts(objectId);
+        setSavedArtifacts(response.artifacts);
+      } catch {
+        // Silencioso - el estado local del panel actual sigue siendo válido
+      }
     }
   };
 
