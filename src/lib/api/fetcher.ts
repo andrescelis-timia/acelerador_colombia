@@ -72,7 +72,7 @@ export const createEnhancedFetcher = (user: string | null | undefined, country: 
           let errorMessage = 'Error desconocido';
           try {
             const errorJson = await response.json();
-            errorMessage = errorJson.message || JSON.stringify(errorJson);
+            errorMessage = errorJson.message || errorJson.detail || JSON.stringify(errorJson);
           } catch {
             errorMessage = await response.text();
           }
@@ -114,7 +114,7 @@ export const createEnhancedFetcher = (user: string | null | undefined, country: 
       let errorMessage = 'Error desconocido';
       try {
         const errorJson = await response.json();
-        errorMessage = errorJson.message || JSON.stringify(errorJson);
+        errorMessage = errorJson.message || errorJson.detail || JSON.stringify(errorJson);
       } catch {
         errorMessage = await response.text();
       }
@@ -172,7 +172,7 @@ export const createUnifiedFetcher = (user: string | null | undefined, country: s
       let errorMessage = 'Error desconocido';
       try {
         const errorJson = await response.json();
-        errorMessage = errorJson.message || JSON.stringify(errorJson);
+        errorMessage = errorJson.message || errorJson.detail || JSON.stringify(errorJson);
       } catch {
         errorMessage = await response.text();
       }

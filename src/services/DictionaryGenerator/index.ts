@@ -78,8 +78,7 @@ async function generateDictionaryLiteCo(
       body: JSON.stringify(data)
     });
   } catch (error) {
-    throw new Error('Error al generar diccionario lite: ' +
-      (error instanceof Error ? error.message : 'Error desconocido'));
+    throw new Error(error instanceof Error ? error.message : 'Error desconocido');
   }
 }
 
