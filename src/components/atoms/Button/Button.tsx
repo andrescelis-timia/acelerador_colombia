@@ -23,6 +23,7 @@ export const Button = ({
         variant === 'danger' && 'bg-red-600 text-white hover:bg-red-700',
         variant === 'outline' && 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50',
         fullWidth && 'w-full',
+        props.disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
       {...props}
