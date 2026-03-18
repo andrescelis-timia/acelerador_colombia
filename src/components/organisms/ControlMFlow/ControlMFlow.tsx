@@ -28,7 +28,7 @@ interface IngestaJob {
 
 interface ControlMJob {
   jobName: string;
-  type: 'T' | 'C' | 'D';
+  type: 'T' | 'C' | 'D' | 'W';
   description: string;
   phase: string;
   originalJob?: string;
@@ -58,6 +58,11 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
 };
 
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
+  // Trigger type: datax o filewatcher
+  const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
+  const [fwAlias, setFwAlias] = useState('');
+  const [fwStagingPath, setFwStagingPath] = useState('');
+
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
   const [uuaa, setUuaa] = useState('');
@@ -170,12 +175,34 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       // Extraer UUAA del primer job encontrado o del metadata
       let extractedUuaa = '';
 
-      // Intentar extraer UUAA del metadata primero
-      if (artifacts.kirby?.artifacts_data?.metadata?.extractedInfo?.alias) {
-        const namespace = artifacts.kirby.artifacts_data.metadata.extractedInfo?.namespace || '';
+      // Intentar extraer UUAA y datos para FileWatcher del metadata
+      if (artifacts.kirby?.artifacts_data?.metadata?.extractedInfo) {
+        const extractedInfo = artifacts.kirby.artifacts_data.metadata.extractedInfo;
+        const metadata = artifacts.kirby.artifacts_data.metadata;
+        const namespace = extractedInfo.namespace || '';
+        const extractedAlias = extractedInfo.alias || '';
         const uuaaMatch = namespace.match(/([a-z]{3,4})\.co\./i);
         if (uuaaMatch) {
           extractedUuaa = uuaaMatch[1].toLowerCase();
+        }
+        // Auto-fill FileWatcher fields
+        if (extractedAlias) {
+          setFwAlias(extractedAlias);
+        }
+        // Extraer staging path: primero de metadata, luego del contenido del config raw
+        if (metadata.stagingInputPath) {
+          setFwStagingPath(metadata.stagingInputPath);
+        } else if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
+          const rawContent = artifacts.kirby.artifacts_data.configs.raw.content;
+          // El input_path tiene comillas internas: "...D02_"${?YEAR}..."  → capturar toda la línea entre paths = [ y ]
+          const pathMatch = rawContent.match(/paths\s*=\s*\[\s*\n?\s*(.*?)\s*\n?\s*\]/s);
+          if (pathMatch) {
+            // Limpiar comillas externas e internas del HOCON
+            const rawPath = pathMatch[1].replace(/"/g, '').trim();
+            // Convertir formato HOCON a formato Control-M: ${?YEAR}${?MONTH}${?DAY} → %%PDATE
+            const stagingPath = rawPath.replace(/\$\{[?]?YEAR\}\$\{[?]?MONTH\}\$\{[?]?DAY\}/, '%%PDATE');
+            setFwStagingPath(stagingPath);
+          }
         }
       }
 
@@ -420,7 +447,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Generar nombre de job Control-M
   const generateControlMJobName = (
     uuaa: string,
-    jobType: 'T' | 'C' | 'D',
+    jobType: 'T' | 'C' | 'D' | 'W',
     environment: 'D' | 'P',
     temporalidadCode: string,
     sequence: number
@@ -445,15 +472,27 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     let dSequence = nextSequences?.D ?? 1;
     let order = 1;
 
-    // 1. Job de Transferencia Datax
-    jobs.push({
-      jobName: generateControlMJobName(normalizedUuaa, 'T', 'D', temporalidadCode, tSequence++),
-      type: 'T',
-      description: `Transferencia Datax ${transferName}`,
-      phase: 'datax',
-      originalJob: transferName,
-      order: order++
-    });
+    // 1. Job iniciador: Datax o FileWatcher
+    if (triggerType === 'filewatcher') {
+      const wSequence = nextSequences?.T ?? 1;
+      jobs.push({
+        jobName: generateControlMJobName(normalizedUuaa, 'W', 'D', temporalidadCode, wSequence),
+        type: 'W',
+        description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
+        phase: 'filewatcher',
+        originalJob: fwStagingPath,
+        order: order++
+      });
+    } else {
+      jobs.push({
+        jobName: generateControlMJobName(normalizedUuaa, 'T', 'D', temporalidadCode, tSequence++),
+        type: 'T',
+        description: `Transferencia Datax ${transferName}`,
+        phase: 'datax',
+        originalJob: transferName,
+        order: order++
+      });
+    }
 
     // 2. Hammurabi Staging (calidad)
     const hammurabiStaging = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'staging');
@@ -553,6 +592,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       type: 'D',
       description: 'Borrado de input en fase Staging',
       phase: 'staging',
+      originalJob: `${uuaa}-co-dfs-rmv-hdfs-01`,
       order: order++
     });
 
@@ -651,7 +691,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           annualDay: dataxConfig.annualDay
         },
         uuaa: uuaa,
-        transferName: transferName,
+        transferName: triggerType === 'datax' ? transferName : undefined,
+        triggerType: triggerType,
+        alias: triggerType === 'filewatcher' ? fwAlias : undefined,
+        stagingPath: triggerType === 'filewatcher' ? fwStagingPath : undefined,
         generatedJobs: jobs.map(j => ({
           jobName: j.jobName,
           type: j.type,
@@ -660,7 +703,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           originalJob: j.originalJob,
           order: j.order
         })),
-        existingT04Xml: existingT04Xml || undefined,
+        existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
         existingT02Xml: existingT02Xml || undefined
       });
 
@@ -724,21 +767,23 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   };
 
   // En modo aditivo, UUAA puede venir del XML; en modo normal es requerida
-  const canGenerate = transferName.trim() !== '' &&
-    (uuaa.trim() !== '' || isAdditiveMode) &&
-    ingestaJobs.length > 0;
+  const canGenerate = triggerType === 'filewatcher'
+    ? fwStagingPath.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0
+    : transferName.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0;
 
-  const getJobTypeColor = (type: 'T' | 'C' | 'D') => {
+  const getJobTypeColor = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
       case 'T': return 'bg-blue-100 text-blue-700';
+      case 'W': return 'bg-amber-100 text-amber-700';
       case 'C': return 'bg-green-100 text-green-700';
       case 'D': return 'bg-red-100 text-red-700';
     }
   };
 
-  const getJobTypeLabel = (type: 'T' | 'C' | 'D') => {
+  const getJobTypeLabel = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
       case 'T': return 'Transferencia';
+      case 'W': return 'FileWatcher';
       case 'C': return 'Ingesta';
       case 'D': return 'Borrado';
     }
@@ -761,12 +806,41 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         <div className="p-5 space-y-4">
           {/* Layout en 2 columnas: Datax + Jobs */}
           <div className="grid grid-cols-2 gap-6">
-            {/* Columna izquierda: Configuracion Datax */}
+            {/* Columna izquierda: Configuracion */}
             <div className="pr-6 border-r border-gray-200">
-              <div className="text-xs text-gray-500 mb-2 font-medium">Configuracion Datax</div>
+              {/* Trigger Type Selector */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-xs text-gray-500 font-medium">Iniciador:</span>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="triggerType"
+                    value="datax"
+                    checked={triggerType === 'datax'}
+                    onChange={() => setTriggerType('datax')}
+                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-700">Datax</span>
+                </label>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="triggerType"
+                    value="filewatcher"
+                    checked={triggerType === 'filewatcher'}
+                    onChange={() => setTriggerType('filewatcher')}
+                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-700">FileWatcher</span>
+                </label>
+              </div>
+
+              <div className="text-xs text-gray-500 mb-2 font-medium">
+                {triggerType === 'datax' ? 'Configuracion Datax' : 'Configuracion FileWatcher'}
+              </div>
               <div className="space-y-3">
-                <div className="flex gap-2">
-                  <div className="flex-1">
+                {triggerType === 'datax' ? (
+                  <div>
                     <label className="block text-xs text-gray-500 mb-1">Transferencia *</label>
                     <input
                       type="text"
@@ -776,22 +850,20 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
                     />
                   </div>
-                  <div className="w-20">
-                    <label className="block text-xs text-gray-500 mb-1">
-                      UUAA {isAdditiveMode && uuaa && <span className="text-green-600">✓</span>}
-                    </label>
+                ) : (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Ruta staging {fwStagingPath && <span className="text-green-600">✓</span>}</label>
                     <input
                       type="text"
-                      placeholder="ctkn"
-                      value={uuaa}
-                      onChange={(e) => setUuaa(e.target.value.toLowerCase())}
+                      placeholder="Se autocompleta al cargar jobs de Pipeline Generator"
+                      value={fwStagingPath}
+                      onChange={(e) => setFwStagingPath(e.target.value)}
                       className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 ${
-                        isAdditiveMode && uuaa ? 'border-green-300 bg-green-50' : 'border-gray-300'
+                        fwStagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
                       }`}
-                      readOnly={isAdditiveMode && !!uuaa}
                     />
                   </div>
-                </div>
+                )}
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">
                     <label className="block text-xs text-gray-500 mb-1">Periodicidad</label>
@@ -1104,7 +1176,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
               {!canGenerate && (
                 <span className="text-xs text-gray-500">
-                  {isAdditiveMode ? 'Requiere transferencia y jobs' : 'Requiere transferencia, UUAA y jobs'}
+                  {triggerType === 'filewatcher'
+                    ? 'Requiere ruta staging, UUAA y jobs (carga desde Pipeline Generator)'
+                    : isAdditiveMode ? 'Requiere transferencia y jobs' : 'Requiere transferencia, UUAA y jobs'}
                 </span>
               )}
 

@@ -36,7 +36,10 @@ export interface GenerateControlMRequest {
   componentType: 'tabla' | 'tablon';
   dataxConfig: DataxConfig;
   uuaa: string;
-  transferName: string;
+  transferName?: string;
+  triggerType?: 'datax' | 'filewatcher';
+  alias?: string;
+  stagingPath?: string;
   generatedJobs?: ControlMJobGenerated[];
   existingT04Xml?: string;
   existingT02Xml?: string;
@@ -66,7 +69,7 @@ export interface AnalyzeSequencesResponse {
 
 export interface ControlMJobGenerated {
   jobName: string;
-  type: 'T' | 'C' | 'D';
+  type: 'T' | 'C' | 'D' | 'W';
   description: string;
   phase: string;
   originalJob?: string;

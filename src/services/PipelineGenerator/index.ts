@@ -174,6 +174,9 @@ class PipelineGeneratorService {
         },
         uuaa: request.uuaa,
         transfer_name: request.transferName,
+        trigger_type: request.triggerType || 'datax',
+        alias: request.alias,
+        staging_path: request.stagingPath,
         generated_jobs: request.generatedJobs,
         existing_t04_xml: request.existingT04Xml,
         existing_t02_xml: request.existingT02Xml
