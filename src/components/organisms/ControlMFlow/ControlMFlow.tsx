@@ -66,6 +66,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
   const [uuaa, setUuaa] = useState('');
+  const [xmlOriginalUuaa, setXmlOriginalUuaa] = useState<string | null>(null); // UUAA from existing XML (3 or 4 chars)
   const [ingestaJobs, setIngestaJobs] = useState<IngestaJob[]>([]);
   const [hasL1T, setHasL1T] = useState(false);
 
@@ -150,7 +151,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         }
       } catch (err) {
         // Si no hay artefactos, no es un error - simplemente no se ha generado aún
-        console.log('No hay artefactos Control-M previos:', err);
       }
     };
 
@@ -170,7 +170,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const artifacts = response.artifacts;
       const jobs: IngestaJob[] = [];
 
-      console.log('Artifacts cargados:', artifacts);
 
       // Extraer UUAA del primer job encontrado o del metadata
       let extractedUuaa = '';
@@ -210,7 +209,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.kirby?.artifacts_data?.jobs) {
         const kirbyJobFiles = Object.values(artifacts.kirby.artifacts_data.jobs) as Array<{ file_name: string }>;
         const kirbyJobNames = kirbyJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('Kirby job names extraidos:', kirbyJobNames);
         const kirbyJobs = extractJobsFromNames(kirbyJobNames, 'kirby');
         jobs.push(...kirbyJobs);
         if (kirbyJobs.length > 0 && !extractedUuaa) {
@@ -222,7 +220,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.hammurabi?.artifacts_data?.jobs) {
         const hammurabiJobFiles = Object.values(artifacts.hammurabi.artifacts_data.jobs) as Array<{ file_name: string }>;
         const hammurabiJobNames = hammurabiJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('Hammurabi job names extraidos:', hammurabiJobNames);
         const hammurabiJobs = extractJobsFromNames(hammurabiJobNames, 'hammurabi');
         jobs.push(...hammurabiJobs);
         if (hammurabiJobs.length > 0 && !extractedUuaa) {
@@ -234,7 +231,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.smartcleaner?.artifacts_data?.jobs) {
         const smartcleanerJobFiles = Object.values(artifacts.smartcleaner.artifacts_data.jobs) as Array<{ file_name: string }>;
         const smartcleanerJobNames = smartcleanerJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('SmartCleaner job names extraidos:', smartcleanerJobNames);
         const smartcleanerJobs = extractJobsFromNames(smartcleanerJobNames, 'smartcleaner');
         jobs.push(...smartcleanerJobs);
         if (smartcleanerJobs.length > 0 && !extractedUuaa) {
@@ -246,9 +242,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const hasL1TJobs = jobs.some(job => job.phase === 'master-l1t');
       setHasL1T(hasL1TJobs);
 
-      console.log('Jobs extraidos:', jobs);
-      console.log('UUAA extraida:', extractedUuaa);
-      console.log('Tiene L1T:', hasL1TJobs);
 
       if (extractedUuaa) {
         setUuaa(extractedUuaa);
@@ -261,7 +254,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       }
 
     } catch (err) {
-      console.log('No hay artefactos guardados:', err);
       setError('No se encontraron artefactos de Pipeline Generator. Genera primero los componentes.');
     } finally {
       setIsLoadingArtifacts(false);
@@ -369,6 +361,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       // Extract UUAA from folder info
       const folderInfo = response.folder_info;
       const xmlUuaa = (folderInfo.t04?.normalizedUuaa || folderInfo.t02?.normalizedUuaa || '').toLowerCase();
+      // Store original UUAA from XML (3 or 4 chars) for job name generation
+      const originalXmlUuaa = (folderInfo.t04?.uuaa || folderInfo.t02?.uuaa || '').toUpperCase();
+      setXmlOriginalUuaa(originalXmlUuaa || null);
 
       if (!uuaa) {
         // Auto-fill if empty
@@ -404,7 +399,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         );
       }
     } catch (err) {
-      console.warn('Error analyzing sequences:', err);
     } finally {
       setIsAnalyzingXml(false);
     }
@@ -429,6 +423,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       );
     } else {
       setNextSequences(null);
+      setXmlOriginalUuaa(null);
       setUuaaMismatchWarning(null);
     }
   };
@@ -453,17 +448,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     sequence: number
   ): string => {
     const sequenceStr = sequence.toString().padStart(3, '0');
-    // Para Control-M usar UUAA original (sin normalizar)
-    const originalUuaa = uuaa.length === 4 && uuaa.startsWith('c')
-      ? uuaa.substring(1).toUpperCase()
-      : uuaa.toUpperCase();
-    return `C${originalUuaa}${jobType}${environment}${temporalidadCode}${sequenceStr}`;
+    return `C${uuaa.toUpperCase()}${jobType}${environment}${temporalidadCode}${sequenceStr}`;
   };
 
   // Generar secuencia de jobs Control-M
   const generateControlMSequence = (): ControlMJob[] => {
     const jobs: ControlMJob[] = [];
-    const normalizedUuaa = normalizeUuaa(uuaa);
+    // In additive mode xmlOriginalUuaa is set; in new mode normalize to 4 chars
+    const jobUuaa = xmlOriginalUuaa || normalizeUuaa(uuaa).toUpperCase();
     const temporalidadCode = TEMPORALIDAD_CODES[dataxConfig.periodicity];
 
     // Use next available sequences from analysis (additive mode) or start from 1
@@ -476,7 +468,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     if (triggerType === 'filewatcher') {
       const wSequence = nextSequences?.T ?? 1;
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'W', 'D', temporalidadCode, wSequence),
+        jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
         description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
         phase: 'filewatcher',
@@ -485,7 +477,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       });
     } else {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'T', 'D', temporalidadCode, tSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'T', 'D', temporalidadCode, tSequence++),
         type: 'T',
         description: `Transferencia Datax ${transferName}`,
         phase: 'datax',
@@ -498,7 +490,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiStaging = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'staging');
     if (hammurabiStaging) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Staging (Hammurabi)',
         phase: 'staging',
@@ -511,7 +503,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyRaw = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'raw');
     if (kirbyRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Ingesta de datos en fase Raw (Kirby)',
         phase: 'raw',
@@ -524,7 +516,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiRaw = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'raw');
     if (hammurabiRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Raw (Hammurabi)',
         phase: 'raw',
@@ -537,7 +529,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyMaster = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master');
     if (kirbyMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Ingesta de datos en fase Master (Kirby)',
         phase: 'master',
@@ -550,7 +542,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiMaster = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master');
     if (hammurabiMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Master (Hammurabi)',
         phase: 'master',
@@ -564,7 +556,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const kirbyL1T = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master-l1t');
       if (kirbyL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: 'Ingesta de datos en fase Master L1T (Kirby)',
           phase: 'master-l1t',
@@ -576,7 +568,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const hammurabiL1T = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master-l1t');
       if (hammurabiL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: 'Calidad de datos en fase Master L1T (Hammurabi)',
           phase: 'master-l1t',
@@ -588,7 +580,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
     // 9. Borrado Staging
     jobs.push({
-      jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+      jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
       type: 'D',
       description: 'Borrado de input en fase Staging',
       phase: 'staging',
@@ -600,7 +592,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerRaw = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'raw');
     if (smartcleanerRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: 'Borrado de datos en fase Raw (SmartCleaner)',
         phase: 'raw',
@@ -613,7 +605,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerMaster = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master');
     if (smartcleanerMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: 'Borrado de datos en fase Master (SmartCleaner)',
         phase: 'master',
@@ -627,7 +619,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const smartcleanerL1T = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master-l1t');
       if (smartcleanerL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
           type: 'D',
           description: 'Borrado de datos en fase Master L1T (SmartCleaner)',
           phase: 'master-l1t',
@@ -708,7 +700,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       });
 
       if (!response.success) {
-        console.warn('Error guardando en S3:', response.message);
       } else {
         // Store generated mallas and S3 URLs
         if (response.data?.mallas) {
@@ -735,8 +726,16 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     try {
       await pipelineService.downloadArtifactFile(objectId, 'controlm', fileName);
     } catch (err) {
-      console.error('Error descargando malla:', err);
       setError(`Error al descargar ${fileName}`);
+    }
+  };
+
+  // Descargar documentación completa como ZIP
+  const handleDownloadDocsZip = async () => {
+    try {
+      await pipelineService.downloadControlMDocsZip(objectId);
+    } catch (err) {
+      setError('Error al descargar documentación');
     }
   };
 
@@ -1236,7 +1235,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-500 font-medium">Secuencia de Jobs ({uuaa.toUpperCase()})</span>
                   {generatedMallas.length > 0 && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {generatedMallas.map((malla) => (
                         <button
                           key={malla}
@@ -1250,6 +1249,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           {malla.includes('-T04') ? (malla.includes('_des') ? 'T04 Des' : 'T04 Pro') : (malla.includes('_des') ? 'T02 Des' : 'T02 Pro')}
                         </button>
                       ))}
+                      <button
+                        onClick={handleDownloadDocsZip}
+                        className="text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 bg-purple-100 text-purple-600"
+                        title="Descargar documentación completa (Changelog, Manuales, Mallas)"
+                      >
+                        <DocumentArrowDownIcon className="h-3 w-3" />
+                        Descargar Documentación
+                      </button>
                     </div>
                   )}
                 </div>
