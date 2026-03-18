@@ -294,28 +294,11 @@ class PipelineGeneratorService {
    * Descarga la documentación Control-M como ZIP
    */
   async downloadControlMDocsZip(objectId: string): Promise<void> {
-    if (!this.user || !this.country) {
-      throw new Error('Usuario y país son requeridos');
-    }
-    const response = await fetch(`${API_BASE_URL}/pipeline-generator/artifacts/${objectId}/docs-zip`, {
-      method: 'GET',
-      headers: {
-        'X-User': this.user,
-        'X-Country': this.country,
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Error descargando documentación: ${response.statusText}`);
-    }
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'documentacion_controlm.zip';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
+    const response = await this.makeRequest<{ download_url: string; file_name: string }>(
+      `/artifacts/${objectId}/docs-zip`,
+      { method: 'GET' }
+    );
+    await this.downloadFile(response.download_url, response.file_name);
   }
 
   // ========================

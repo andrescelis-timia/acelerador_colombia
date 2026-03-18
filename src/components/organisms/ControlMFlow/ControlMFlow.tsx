@@ -94,6 +94,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [nextSequences, setNextSequences] = useState<{ T: number; C: number; D: number } | null>(null);
   const [isAnalyzingXml, setIsAnalyzingXml] = useState(false);
 
+  // Estados de descarga
+  const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
+
   // Estados de generacion
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -723,19 +726,25 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   // Descargar malla XML
   const handleDownloadMalla = async (fileName: string) => {
+    setDownloadingFile(fileName);
     try {
       await pipelineService.downloadArtifactFile(objectId, 'controlm', fileName);
     } catch (err) {
       setError(`Error al descargar ${fileName}`);
+    } finally {
+      setDownloadingFile(null);
     }
   };
 
   // Descargar documentación completa como ZIP
   const handleDownloadDocsZip = async () => {
+    setDownloadingFile('docs-zip');
     try {
       await pipelineService.downloadControlMDocsZip(objectId);
     } catch (err) {
       setError('Error al descargar documentación');
+    } finally {
+      setDownloadingFile(null);
     }
   };
 
@@ -1240,21 +1249,27 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         <button
                           key={malla}
                           onClick={() => handleDownloadMalla(malla)}
-                          className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 ${
+                          disabled={downloadingFile === malla}
+                          className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 disabled:opacity-50 ${
                             malla.includes('-T04') ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
                           }`}
                           title={malla}
                         >
-                          <DocumentArrowDownIcon className="h-3 w-3" />
+                          {downloadingFile === malla
+                            ? <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                            : <DocumentArrowDownIcon className="h-3 w-3" />}
                           {malla.includes('-T04') ? (malla.includes('_des') ? 'T04 Des' : 'T04 Pro') : (malla.includes('_des') ? 'T02 Des' : 'T02 Pro')}
                         </button>
                       ))}
                       <button
                         onClick={handleDownloadDocsZip}
-                        className="text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 bg-purple-100 text-purple-600"
+                        disabled={downloadingFile === 'docs-zip'}
+                        className="text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 bg-purple-100 text-purple-600 disabled:opacity-50"
                         title="Descargar documentación completa (Changelog, Manuales, Mallas)"
                       >
-                        <DocumentArrowDownIcon className="h-3 w-3" />
+                        {downloadingFile === 'docs-zip'
+                          ? <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                          : <DocumentArrowDownIcon className="h-3 w-3" />}
                         Descargar Documentación
                       </button>
                     </div>
