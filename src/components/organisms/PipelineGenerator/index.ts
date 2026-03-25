@@ -1,8 +1,7 @@
 export { PipelineGenerator } from './PipelineGenerator';
-export type { 
+export type {
   PipelineGeneratorProps,
   GeneratorPanelProps,
-  ControlMGeneratorPanelProps,
   SchemaUploadSectionProps,
   SchemaFile,
   SchemaField,

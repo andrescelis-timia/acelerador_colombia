@@ -174,6 +174,9 @@ class PipelineGeneratorService {
         },
         uuaa: request.uuaa,
         transfer_name: request.transferName,
+        trigger_type: request.triggerType || 'datax',
+        alias: request.alias,
+        staging_path: request.stagingPath,
         generated_jobs: request.generatedJobs,
         existing_t04_xml: request.existingT04Xml,
         existing_t02_xml: request.existingT02Xml
@@ -285,6 +288,17 @@ class PipelineGeneratorService {
   async downloadArtifactFile(objectId: string, generatorType: string, fileName: string): Promise<void> {
     const downloadUrl = await this.getArtifactDownloadUrl(objectId, generatorType, fileName);
     await this.downloadFile(downloadUrl, fileName);
+  }
+
+  /**
+   * Descarga la documentación Control-M como ZIP
+   */
+  async downloadControlMDocsZip(objectId: string): Promise<void> {
+    const response = await this.makeRequest<{ download_url: string; file_name: string }>(
+      `/artifacts/${objectId}/docs-zip`,
+      { method: 'GET' }
+    );
+    await this.downloadFile(response.download_url, response.file_name);
   }
 
   // ========================

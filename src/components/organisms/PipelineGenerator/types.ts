@@ -18,9 +18,6 @@ export interface GeneratorPanelProps {
   initialData?: GeneratedArtifact | null;
 }
 
-// ControlM y otros generadores usan la misma interfaz base
-export type ControlMGeneratorPanelProps = GeneratorPanelProps;
-
 export interface SchemaUploadSectionProps {
   rawSchema: File | null;
   masterSchema: File | null;

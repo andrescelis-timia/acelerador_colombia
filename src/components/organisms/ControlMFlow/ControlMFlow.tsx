@@ -28,7 +28,7 @@ interface IngestaJob {
 
 interface ControlMJob {
   jobName: string;
-  type: 'T' | 'C' | 'D';
+  type: 'T' | 'C' | 'D' | 'W';
   description: string;
   phase: string;
   originalJob?: string;
@@ -58,9 +58,15 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
 };
 
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
+  // Trigger type: datax o filewatcher
+  const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
+  const [fwAlias, setFwAlias] = useState('');
+  const [fwStagingPath, setFwStagingPath] = useState('');
+
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
   const [uuaa, setUuaa] = useState('');
+  const [xmlOriginalUuaa, setXmlOriginalUuaa] = useState<string | null>(null); // UUAA from existing XML (3 or 4 chars)
   const [ingestaJobs, setIngestaJobs] = useState<IngestaJob[]>([]);
   const [hasL1T, setHasL1T] = useState(false);
 
@@ -87,6 +93,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [existingT02FileName, setExistingT02FileName] = useState<string>('');
   const [nextSequences, setNextSequences] = useState<{ T: number; C: number; D: number } | null>(null);
   const [isAnalyzingXml, setIsAnalyzingXml] = useState(false);
+
+  // Estados de descarga
+  const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
 
   // Estados de generacion
   const [isGenerating, setIsGenerating] = useState(false);
@@ -145,7 +154,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         }
       } catch (err) {
         // Si no hay artefactos, no es un error - simplemente no se ha generado aún
-        console.log('No hay artefactos Control-M previos:', err);
       }
     };
 
@@ -165,17 +173,38 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const artifacts = response.artifacts;
       const jobs: IngestaJob[] = [];
 
-      console.log('Artifacts cargados:', artifacts);
 
       // Extraer UUAA del primer job encontrado o del metadata
       let extractedUuaa = '';
 
-      // Intentar extraer UUAA del metadata primero
-      if (artifacts.kirby?.artifacts_data?.metadata?.extractedInfo?.alias) {
-        const namespace = artifacts.kirby.artifacts_data.metadata.extractedInfo?.namespace || '';
+      // Intentar extraer UUAA y datos para FileWatcher del metadata
+      if (artifacts.kirby?.artifacts_data?.metadata?.extractedInfo) {
+        const extractedInfo = artifacts.kirby.artifacts_data.metadata.extractedInfo;
+        const metadata = artifacts.kirby.artifacts_data.metadata;
+        const namespace = extractedInfo.namespace || '';
+        const extractedAlias = extractedInfo.alias || '';
         const uuaaMatch = namespace.match(/([a-z]{3,4})\.co\./i);
         if (uuaaMatch) {
           extractedUuaa = uuaaMatch[1].toLowerCase();
+        }
+        // Auto-fill FileWatcher fields
+        if (extractedAlias) {
+          setFwAlias(extractedAlias);
+        }
+        // Extraer staging path: primero de metadata, luego del contenido del config raw
+        if (metadata.stagingInputPath) {
+          setFwStagingPath(metadata.stagingInputPath);
+        } else if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
+          const rawContent = artifacts.kirby.artifacts_data.configs.raw.content;
+          // El input_path tiene comillas internas: "...D02_"${?YEAR}..."  → capturar toda la línea entre paths = [ y ]
+          const pathMatch = rawContent.match(/paths\s*=\s*\[\s*\n?\s*(.*?)\s*\n?\s*\]/s);
+          if (pathMatch) {
+            // Limpiar comillas externas e internas del HOCON
+            const rawPath = pathMatch[1].replace(/"/g, '').trim();
+            // Convertir formato HOCON a formato Control-M: ${?YEAR}${?MONTH}${?DAY} → %%PDATE
+            const stagingPath = rawPath.replace(/\$\{[?]?YEAR\}\$\{[?]?MONTH\}\$\{[?]?DAY\}/, '%%PDATE');
+            setFwStagingPath(stagingPath);
+          }
         }
       }
 
@@ -183,7 +212,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.kirby?.artifacts_data?.jobs) {
         const kirbyJobFiles = Object.values(artifacts.kirby.artifacts_data.jobs) as Array<{ file_name: string }>;
         const kirbyJobNames = kirbyJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('Kirby job names extraidos:', kirbyJobNames);
         const kirbyJobs = extractJobsFromNames(kirbyJobNames, 'kirby');
         jobs.push(...kirbyJobs);
         if (kirbyJobs.length > 0 && !extractedUuaa) {
@@ -195,7 +223,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.hammurabi?.artifacts_data?.jobs) {
         const hammurabiJobFiles = Object.values(artifacts.hammurabi.artifacts_data.jobs) as Array<{ file_name: string }>;
         const hammurabiJobNames = hammurabiJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('Hammurabi job names extraidos:', hammurabiJobNames);
         const hammurabiJobs = extractJobsFromNames(hammurabiJobNames, 'hammurabi');
         jobs.push(...hammurabiJobs);
         if (hammurabiJobs.length > 0 && !extractedUuaa) {
@@ -207,7 +234,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       if (artifacts.smartcleaner?.artifacts_data?.jobs) {
         const smartcleanerJobFiles = Object.values(artifacts.smartcleaner.artifacts_data.jobs) as Array<{ file_name: string }>;
         const smartcleanerJobNames = smartcleanerJobFiles.map(f => f.file_name?.replace(/\.(conf|json|yml|yaml)$/i, '') || '').filter(Boolean);
-        console.log('SmartCleaner job names extraidos:', smartcleanerJobNames);
         const smartcleanerJobs = extractJobsFromNames(smartcleanerJobNames, 'smartcleaner');
         jobs.push(...smartcleanerJobs);
         if (smartcleanerJobs.length > 0 && !extractedUuaa) {
@@ -219,9 +245,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const hasL1TJobs = jobs.some(job => job.phase === 'master-l1t');
       setHasL1T(hasL1TJobs);
 
-      console.log('Jobs extraidos:', jobs);
-      console.log('UUAA extraida:', extractedUuaa);
-      console.log('Tiene L1T:', hasL1TJobs);
 
       if (extractedUuaa) {
         setUuaa(extractedUuaa);
@@ -234,7 +257,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       }
 
     } catch (err) {
-      console.log('No hay artefactos guardados:', err);
       setError('No se encontraron artefactos de Pipeline Generator. Genera primero los componentes.');
     } finally {
       setIsLoadingArtifacts(false);
@@ -342,6 +364,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       // Extract UUAA from folder info
       const folderInfo = response.folder_info;
       const xmlUuaa = (folderInfo.t04?.normalizedUuaa || folderInfo.t02?.normalizedUuaa || '').toLowerCase();
+      // Store original UUAA from XML (3 or 4 chars) for job name generation
+      const originalXmlUuaa = (folderInfo.t04?.uuaa || folderInfo.t02?.uuaa || '').toUpperCase();
+      setXmlOriginalUuaa(originalXmlUuaa || null);
 
       if (!uuaa) {
         // Auto-fill if empty
@@ -377,7 +402,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         );
       }
     } catch (err) {
-      console.warn('Error analyzing sequences:', err);
     } finally {
       setIsAnalyzingXml(false);
     }
@@ -402,6 +426,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       );
     } else {
       setNextSequences(null);
+      setXmlOriginalUuaa(null);
       setUuaaMismatchWarning(null);
     }
   };
@@ -420,23 +445,20 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Generar nombre de job Control-M
   const generateControlMJobName = (
     uuaa: string,
-    jobType: 'T' | 'C' | 'D',
+    jobType: 'T' | 'C' | 'D' | 'W',
     environment: 'D' | 'P',
     temporalidadCode: string,
     sequence: number
   ): string => {
     const sequenceStr = sequence.toString().padStart(3, '0');
-    // Para Control-M usar UUAA original (sin normalizar)
-    const originalUuaa = uuaa.length === 4 && uuaa.startsWith('c')
-      ? uuaa.substring(1).toUpperCase()
-      : uuaa.toUpperCase();
-    return `C${originalUuaa}${jobType}${environment}${temporalidadCode}${sequenceStr}`;
+    return `C${uuaa.toUpperCase()}${jobType}${environment}${temporalidadCode}${sequenceStr}`;
   };
 
   // Generar secuencia de jobs Control-M
   const generateControlMSequence = (): ControlMJob[] => {
     const jobs: ControlMJob[] = [];
-    const normalizedUuaa = normalizeUuaa(uuaa);
+    // In additive mode xmlOriginalUuaa is set; in new mode normalize to 4 chars
+    const jobUuaa = xmlOriginalUuaa || normalizeUuaa(uuaa).toUpperCase();
     const temporalidadCode = TEMPORALIDAD_CODES[dataxConfig.periodicity];
 
     // Use next available sequences from analysis (additive mode) or start from 1
@@ -445,21 +467,33 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     let dSequence = nextSequences?.D ?? 1;
     let order = 1;
 
-    // 1. Job de Transferencia Datax
-    jobs.push({
-      jobName: generateControlMJobName(normalizedUuaa, 'T', 'D', temporalidadCode, tSequence++),
-      type: 'T',
-      description: `Transferencia Datax ${transferName}`,
-      phase: 'datax',
-      originalJob: transferName,
-      order: order++
-    });
+    // 1. Job iniciador: Datax o FileWatcher
+    if (triggerType === 'filewatcher') {
+      const wSequence = nextSequences?.T ?? 1;
+      jobs.push({
+        jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
+        type: 'W',
+        description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
+        phase: 'filewatcher',
+        originalJob: fwStagingPath,
+        order: order++
+      });
+    } else {
+      jobs.push({
+        jobName: generateControlMJobName(jobUuaa, 'T', 'D', temporalidadCode, tSequence++),
+        type: 'T',
+        description: `Transferencia Datax ${transferName}`,
+        phase: 'datax',
+        originalJob: transferName,
+        order: order++
+      });
+    }
 
     // 2. Hammurabi Staging (calidad)
     const hammurabiStaging = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'staging');
     if (hammurabiStaging) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Staging (Hammurabi)',
         phase: 'staging',
@@ -472,7 +506,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyRaw = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'raw');
     if (kirbyRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Ingesta de datos en fase Raw (Kirby)',
         phase: 'raw',
@@ -485,7 +519,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiRaw = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'raw');
     if (hammurabiRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Raw (Hammurabi)',
         phase: 'raw',
@@ -498,7 +532,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyMaster = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master');
     if (kirbyMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Ingesta de datos en fase Master (Kirby)',
         phase: 'master',
@@ -511,7 +545,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiMaster = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master');
     if (hammurabiMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: 'Calidad de datos en fase Master (Hammurabi)',
         phase: 'master',
@@ -525,7 +559,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const kirbyL1T = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master-l1t');
       if (kirbyL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: 'Ingesta de datos en fase Master L1T (Kirby)',
           phase: 'master-l1t',
@@ -537,7 +571,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const hammurabiL1T = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master-l1t');
       if (hammurabiL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: 'Calidad de datos en fase Master L1T (Hammurabi)',
           phase: 'master-l1t',
@@ -549,10 +583,11 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
     // 9. Borrado Staging
     jobs.push({
-      jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+      jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
       type: 'D',
       description: 'Borrado de input en fase Staging',
       phase: 'staging',
+      originalJob: `${uuaa}-co-dfs-rmv-hdfs-01`,
       order: order++
     });
 
@@ -560,7 +595,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerRaw = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'raw');
     if (smartcleanerRaw) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: 'Borrado de datos en fase Raw (SmartCleaner)',
         phase: 'raw',
@@ -573,7 +608,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerMaster = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master');
     if (smartcleanerMaster) {
       jobs.push({
-        jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: 'Borrado de datos en fase Master (SmartCleaner)',
         phase: 'master',
@@ -587,7 +622,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const smartcleanerL1T = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master-l1t');
       if (smartcleanerL1T) {
         jobs.push({
-          jobName: generateControlMJobName(normalizedUuaa, 'D', 'D', temporalidadCode, dSequence++),
+          jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
           type: 'D',
           description: 'Borrado de datos en fase Master L1T (SmartCleaner)',
           phase: 'master-l1t',
@@ -651,7 +686,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           annualDay: dataxConfig.annualDay
         },
         uuaa: uuaa,
-        transferName: transferName,
+        transferName: triggerType === 'datax' ? transferName : undefined,
+        triggerType: triggerType,
+        alias: triggerType === 'filewatcher' ? fwAlias : undefined,
+        stagingPath: triggerType === 'filewatcher' ? fwStagingPath : undefined,
         generatedJobs: jobs.map(j => ({
           jobName: j.jobName,
           type: j.type,
@@ -660,12 +698,11 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           originalJob: j.originalJob,
           order: j.order
         })),
-        existingT04Xml: existingT04Xml || undefined,
+        existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
         existingT02Xml: existingT02Xml || undefined
       });
 
       if (!response.success) {
-        console.warn('Error guardando en S3:', response.message);
       } else {
         // Store generated mallas and S3 URLs
         if (response.data?.mallas) {
@@ -689,11 +726,25 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   // Descargar malla XML
   const handleDownloadMalla = async (fileName: string) => {
+    setDownloadingFile(fileName);
     try {
       await pipelineService.downloadArtifactFile(objectId, 'controlm', fileName);
     } catch (err) {
-      console.error('Error descargando malla:', err);
       setError(`Error al descargar ${fileName}`);
+    } finally {
+      setDownloadingFile(null);
+    }
+  };
+
+  // Descargar documentación completa como ZIP
+  const handleDownloadDocsZip = async () => {
+    setDownloadingFile('docs-zip');
+    try {
+      await pipelineService.downloadControlMDocsZip(objectId);
+    } catch (err) {
+      setError('Error al descargar documentación');
+    } finally {
+      setDownloadingFile(null);
     }
   };
 
@@ -724,21 +775,23 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   };
 
   // En modo aditivo, UUAA puede venir del XML; en modo normal es requerida
-  const canGenerate = transferName.trim() !== '' &&
-    (uuaa.trim() !== '' || isAdditiveMode) &&
-    ingestaJobs.length > 0;
+  const canGenerate = triggerType === 'filewatcher'
+    ? fwStagingPath.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0
+    : transferName.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0;
 
-  const getJobTypeColor = (type: 'T' | 'C' | 'D') => {
+  const getJobTypeColor = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
       case 'T': return 'bg-blue-100 text-blue-700';
+      case 'W': return 'bg-amber-100 text-amber-700';
       case 'C': return 'bg-green-100 text-green-700';
       case 'D': return 'bg-red-100 text-red-700';
     }
   };
 
-  const getJobTypeLabel = (type: 'T' | 'C' | 'D') => {
+  const getJobTypeLabel = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
       case 'T': return 'Transferencia';
+      case 'W': return 'FileWatcher';
       case 'C': return 'Ingesta';
       case 'D': return 'Borrado';
     }
@@ -761,12 +814,41 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         <div className="p-5 space-y-4">
           {/* Layout en 2 columnas: Datax + Jobs */}
           <div className="grid grid-cols-2 gap-6">
-            {/* Columna izquierda: Configuracion Datax */}
+            {/* Columna izquierda: Configuracion */}
             <div className="pr-6 border-r border-gray-200">
-              <div className="text-xs text-gray-500 mb-2 font-medium">Configuracion Datax</div>
+              {/* Trigger Type Selector */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-xs text-gray-500 font-medium">Iniciador:</span>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="triggerType"
+                    value="datax"
+                    checked={triggerType === 'datax'}
+                    onChange={() => setTriggerType('datax')}
+                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-700">Datax</span>
+                </label>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="triggerType"
+                    value="filewatcher"
+                    checked={triggerType === 'filewatcher'}
+                    onChange={() => setTriggerType('filewatcher')}
+                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-700">FileWatcher</span>
+                </label>
+              </div>
+
+              <div className="text-xs text-gray-500 mb-2 font-medium">
+                {triggerType === 'datax' ? 'Configuracion Datax' : 'Configuracion FileWatcher'}
+              </div>
               <div className="space-y-3">
-                <div className="flex gap-2">
-                  <div className="flex-1">
+                {triggerType === 'datax' ? (
+                  <div>
                     <label className="block text-xs text-gray-500 mb-1">Transferencia *</label>
                     <input
                       type="text"
@@ -776,22 +858,20 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
                     />
                   </div>
-                  <div className="w-20">
-                    <label className="block text-xs text-gray-500 mb-1">
-                      UUAA {isAdditiveMode && uuaa && <span className="text-green-600">✓</span>}
-                    </label>
+                ) : (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Ruta staging {fwStagingPath && <span className="text-green-600">✓</span>}</label>
                     <input
                       type="text"
-                      placeholder="ctkn"
-                      value={uuaa}
-                      onChange={(e) => setUuaa(e.target.value.toLowerCase())}
+                      placeholder="Se autocompleta al cargar jobs de Pipeline Generator"
+                      value={fwStagingPath}
+                      onChange={(e) => setFwStagingPath(e.target.value)}
                       className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 ${
-                        isAdditiveMode && uuaa ? 'border-green-300 bg-green-50' : 'border-gray-300'
+                        fwStagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
                       }`}
-                      readOnly={isAdditiveMode && !!uuaa}
                     />
                   </div>
-                </div>
+                )}
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">
                     <label className="block text-xs text-gray-500 mb-1">Periodicidad</label>
@@ -1104,7 +1184,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
               {!canGenerate && (
                 <span className="text-xs text-gray-500">
-                  {isAdditiveMode ? 'Requiere transferencia y jobs' : 'Requiere transferencia, UUAA y jobs'}
+                  {triggerType === 'filewatcher'
+                    ? 'Requiere ruta staging, UUAA y jobs (carga desde Pipeline Generator)'
+                    : isAdditiveMode ? 'Requiere transferencia y jobs' : 'Requiere transferencia, UUAA y jobs'}
                 </span>
               )}
 
@@ -1162,20 +1244,34 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-500 font-medium">Secuencia de Jobs ({uuaa.toUpperCase()})</span>
                   {generatedMallas.length > 0 && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {generatedMallas.map((malla) => (
                         <button
                           key={malla}
                           onClick={() => handleDownloadMalla(malla)}
-                          className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 ${
+                          disabled={downloadingFile === malla}
+                          className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 disabled:opacity-50 ${
                             malla.includes('-T04') ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
                           }`}
                           title={malla}
                         >
-                          <DocumentArrowDownIcon className="h-3 w-3" />
+                          {downloadingFile === malla
+                            ? <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                            : <DocumentArrowDownIcon className="h-3 w-3" />}
                           {malla.includes('-T04') ? (malla.includes('_des') ? 'T04 Des' : 'T04 Pro') : (malla.includes('_des') ? 'T02 Des' : 'T02 Pro')}
                         </button>
                       ))}
+                      <button
+                        onClick={handleDownloadDocsZip}
+                        disabled={downloadingFile === 'docs-zip'}
+                        className="text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 bg-purple-100 text-purple-600 disabled:opacity-50"
+                        title="Descargar documentación completa (Changelog, Manuales, Mallas)"
+                      >
+                        {downloadingFile === 'docs-zip'
+                          ? <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                          : <DocumentArrowDownIcon className="h-3 w-3" />}
+                        Descargar Documentación
+                      </button>
                     </div>
                   )}
                 </div>
