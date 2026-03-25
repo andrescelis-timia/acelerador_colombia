@@ -152,7 +152,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
             if (data.config.transfer_name) setTransferName(data.config.transfer_name);
           }
         }
-      } catch (err) {
+      } catch {
         // Si no hay artefactos, no es un error - simplemente no se ha generado aún
       }
     };
@@ -197,7 +197,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         } else if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
           const rawContent = artifacts.kirby.artifacts_data.configs.raw.content;
           // El input_path tiene comillas internas: "...D02_"${?YEAR}..."  → capturar toda la línea entre paths = [ y ]
-          const pathMatch = rawContent.match(/paths\s*=\s*\[\s*\n?\s*(.*?)\s*\n?\s*\]/s);
+          const pathMatch = rawContent.match(/paths\s*=\s*\[\s*[\n\r]?\s*(.+?)\s*[\n\r]?\s*\]/);
           if (pathMatch) {
             // Limpiar comillas externas e internas del HOCON
             const rawPath = pathMatch[1].replace(/"/g, '').trim();
@@ -256,7 +256,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         setError('No se encontraron jobs en Pipeline Generator. Genera primero los componentes Kirby, Hammurabi y SmartCleaner.');
       }
 
-    } catch (err) {
+    } catch {
       setError('No se encontraron artefactos de Pipeline Generator. Genera primero los componentes.');
     } finally {
       setIsLoadingArtifacts(false);
@@ -401,7 +401,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
             : null
         );
       }
-    } catch (err) {
+    } catch {
     } finally {
       setIsAnalyzingXml(false);
     }
@@ -729,7 +729,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     setDownloadingFile(fileName);
     try {
       await pipelineService.downloadArtifactFile(objectId, 'controlm', fileName);
-    } catch (err) {
+    } catch {
       setError(`Error al descargar ${fileName}`);
     } finally {
       setDownloadingFile(null);
@@ -741,7 +741,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     setDownloadingFile('docs-zip');
     try {
       await pipelineService.downloadControlMDocsZip(objectId);
-    } catch (err) {
+    } catch {
       setError('Error al descargar documentación');
     } finally {
       setDownloadingFile(null);

@@ -129,6 +129,7 @@ export interface GenerateKirbyResponse {
       masterSecurityLevel: string;
       detectedTransformations: string[];
       componentType: 'tabla' | 'tablon';
+      stagingInputPath?: string;
       extractedInfo: {
         alias: string;
         namespace: string;
