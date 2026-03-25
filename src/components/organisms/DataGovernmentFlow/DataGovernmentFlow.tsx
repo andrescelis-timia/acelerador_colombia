@@ -735,17 +735,22 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                   </div>
                   <div className="flex-1 px-4 flex flex-col items-center justify-center gap-1">
                     <span className="text-[10px] text-gray-400 uppercase tracking-wide">Periodicidad</span>
-                    <select
-                      value={periodicity}
-                      onChange={(e) => setPeriodicity(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-                      disabled={isLiteLoading}
-                      className="w-28 text-xs text-center font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer appearance-none"
-                    >
-                      <option value="daily">Diario</option>
-                      <option value="weekly">Semanal</option>
-                      <option value="monthly">Mensual</option>
-                      <option value="yearly">Anual</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={periodicity}
+                        onChange={(e) => setPeriodicity(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
+                        disabled={isLiteLoading}
+                        className="w-32 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md pl-3 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer appearance-none hover:border-gray-400 transition-colors"
+                      >
+                        <option value="daily">Diario</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensual</option>
+                        <option value="yearly">Anual</option>
+                      </select>
+                      <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>

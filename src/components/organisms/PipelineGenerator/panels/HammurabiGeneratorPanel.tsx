@@ -188,10 +188,10 @@ export const HammurabiGeneratorPanel = ({
             <div className="flex items-center text-sm text-gray-600">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-1" />
               {totalFiles} archivos
-              {isFromSavedData && initialData?.creation_date && (
+              {isFromSavedData && (initialData?.update_date || initialData?.creation_date) && (
                 <span className="ml-2 text-xs text-gray-400">
                   <ClockIcon className="h-3 w-3 inline mr-1" />
-                  {new Date(initialData.creation_date).toLocaleDateString()}
+                  {new Date(initialData.update_date || initialData.creation_date).toLocaleDateString()}
                 </span>
               )}
             </div>
