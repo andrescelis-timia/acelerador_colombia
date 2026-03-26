@@ -13,7 +13,8 @@ import {
 import { BarChart } from '@/components/molecules/BarChart';
 
 const formatTimeAgo = (timestamp: string): string => {
-  const diff = Date.now() - new Date(timestamp).getTime();
+  const diff = Date.now() - new Date(timestamp + 'Z').getTime();
+  if (diff < 0) return 'hace <1h';
   const hours = Math.floor(diff / 3600000);
   if (hours < 1) return 'hace <1h';
   if (hours < 24) return `hace ${hours}h`;
