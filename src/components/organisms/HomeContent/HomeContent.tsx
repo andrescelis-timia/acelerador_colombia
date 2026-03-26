@@ -14,9 +14,8 @@ import { BarChart } from '@/components/molecules/BarChart';
 
 const formatTimeAgo = (timestamp: string): string => {
   const diff = Date.now() - new Date(timestamp).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `hace ${minutes}m`;
-  const hours = Math.floor(minutes / 60);
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'hace <1h';
   if (hours < 24) return `hace ${hours}h`;
   const days = Math.floor(hours / 24);
   return `hace ${days}d`;
@@ -81,7 +80,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
   const phaseOrder = ['gobierno', 'kirby', 'hammurabi', 'smartcleaner', 'controlm'];
 
   const projectChartData = stats.projects_detail.map(p => ({
-    label: p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name,
+    label: p.name.length > 100 ? p.name.substring(0, 100) + '...' : p.name,
     value: p.total_objects,
   }));
 
