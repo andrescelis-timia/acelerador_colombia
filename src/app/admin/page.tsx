@@ -38,6 +38,9 @@ export default function AdminPage() {
   const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'DEVELOPER'>('DEVELOPER');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [assignCountry, setAssignCountry] = useState<string>(
+    typeof window !== 'undefined' ? localStorage.getItem('selectedCountry') || 'CO' : 'CO'
+  );
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -108,8 +111,10 @@ export default function AdminPage() {
     if (!user?.email) return;
     try {
       setLoadingProjects(true);
+      setSelectedProjectId(null);
+      setMembers([]);
       const response = await fetch(`${API_URL}/projects`, {
-        headers: { 'X-User': user.email, 'X-Country': userCountry }
+        headers: { 'X-User': user.email, 'X-Country': assignCountry }
       });
       if (response.ok) {
         const data = await response.json();
@@ -118,19 +123,19 @@ export default function AdminPage() {
     } catch { /* ignore */ } finally {
       setLoadingProjects(false);
     }
-  }, [user?.email, userCountry, API_URL]);
+  }, [user?.email, assignCountry, API_URL]);
 
   const fetchMembers = useCallback(async (projectId: string) => {
     if (!user?.email) return;
     try {
       setLoadingMembers(true);
-      const service = new ProjectMemberService(user.email, userCountry);
+      const service = new ProjectMemberService(user.email, assignCountry);
       const data = await service.getMembers(projectId);
       setMembers(data);
     } catch { setMembers([]); } finally {
       setLoadingMembers(false);
     }
-  }, [user?.email, userCountry]);
+  }, [user?.email, assignCountry]);
 
   const handleSelectProject = (projectId: string) => {
     setSelectedProjectId(projectId);
@@ -140,7 +145,7 @@ export default function AdminPage() {
   const handleAddMember = async () => {
     if (!user?.email || !selectedProjectId || !addMemberEmail.trim()) return;
     try {
-      const service = new ProjectMemberService(user.email, userCountry);
+      const service = new ProjectMemberService(user.email, assignCountry);
       await service.addMember(selectedProjectId, { user_email: addMemberEmail.trim(), project_role: addMemberRole });
       setAddMemberEmail('');
       setSuccessMessage(`Miembro ${addMemberEmail} agregado como ${addMemberRole}`);
@@ -155,7 +160,7 @@ export default function AdminPage() {
   const handleRemoveMember = async (userId: string) => {
     if (!user?.email || !selectedProjectId) return;
     try {
-      const service = new ProjectMemberService(user.email, userCountry);
+      const service = new ProjectMemberService(user.email, assignCountry);
       await service.removeMember(selectedProjectId, userId);
       setSuccessMessage('Miembro eliminado');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -169,7 +174,7 @@ export default function AdminPage() {
   const handleChangeRole = async (userId: string, newRole: 'OWNER' | 'DEVELOPER') => {
     if (!user?.email || !selectedProjectId) return;
     try {
-      const service = new ProjectMemberService(user.email, userCountry);
+      const service = new ProjectMemberService(user.email, assignCountry);
       await service.updateMemberRole(selectedProjectId, userId, { project_role: newRole });
       setSuccessMessage(`Rol actualizado a ${newRole}`);
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -181,10 +186,10 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (activeTab === 'assignments' && projects.length === 0) {
+    if (activeTab === 'assignments') {
       fetchProjects();
     }
-  }, [activeTab, projects.length, fetchProjects]);
+  }, [activeTab, assignCountry, fetchProjects]);
 
   const getAuthMethodBadge = (hasGoogle: boolean, hasPassword: boolean) => {
     if (hasPassword) {
@@ -467,7 +472,19 @@ export default function AdminPage() {
         )}
 
         {activeTab === 'assignments' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Pais:</label>
+              <select
+                value={assignCountry}
+                onChange={(e) => setAssignCountry(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+              >
+                <option value="CO">Colombia</option>
+                <option value="PE">Peru</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Project selector */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
@@ -619,6 +636,7 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+          </div>
           </div>
         )}
       </div>
