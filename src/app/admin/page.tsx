@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { TrashIcon } from '@heroicons/react/24/outline';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -408,7 +409,7 @@ export default function AdminPage() {
                               }}
                               className="text-red-600 hover:text-red-800 text-xs font-medium"
                             >
-                              Eliminar
+                              <TrashIcon className="h-4 w-4" />
                             </button>
                           </td>
                         </tr>
