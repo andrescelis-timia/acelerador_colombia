@@ -1,14 +1,6 @@
+import type { DashboardStats } from '@/services/Dashboard/types';
+
 export interface HomeContentProps {
-  metrics: {
-    totalProyectos: number;
-    proyectosCompletados: number;
-    tiempoPromedio: string;
-    objetosPendientes: number;
-  };
-  charts: {
-    tiempoPromedioEtapas: {
-      label: string;
-      value: number;
-    }[];
-  };
-} 
+  stats: DashboardStats | null;
+  loading: boolean;
+}
