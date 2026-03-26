@@ -35,4 +35,5 @@ export interface DashboardStats {
     label: string;
     value: number;
   }[];
+  total_fields: number;
 }
