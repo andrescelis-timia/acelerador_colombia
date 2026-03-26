@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [addMemberEmail, setAddMemberEmail] = useState('');
   const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'DEVELOPER'>('DEVELOPER');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -358,37 +359,57 @@ export default function AdminPage() {
                             {u.country}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select
-                              value={u.role}
-                              onChange={async (e) => {
-                                const newRole = e.target.value;
-                                try {
-                                  const response = await fetch(`${API_URL}/admin/users/${u.id_user}/role`, {
-                                    method: 'PUT',
-                                    headers: { 'X-User': user?.email || '', 'X-Country': userCountry, 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ role: newRole }),
-                                  });
-                                  if (response.ok) {
-                                    setSuccessMessage(`Rol de ${u.email} actualizado a ${newRole}`);
-                                    setTimeout(() => setSuccessMessage(''), 3000);
-                                    fetchUsers();
-                                  } else {
-                                    const data = await response.json();
-                                    setErrorMessage(data.detail || 'Error al actualizar rol');
-                                  }
-                                } catch { setErrorMessage('Error al actualizar rol'); }
-                              }}
-                              className="text-xs border border-gray-300 rounded px-2 py-1"
-                            >
-                              <option value="DEVELOPER">DEVELOPER</option>
-                              <option value="OWNER">OWNER</option>
-                              <option value="ADMIN">ADMIN</option>
-                            </select>
+                            {editingUserId === u.id_user ? (
+                              <select
+                                value={u.role}
+                                onChange={async (e) => {
+                                  const newRole = e.target.value;
+                                  try {
+                                    const response = await fetch(`${API_URL}/admin/users/${u.id_user}/role`, {
+                                      method: 'PUT',
+                                      headers: { 'X-User': user?.email || '', 'X-Country': userCountry, 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ role: newRole }),
+                                    });
+                                    if (response.ok) {
+                                      setSuccessMessage(`Rol de ${u.email} actualizado a ${newRole}`);
+                                      setTimeout(() => setSuccessMessage(''), 3000);
+                                      setEditingUserId(null);
+                                      fetchUsers();
+                                    } else {
+                                      const data = await response.json();
+                                      setErrorMessage(data.detail || 'Error al actualizar rol');
+                                    }
+                                  } catch { setErrorMessage('Error al actualizar rol'); }
+                                }}
+                                onBlur={() => setEditingUserId(null)}
+                                autoFocus
+                                className="text-xs border border-blue-400 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500"
+                              >
+                                <option value="DEVELOPER">DEVELOPER</option>
+                                <option value="OWNER">OWNER</option>
+                                <option value="ADMIN">ADMIN</option>
+                              </select>
+                            ) : (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                u.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                u.role === 'OWNER' ? 'bg-purple-100 text-purple-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {u.role}
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {getAuthMethodBadge(u.has_google_auth, u.has_password_auth)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <td className="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setEditingUserId(editingUserId === u.id_user ? null : u.id_user)}
+                              className="text-indigo-600 hover:text-indigo-800"
+                              title="Editar rol"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
                             <button
                               onClick={async () => {
                                 if (!confirm(`Eliminar usuario ${u.email}?`)) return;
