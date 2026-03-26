@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 
-export type UserRole = 'ADMIN' | 'USER' | 'ADMIN-READONLY' | null;
+export type UserRole = 'ADMIN' | 'OWNER' | 'DEVELOPER' | null;
 
 // Cache global para evitar múltiples peticiones
 const roleCache = new Map<string, { role: UserRole; timestamp: number }>();
@@ -15,28 +15,28 @@ export const useUserRole = () => {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      // Evitar múltiples peticiones simultáneas
       if (fetchingRef.current) return;
 
       try {
         setLoading(true);
         fetchingRef.current = true;
 
-        // Si hay sessionData (autenticación con password), usar el rol directamente
         if (sessionData && sessionData.role) {
-          setUserRole(sessionData.role as UserRole);
+          // Map legacy roles
+          let role = sessionData.role as string;
+          if (role === 'USER') role = 'DEVELOPER';
+          if (role === 'ADMIN-READONLY') role = 'ADMIN';
+          setUserRole(role as UserRole);
           setLoading(false);
           return;
         }
 
-        // Si no hay usuario, no hacer nada
         if (!user?.email) {
           setUserRole(null);
           setLoading(false);
           return;
         }
 
-        // Verificar caché primero
         const cacheKey = `${user.email}-${country}`;
         const cached = roleCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
@@ -45,7 +45,6 @@ export const useUserRole = () => {
           return;
         }
 
-        // Si es usuario Google OAuth, obtener rol desde backend
         if (authMethod === 'google') {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/role/${user.email}`, {
             headers: {
@@ -56,32 +55,30 @@ export const useUserRole = () => {
 
           if (response.ok) {
             const data = await response.json();
-            const role = data.role as UserRole;
-
-            // Guardar en caché
-            roleCache.set(cacheKey, { role, timestamp: Date.now() });
-            setUserRole(role);
+            let role = data.role as string;
+            if (role === 'USER') role = 'DEVELOPER';
+            if (role === 'ADMIN-READONLY') role = 'ADMIN';
+            roleCache.set(cacheKey, { role: role as UserRole, timestamp: Date.now() });
+            setUserRole(role as UserRole);
           } else {
-            const fallbackRole = 'USER' as UserRole;
-            roleCache.set(cacheKey, { role: fallbackRole, timestamp: Date.now() });
-            setUserRole(fallbackRole);
+            roleCache.set(cacheKey, { role: 'DEVELOPER', timestamp: Date.now() });
+            setUserRole('DEVELOPER');
           }
         } else if (!sessionData) {
-          // Fallback: intentar obtener desde localStorage para autenticación basada en headers
           const storedRole = localStorage.getItem('auth_user_role');
           if (storedRole) {
-            const role = storedRole as UserRole;
-            roleCache.set(cacheKey, { role, timestamp: Date.now() });
-            setUserRole(role);
+            let role = storedRole;
+            if (role === 'USER') role = 'DEVELOPER';
+            if (role === 'ADMIN-READONLY') role = 'ADMIN';
+            roleCache.set(cacheKey, { role: role as UserRole, timestamp: Date.now() });
+            setUserRole(role as UserRole);
           } else {
-            const fallbackRole = 'USER' as UserRole;
-            roleCache.set(cacheKey, { role: fallbackRole, timestamp: Date.now() });
-            setUserRole(fallbackRole);
+            roleCache.set(cacheKey, { role: 'DEVELOPER', timestamp: Date.now() });
+            setUserRole('DEVELOPER');
           }
         }
-      } catch (error) {
-        console.error('Error obteniendo rol del usuario:', error);
-        setUserRole('USER'); // Default fallback
+      } catch {
+        setUserRole('DEVELOPER');
       } finally {
         setLoading(false);
         fetchingRef.current = false;
@@ -95,8 +92,8 @@ export const useUserRole = () => {
     userRole,
     loading,
     isAdmin: userRole === 'ADMIN',
-    isAdminReadonly: userRole === 'ADMIN-READONLY',
-    isAnyAdmin: userRole === 'ADMIN' || userRole === 'ADMIN-READONLY',
-    isUser: userRole === 'USER'
+    isOwner: userRole === 'OWNER',
+    isDeveloper: userRole === 'DEVELOPER',
+    canCreateProjects: userRole === 'ADMIN' || userRole === 'OWNER',
   };
 };

@@ -18,7 +18,6 @@ import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T, 
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
-import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
 
@@ -515,15 +514,13 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
         return (
           <BoxFlowControls
             centerContent={
-              <ReadOnlyWrapper showFallback={false}>
-                <button
-                  onClick={() => handleOpenForm('pre-dictionary')}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                  title="Campos adicionales"
-                >
-                  {progress}
-                </button>
-              </ReadOnlyWrapper>
+              <button
+                onClick={() => handleOpenForm('pre-dictionary')}
+                className="text-sm text-blue-600 hover:text-blue-800"
+                title="Campos adicionales"
+              >
+                {progress}
+              </button>
             }
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,

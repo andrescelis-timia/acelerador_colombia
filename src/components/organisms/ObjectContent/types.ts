@@ -10,4 +10,5 @@ export interface ObjectContentProps {
   setCurrentPage: (value: number | ((prevValue: number) => number)) => void;
   itemsPerPage: number;
   totalItems: number;
+  projectId?: string | null;
 } 

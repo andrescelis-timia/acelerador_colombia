@@ -32,6 +32,7 @@ export interface ProjectResponse {
   update_date?: string;
   update_user?: string;
   active: boolean;
+  my_role?: 'OWNER' | 'DEVELOPER' | null;
 }
 
 // Formato para la tabla
@@ -41,6 +42,7 @@ export interface ProjectTableData {
   name: string;
   status: ProjectStatus;
   creation_date: string;
+  my_role?: 'OWNER' | 'DEVELOPER' | null;
 }
 
 // Formato para el dashboard

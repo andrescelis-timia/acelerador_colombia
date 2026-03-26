@@ -22,8 +22,8 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
     password: '',
     confirmPassword: '',
     country: 'CO',
-    role: 'USER',
-    authMethod: 'password'
+    role: 'DEVELOPER',
+    authMethod: 'google'
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -228,7 +228,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
           password: '',
           confirmPassword: '',
           country: 'CO',
-          role: 'USER',
+          role: 'DEVELOPER',
           authMethod: 'password'
         });
       } else {
@@ -380,9 +380,9 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               aria-describedby={errors.role ? 'role-error' : undefined}
               aria-invalid={!!errors.role}
             >
-              <option value="USER">Usuario</option>
+              <option value="DEVELOPER">Developer</option>
+              <option value="OWNER">Owner</option>
               <option value="ADMIN">Administrador</option>
-              <option value="ADMIN-READONLY">Administrador Solo Lectura</option>
             </select>
             {errors.role && (
               <p id="role-error" className="mt-1 text-sm text-red-600" role="alert">

@@ -8,6 +8,7 @@ export const transformToTableData = (objects: ObjectResponse[]): ObjectTableData
     status: object.status,
     url_document: object.url_document,
     creation_date: object.creation_date,
+    creation_user: object.creation_user,
     flag_l1t: object.flag_l1t,
     project_name: object.project_name
   }));

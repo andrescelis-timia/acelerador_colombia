@@ -7,7 +7,7 @@ export interface JWTPayload {
   sub: string; // user id
   email: string;
   country: 'CO' | 'PE';
-  role: 'ADMIN' | 'USER' | 'ADMIN-READONLY';
+  role: 'ADMIN' | 'OWNER' | 'DEVELOPER';
   iat: number; // issued at
   exp: number; // expires at
   requiresPasswordChange?: boolean;
