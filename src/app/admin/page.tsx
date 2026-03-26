@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
-
 import { useAuth } from '@/lib/context/AuthContext';
+import { ProjectMemberService } from '@/services/ProjectMember';
+import type { ProjectMember } from '@/services/ProjectMember/types';
+import type { ProjectResponse } from '@/services/Project/types';
 
 interface UserListItem {
   id_user: string;
@@ -21,9 +23,18 @@ export default function AdminPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [activeTab, setActiveTab] = useState<'users' | 'create'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'create' | 'assignments'>('users');
   const { isAdmin, loading } = useUserRole();
   const { user } = useAuth();
+
+  // Assignments tab state
+  const [projects, setProjects] = useState<ProjectResponse[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [members, setMembers] = useState<ProjectMember[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [addMemberEmail, setAddMemberEmail] = useState('');
+  const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'DEVELOPER'>('DEVELOPER');
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -86,6 +97,91 @@ export default function AdminPage() {
     // Clear message after 5 seconds
     setTimeout(() => setErrorMessage(''), 5000);
   };
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+  const userCountry = typeof window !== 'undefined' ? localStorage.getItem('selectedCountry') || 'CO' : 'CO';
+
+  const fetchProjects = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      setLoadingProjects(true);
+      const response = await fetch(`${API_URL}/projects`, {
+        headers: { 'X-User': user.email, 'X-Country': userCountry }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      }
+    } catch { /* ignore */ } finally {
+      setLoadingProjects(false);
+    }
+  }, [user?.email, userCountry, API_URL]);
+
+  const fetchMembers = useCallback(async (projectId: string) => {
+    if (!user?.email) return;
+    try {
+      setLoadingMembers(true);
+      const service = new ProjectMemberService(user.email, userCountry);
+      const data = await service.getMembers(projectId);
+      setMembers(data);
+    } catch { setMembers([]); } finally {
+      setLoadingMembers(false);
+    }
+  }, [user?.email, userCountry]);
+
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    fetchMembers(projectId);
+  };
+
+  const handleAddMember = async () => {
+    if (!user?.email || !selectedProjectId || !addMemberEmail.trim()) return;
+    try {
+      const service = new ProjectMemberService(user.email, userCountry);
+      await service.addMember(selectedProjectId, { user_email: addMemberEmail.trim(), project_role: addMemberRole });
+      setAddMemberEmail('');
+      setSuccessMessage(`Miembro ${addMemberEmail} agregado como ${addMemberRole}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+      fetchMembers(selectedProjectId);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : 'Error al agregar miembro');
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!user?.email || !selectedProjectId) return;
+    try {
+      const service = new ProjectMemberService(user.email, userCountry);
+      await service.removeMember(selectedProjectId, userId);
+      setSuccessMessage('Miembro eliminado');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      fetchMembers(selectedProjectId);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : 'Error al eliminar miembro');
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
+  const handleChangeRole = async (userId: string, newRole: 'OWNER' | 'DEVELOPER') => {
+    if (!user?.email || !selectedProjectId) return;
+    try {
+      const service = new ProjectMemberService(user.email, userCountry);
+      await service.updateMemberRole(selectedProjectId, userId, { project_role: newRole });
+      setSuccessMessage(`Rol actualizado a ${newRole}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+      fetchMembers(selectedProjectId);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : 'Error al cambiar rol');
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'assignments' && projects.length === 0) {
+      fetchProjects();
+    }
+  }, [activeTab, projects.length, fetchProjects]);
 
   const getRoleBadge = (role: string) => {
     const roleColors = {
@@ -216,6 +312,15 @@ export default function AdminPage() {
               >
                 Crear Usuario
               </button>
+              <button
+                onClick={() => setActiveTab('assignments')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'assignments'
+                  ? 'border-[#0A3977] text-[#0A3977]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Asignaciones
+              </button>
             </nav>
           </div>
         </div>
@@ -290,12 +395,140 @@ export default function AdminPage() {
                 Crear Nuevo Usuario
               </h3>
               <p className="mt-1 text-sm text-gray-600 mb-6">
-                Crea un nuevo usuario que podrá autenticarse usando Google OAuth o email y contraseña.
+                Crea un nuevo usuario que podra autenticarse usando Google OAuth o email y contrasena.
               </p>
               <CreateUserWithPasswordForm
                 onSuccess={handleSuccess}
                 onError={handleError}
               />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'assignments' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Project selector */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Proyectos</h3>
+                {loadingProjects ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-1 max-h-96 overflow-y-auto">
+                    {projects.map((proj) => (
+                      <button
+                        key={proj.id_project}
+                        onClick={() => handleSelectProject(proj.id_project)}
+                        className={`w-full text-left px-3 py-2 rounded text-sm ${
+                          selectedProjectId === proj.id_project
+                            ? 'bg-[#0A3977] text-white'
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        <div className="font-medium truncate">{proj.name}</div>
+                        <div className={`text-xs ${selectedProjectId === proj.id_project ? 'text-blue-200' : 'text-gray-400'}`}>
+                          {proj.ticket_jira}
+                        </div>
+                      </button>
+                    ))}
+                    {projects.length === 0 && (
+                      <p className="text-sm text-gray-500 text-center py-4">No hay proyectos</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Members panel */}
+            <div className="lg:col-span-2 bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Miembros {selectedProjectId ? `del proyecto` : ''}
+                </h3>
+
+                {!selectedProjectId ? (
+                  <p className="text-sm text-gray-500 text-center py-8">Selecciona un proyecto para ver sus miembros</p>
+                ) : (
+                  <>
+                    {/* Add member form */}
+                    <div className="flex gap-2 mb-4">
+                      <input
+                        type="email"
+                        placeholder="Email del usuario"
+                        value={addMemberEmail}
+                        onChange={(e) => setAddMemberEmail(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                      />
+                      <select
+                        value={addMemberRole}
+                        onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'DEVELOPER')}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        <option value="DEVELOPER">Developer</option>
+                        <option value="OWNER">Owner</option>
+                      </select>
+                      <button
+                        onClick={handleAddMember}
+                        disabled={!addMemberEmail.trim()}
+                        className="px-4 py-2 bg-[#0A3977] text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Agregar
+                      </button>
+                    </div>
+
+                    {/* Members list */}
+                    {loadingMembers ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                      </div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {members.map((member) => (
+                            <tr key={member.id_project_member} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm text-gray-900">{member.user_email}</td>
+                              <td className="px-4 py-3">
+                                <select
+                                  value={member.project_role}
+                                  onChange={(e) => handleChangeRole(member.id_user, e.target.value as 'OWNER' | 'DEVELOPER')}
+                                  className="text-xs border border-gray-300 rounded px-2 py-1"
+                                >
+                                  <option value="DEVELOPER">Developer</option>
+                                  <option value="OWNER">Owner</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <button
+                                  onClick={() => handleRemoveMember(member.id_user)}
+                                  className="text-red-600 hover:text-red-800 text-xs font-medium"
+                                >
+                                  Quitar
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {members.length === 0 && (
+                            <tr>
+                              <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
+                                Sin miembros asignados
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
