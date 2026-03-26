@@ -43,10 +43,10 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
   }
 
   const metricCards = [
-    { title: 'Proyectos', value: stats.projects.total, icon: FolderIcon, color: 'bg-blue-100', iconColor: 'text-blue-600' },
-    { title: 'Objetos', value: stats.objects.total, icon: CubeIcon, color: 'bg-indigo-100', iconColor: 'text-indigo-600' },
-    { title: 'En Curso', value: stats.objects.by_status.in_progress, icon: ArrowPathIcon, color: 'bg-yellow-100', iconColor: 'text-yellow-600' },
-    { title: 'Completados', value: stats.objects.by_status.completed, icon: CheckCircleIcon, color: 'bg-green-100', iconColor: 'text-green-600' },
+    { title: 'Total Proyectos', value: stats.projects.total, icon: FolderIcon, color: 'bg-blue-100', iconColor: 'text-blue-600' },
+    { title: 'Total Objetos', value: stats.objects.total, icon: CubeIcon, color: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+    { title: 'Objetos En Curso', value: stats.objects.by_status.in_progress, icon: ArrowPathIcon, color: 'bg-yellow-100', iconColor: 'text-yellow-600' },
+    { title: 'Objetos Completados', value: stats.objects.by_status.completed, icon: CheckCircleIcon, color: 'bg-green-100', iconColor: 'text-green-600' },
   ];
 
   const phaseOrder = ['gobierno', 'kirby', 'hammurabi', 'smartcleaner', 'controlm'];
@@ -103,7 +103,66 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
           </div>
         </div>
 
-        {/* Project Distribution */}
+        {/* Objects by Status (donut) */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Objetos por Estado</h3>
+          <div className="flex items-center justify-center">
+            <div className="relative w-40 h-40">
+              <svg viewBox="0 0 36 36" className="w-full h-full">
+                {(() => {
+                  const total = stats.objects.total || 1;
+                  const segments = [
+                    { value: stats.objects.by_status.completed, color: '#10B981', label: 'Completados' },
+                    { value: stats.objects.by_status.in_progress, color: '#F59E0B', label: 'En curso' },
+                    { value: stats.objects.by_status.pending, color: '#D1D5DB', label: 'Pendientes' },
+                  ];
+                  let offset = 0;
+                  return segments.map((seg, i) => {
+                    const pct = (seg.value / total) * 100;
+                    const dash = `${pct} ${100 - pct}`;
+                    const el = (
+                      <circle key={i} cx="18" cy="18" r="15.915" fill="none" stroke={seg.color}
+                        strokeWidth="3.5" strokeDasharray={dash} strokeDashoffset={-offset}
+                        transform="rotate(-90 18 18)" />
+                    );
+                    offset += pct;
+                    return el;
+                  });
+                })()}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-bold text-gray-900">{stats.objects.total}</span>
+              </div>
+            </div>
+            <div className="ml-6 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-gray-600">Completados: {stats.objects.by_status.completed}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <span className="text-gray-600">En curso: {stats.objects.by_status.in_progress}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+                <span className="text-gray-600">Pendientes: {stats.objects.by_status.pending}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Objects by Month + Project Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Objetos Creados por Mes</h3>
+          {stats.objects_by_month && stats.objects_by_month.length > 0 ? (
+            <BarChart data={stats.objects_by_month} />
+          ) : (
+            <p className="text-gray-500 text-sm text-center py-8">Sin datos</p>
+          )}
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Objetos por Proyecto</h3>
           {projectChartData.length > 0 ? (

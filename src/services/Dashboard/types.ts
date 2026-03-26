@@ -31,4 +31,8 @@ export interface DashboardStats {
     action: string;
     timestamp: string;
   }[];
+  objects_by_month: {
+    label: string;
+    value: number;
+  }[];
 }
