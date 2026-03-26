@@ -56,18 +56,6 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       required: true
     },
     {
-      name: 'status',
-      label: 'Estado',
-      placeholder: 'Seleccione el estado',
-      type: 'select' as const,
-      required: true,
-      options: [
-        { value: 'pending', label: 'Pendiente' },
-        { value: 'in_progress', label: 'En Proceso' },
-        { value: 'completed', label: 'Completado' }
-      ]
-    },
-    {
       name: 'url_document',
       label: 'Enlace Pre-diccionario',
       placeholder: 'Ingrese la URL del pre-diccionario',
