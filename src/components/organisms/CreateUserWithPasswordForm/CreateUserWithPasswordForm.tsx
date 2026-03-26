@@ -23,7 +23,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
     confirmPassword: '',
     country: 'CO',
     role: 'DEVELOPER',
-    authMethod: 'password'
+    authMethod: 'google'
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [addMemberEmail, setAddMemberEmail] = useState('');
   const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'DEVELOPER'>('DEVELOPER');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -182,20 +183,6 @@ export default function AdminPage() {
       fetchProjects();
     }
   }, [activeTab, projects.length, fetchProjects]);
-
-  const getRoleBadge = (role: string) => {
-    const roleColors = {
-      'ADMIN': 'bg-red-100 text-red-800',
-      'OWNER': 'bg-purple-100 text-purple-800',
-      'DEVELOPER': 'bg-blue-100 text-blue-800'
-    };
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[role as keyof typeof roleColors] || 'bg-gray-100 text-gray-800'}`}>
-        {role}
-      </span>
-    );
-  };
 
   const getAuthMethodBadge = (hasGoogle: boolean, hasPassword: boolean) => {
     if (hasPassword) {
@@ -355,22 +342,74 @@ export default function AdminPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Método de Auth
                         </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Acciones
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => (
-                        <tr key={user.id_user} className="hover:bg-gray-50">
+                      {users.map((u) => (
+                        <tr key={u.id_user} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {user.email}
+                            {u.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.country}
+                            {u.country}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getRoleBadge(user.role)}
+                            <select
+                              value={u.role}
+                              onChange={async (e) => {
+                                const newRole = e.target.value;
+                                try {
+                                  const response = await fetch(`${API_URL}/admin/users/${u.id_user}/role`, {
+                                    method: 'PUT',
+                                    headers: { 'X-User': user?.email || '', 'X-Country': userCountry, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ role: newRole }),
+                                  });
+                                  if (response.ok) {
+                                    setSuccessMessage(`Rol de ${u.email} actualizado a ${newRole}`);
+                                    setTimeout(() => setSuccessMessage(''), 3000);
+                                    fetchUsers();
+                                  } else {
+                                    const data = await response.json();
+                                    setErrorMessage(data.detail || 'Error al actualizar rol');
+                                  }
+                                } catch { setErrorMessage('Error al actualizar rol'); }
+                              }}
+                              className="text-xs border border-gray-300 rounded px-2 py-1"
+                            >
+                              <option value="DEVELOPER">DEVELOPER</option>
+                              <option value="OWNER">OWNER</option>
+                              <option value="ADMIN">ADMIN</option>
+                            </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getAuthMethodBadge(user.has_google_auth, user.has_password_auth)}
+                            {getAuthMethodBadge(u.has_google_auth, u.has_password_auth)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Eliminar usuario ${u.email}?`)) return;
+                                try {
+                                  const response = await fetch(`${API_URL}/admin/users/${u.id_user}`, {
+                                    method: 'DELETE',
+                                    headers: { 'X-User': user?.email || '', 'X-Country': userCountry },
+                                  });
+                                  if (response.ok) {
+                                    setSuccessMessage(`Usuario ${u.email} eliminado`);
+                                    setTimeout(() => setSuccessMessage(''), 3000);
+                                    fetchUsers();
+                                  } else {
+                                    const data = await response.json();
+                                    setErrorMessage(data.detail || 'Error al eliminar');
+                                  }
+                                } catch { setErrorMessage('Error al eliminar usuario'); }
+                              }}
+                              className="text-red-600 hover:text-red-800 text-xs font-medium"
+                            >
+                              Eliminar
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -454,13 +493,41 @@ export default function AdminPage() {
                   <>
                     {/* Add member form */}
                     <div className="flex gap-2 mb-4">
-                      <input
-                        type="email"
-                        placeholder="Email del usuario"
-                        value={addMemberEmail}
-                        onChange={(e) => setAddMemberEmail(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
-                      />
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          placeholder="Buscar usuario por email..."
+                          value={addMemberEmail}
+                          onChange={(e) => {
+                            setAddMemberEmail(e.target.value);
+                            setShowUserDropdown(true);
+                          }}
+                          onFocus={() => setShowUserDropdown(true)}
+                          onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                        />
+                        {showUserDropdown && addMemberEmail.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                            {users
+                              .filter(u => u.email.toLowerCase().includes(addMemberEmail.toLowerCase()))
+                              .filter(u => !members.some(m => m.user_email === u.email))
+                              .map(u => (
+                                <button
+                                  key={u.id_user}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    setAddMemberEmail(u.email);
+                                    setShowUserDropdown(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                >
+                                  <span>{u.email}</span>
+                                  <span className="text-xs text-gray-400">{u.role}</span>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                       <select
                         value={addMemberRole}
                         onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'DEVELOPER')}
