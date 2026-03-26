@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { createFetcher } from '@/lib/api/fetcher';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 export const useProjectRole = (projectId: string | null) => {
   const { user, country } = useAuth();
@@ -20,8 +20,7 @@ export const useProjectRole = (projectId: string | null) => {
       try {
         setLoading(true);
         const fetcher = createFetcher(user.email, country);
-        const response = await fetcher(`${API_URL}/api/v1/projects/${projectId}/my-role`);
-        const data = await response.json();
+        const data = await fetcher(`${API_URL}/projects/${projectId}/my-role`);
         setProjectRole(data.role);
       } catch {
         setProjectRole(null);
