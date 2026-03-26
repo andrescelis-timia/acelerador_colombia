@@ -68,6 +68,7 @@ export interface ObjectTableData {
   status: ObjectStatus;
   url_document: string;
   creation_date: string;
+  creation_user: string;
   project_name: string;
   pipeline_status?: PipelineStatus;
 } 

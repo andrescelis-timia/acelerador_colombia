@@ -10,20 +10,18 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute = ({ children, fallbackPath = '/' }: AdminRouteProps) => {
-  const { isAnyAdmin, loading } = useUserRole();
+  const { isAdmin, loading } = useUserRole();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      // Permitir acceso si es ADMIN o ADMIN-READONLY
-      if (!isAnyAdmin) {
+      if (!isAdmin) {
         router.push(fallbackPath);
         return;
       }
     }
-  }, [isAnyAdmin, loading, router, fallbackPath]);
+  }, [isAdmin, loading, router, fallbackPath]);
 
-  // Mostrar loading mientras se verifica la autenticación
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -35,14 +33,12 @@ export const AdminRoute = ({ children, fallbackPath = '/' }: AdminRouteProps) =>
     );
   }
 
-  // Si no es ADMIN o ADMIN-READONLY, denegar acceso
-  if (!isAnyAdmin) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h1>
-          <p className="text-gray-600 mb-4">Solo usuarios con permisos de administrador pueden acceder a esta sección.</p>
+          <p className="text-gray-600 mb-4">Solo usuarios ADMIN pueden acceder a esta seccion.</p>
           <p className="text-sm text-gray-500">Redirigiendo...</p>
         </div>
       </div>

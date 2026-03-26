@@ -26,7 +26,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  // Solo mostrar Admin para usuarios con rol ADMIN completo (no ADMIN-READONLY)
+  // Solo mostrar Admin para usuarios con rol ADMIN
 
   // Crear lista de navItems base
   const baseNavItems = [

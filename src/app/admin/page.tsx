@@ -22,7 +22,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [activeTab, setActiveTab] = useState<'users' | 'create'>('users');
-  const { isAdmin, isAdminReadonly, loading } = useUserRole();
+  const { isAdmin, loading } = useUserRole();
   const { user } = useAuth();
 
   const fetchUsers = useCallback(async () => {
@@ -90,8 +90,8 @@ export default function AdminPage() {
   const getRoleBadge = (role: string) => {
     const roleColors = {
       'ADMIN': 'bg-red-100 text-red-800',
-      'ADMIN-READONLY': 'bg-yellow-100 text-yellow-800',
-      'USER': 'bg-blue-100 text-blue-800'
+      'OWNER': 'bg-purple-100 text-purple-800',
+      'DEVELOPER': 'bg-blue-100 text-blue-800'
     };
 
     return (
@@ -143,10 +143,7 @@ export default function AdminPage() {
             Solo los administradores completos pueden acceder a esta página.
           </p>
           <p className="text-sm text-gray-500">
-            {isAdminReadonly 
-              ? 'Los usuarios ADMIN-READONLY no tienen acceso a la administración de usuarios.'
-              : 'Necesitas permisos de administrador para ver esta página.'
-            }
+            Necesitas permisos de administrador para ver esta pagina.
           </p>
         </div>
       </div>

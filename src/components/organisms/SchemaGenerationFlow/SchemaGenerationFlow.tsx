@@ -10,7 +10,6 @@ import {
 import { useAuth } from '@/lib/context/AuthContext';
 import { API_CONFIG } from '@/lib/api/config';
 import {SchemaField, SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
-import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
 
 export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
   const { user, country } = useAuth();
@@ -220,7 +219,6 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
         </div>
         
         <div className="flex justify-center">
-          <ReadOnlyWrapper fallbackMessage="Botón deshabilitado">
             <button
               onClick={generateSchemas}
               disabled={status.isGenerating}
@@ -236,7 +234,6 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
               )}
               {status.isGenerating ? 'Generando...' : 'Generar Schemas'}
             </button>
-          </ReadOnlyWrapper>
         </div>
       </div>
 

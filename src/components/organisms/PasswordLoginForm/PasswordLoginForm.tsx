@@ -95,7 +95,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
         onSuccess('', {
           email: formData.email,
           country: 'CO', // This will be overridden by AuthContext
-          role: 'USER' // This will be overridden by AuthContext
+          role: 'DEVELOPER' // This will be overridden by AuthContext
         } as ResponseUserDto);
       } else {
         const errorMessage = result.error || 'Error al iniciar sesión';

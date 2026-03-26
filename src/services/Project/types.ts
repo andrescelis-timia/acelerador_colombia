@@ -42,6 +42,7 @@ export interface ProjectTableData {
   name: string;
   status: ProjectStatus;
   creation_date: string;
+  my_role?: 'OWNER' | 'DEVELOPER' | null;
 }
 
 // Formato para el dashboard

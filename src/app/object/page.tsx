@@ -73,7 +73,7 @@ function ObjectPageContent() {
 
   return (
     <>
-      <ObjectContent 
+      <ObjectContent
         data={filteredObjects}
         onSearch={handleSearch}
         onEdit={loadObjects}
@@ -83,6 +83,7 @@ function ObjectPageContent() {
         setCurrentPage={setCurrentPage}
         itemsPerPage={itemsPerPage}
         totalItems={filteredObjects.length}
+        projectId={projectId}
       />
       <ErrorModal 
         message={errorMessage}

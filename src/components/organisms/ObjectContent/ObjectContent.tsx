@@ -10,7 +10,8 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
-import { ReadOnlyWrapper } from '@/components/organisms/ReadOnlyWrapper';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useProjectRole } from '@/hooks/useProjectRole';
 import { PipelineStatusIndicator } from '@/components/molecules/PipelineStatusIndicator';
 import { PipelineStatusModal } from '@/components/molecules/PipelineStatusModal';
 import { usePipelineGeneratorService, ArtifactsStatus } from '@/services/PipelineGenerator';
@@ -46,10 +47,12 @@ const derivePipelineStatus = (artifactsStatus: ArtifactsStatus | undefined): Pip
   };
 };
 
-export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, ...props }: ObjectContentProps) => {
+export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentPage, itemsPerPage, totalItems, projectId, ...props }: ObjectContentProps) => {
   const { user, country } = useAuth();
   const router = useRouter();
   const pipelineService = usePipelineGeneratorService();
+  const { isAdmin } = useUserRole();
+  const { isProjectOwner, canEditObject } = useProjectRole(projectId ?? null);
   const [objects, setObjects] = useState(data);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedObject, setSelectedObject] = useState<ObjectUpdateWithId | undefined>(undefined);
@@ -235,9 +238,12 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
         columns={columns}
         onEdit={handleRowClick}
         onDelete={handleArchiveClick}
-        renderActions={(item) => (
+        renderActions={(item) => {
+          const obj = objects.find(o => o.id_object === item.id);
+          const canEdit = isAdmin || (obj ? canEditObject(obj.creation_user) : isProjectOwner);
+          return (
           <div key={`actions-${item.id}`}>
-            <ReadOnlyWrapper showFallback={false}>
+            {canEdit && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -248,8 +254,8 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
               >
                 <PencilIcon className="h-5 w-5 inline" />
               </button>
-            </ReadOnlyWrapper>
-            <ReadOnlyWrapper showFallback={false}>
+            )}
+            {canEdit && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -260,9 +266,10 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
               >
                 <ArchiveBoxIcon className="h-5 w-5 inline" />
               </button>
-            </ReadOnlyWrapper>
+            )}
           </div>
-        )}
+          );
+        }}
       />
 
       <div className="flex justify-center items-center gap-4 mt-4">
