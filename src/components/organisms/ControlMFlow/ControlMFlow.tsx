@@ -161,6 +161,18 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objectId]);
 
+  // Update staging path date variable when periodicity changes
+  useEffect(() => {
+    if (!fwStagingPath) return;
+    const isMonthlyOrAnnual = dataxConfig.periodicity === 'mensual' || dataxConfig.periodicity === 'anual';
+    const newVar = isMonthlyOrAnnual ? '%%PDATE' : '%%$ODATE';
+    const oldVar = isMonthlyOrAnnual ? '%%$ODATE' : '%%PDATE';
+    if (fwStagingPath.includes(oldVar)) {
+      setFwStagingPath(fwStagingPath.replace(oldVar, newVar));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataxConfig.periodicity]);
+
   // Cargar jobs desde Pipeline Generator
   const loadJobsFromPipelineGenerator = async () => {
     if (!objectId) return;
@@ -201,8 +213,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           if (pathMatch) {
             // Limpiar comillas externas e internas del HOCON
             const rawPath = pathMatch[1].replace(/"/g, '').trim();
-            // Convertir formato HOCON a formato Control-M: ${?YEAR}${?MONTH}${?DAY} → %%PDATE
-            const stagingPath = rawPath.replace(/\$\{[?]?YEAR\}\$\{[?]?MONTH\}\$\{[?]?DAY\}/, '%%PDATE');
+            // Convertir formato HOCON a formato Control-M según periodicidad
+            const dateVar = (dataxConfig.periodicity === 'mensual' || dataxConfig.periodicity === 'anual') ? '%%PDATE' : '%%$ODATE';
+            const stagingPath = rawPath.replace(/\$\{[?]?YEAR\}\$\{[?]?MONTH\}\$\{[?]?DAY\}/, dateVar);
             setFwStagingPath(stagingPath);
           }
         }
