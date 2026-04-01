@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 import { ControlMFlow } from '@/components/organisms/ControlMFlow';
+import { SampleAnalysis } from '@/components/organisms/SampleAnalysis';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
@@ -53,11 +54,17 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
       ) : (country === 'CO' || country === 'PE') ? (
         <TabGroup>
           <TabList>
+            <Tab>Muestra</Tab>
             <Tab>Gobierno del dato</Tab>
             <Tab>Generación de Schemas</Tab>
             <Tab>Pipeline Generator</Tab>
             <Tab>Control-M</Tab>
           </TabList>
+          <TabPanel>
+            <div className="p-4">
+              <SampleAnalysis objectId={objectId} />
+            </div>
+          </TabPanel>
           <TabPanel>
             <div className="p-4">
               <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
