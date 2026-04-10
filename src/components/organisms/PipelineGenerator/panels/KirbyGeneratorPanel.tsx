@@ -117,7 +117,8 @@ export const KirbyGeneratorPanel = ({
 
       Object.entries(generationResults.configs).forEach(([key, file]) => {
         if (file) {
-          const folder = confsFolder!.folder(key);
+          const folderName = key === 'l1t' ? 'master' : key;
+          const folder = confsFolder!.folder(folderName);
           folder.file(file.file_name, file.content);
         }
       });
