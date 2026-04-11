@@ -31,8 +31,12 @@ export interface SampleAnalysisResult {
   message?: string;
   metadata?: SampleMetadata;
   fields?: SampleField[];
+  preview_rows?: string[][];
+  validation_warning?: string;
+  validation_ok?: string;
 }
 
 export interface SampleAnalysisProps {
   objectId: string;
+  initialData?: { artifacts_data?: Record<string, unknown>; s3_urls?: Record<string, string> } | null;
 }

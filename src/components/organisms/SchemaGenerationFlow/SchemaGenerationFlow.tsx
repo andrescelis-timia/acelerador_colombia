@@ -190,7 +190,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              Formato diccionario
+              Formato Nebula
             </button>
             <button
               onClick={() => setSchemaMode('full')}
@@ -213,7 +213,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
           <p className="text-sm text-gray-600">
             {schemaMode === 'lite_co'
               ? 'Genera archivos .schema (RAW, MASTER) desde Google Sheets'
-              : 'Genera archivos .schema (RAW, MASTER, L1T) desde diccionarios base'
+              : 'Genera archivos .schema (RAW, MASTER, L1T) desde diccionarios DATUM'
             }
           </p>
         </div>
@@ -287,7 +287,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
         <ProgressDialog
           title="Generando Schemas"
           steps={schemaMode === 'lite_co' ? [
-            { label: "Leyendo diccionario desde Google Sheets", duration: 2000 },
+            { label: "Leyendo Nebula desde Google Sheets", duration: 2000 },
             { label: "Procesando campos y metadatos", duration: 1500 },
             { label: "Generando schema RAW", duration: 700 },
             { label: "Generando schema MASTER", duration: 700 }

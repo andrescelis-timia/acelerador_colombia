@@ -6,25 +6,62 @@ import {
   DocumentTextIcon,
   XMarkIcon,
   InformationCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  EyeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
-import { Button } from '@/components/atoms/Button';
 import { SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
-import { PipelineProgressBar } from '@/components/molecules/PipelineProgressBar';
+
 
 
 export const SchemaUploadSection = ({
+  objectId,
   rawSchema,
   masterSchema,
   componentType,
   onSchemaUpload,
   onComponentTypeChange,
-  completedGenerators = []
 }: SchemaUploadSectionProps) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
   const pipelineGeneratorService = usePipelineGeneratorService();
 
+  const handlePreviewSchema = async (schema: File, type: 'raw' | 'master') => {
+    try {
+      const text = await schema.text();
+      const parsed = JSON.parse(text);
+      setSchemaPreview({
+        title: `Schema ${type === 'raw' ? 'Raw' : 'Master'} — ${schema.name}`,
+        content: JSON.stringify(parsed, null, 2),
+      });
+    } catch {
+      setSchemaPreview({ title: schema.name, content: 'Error al leer el archivo' });
+    }
+  };
+
+  const persistSchemas = async (currentRaw: File | null, currentMaster: File | null) => {
+    if (!objectId || !currentMaster) return;
+    try {
+      const masterContent = await currentMaster.text();
+      const masterData = JSON.parse(masterContent);
+      let rawData = undefined;
+      if (currentRaw) {
+        const rawContent = await currentRaw.text();
+        rawData = JSON.parse(rawContent);
+      }
+      await pipelineGeneratorService.saveSchemas({
+        object_id: objectId,
+        raw_schema_data: rawData,
+        master_schema_data: masterData,
+        component_type: componentType,
+        raw_file_name: currentRaw?.name,
+        master_file_name: currentMaster.name,
+      });
+    } catch {
+      // non-critical
+    }
+  };
 
   const handleFileUpload = async (type: 'raw' | 'master', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -39,7 +76,6 @@ export const SchemaUploadSection = ({
     }
 
     // Primero guardamos el archivo inmediatamente
-
     onSchemaUpload(type, file);
 
     // Luego validamos de manera opcional (no bloqueante)
@@ -58,12 +94,23 @@ export const SchemaUploadSection = ({
       ];
 
       setValidationErrors(errors);
+
+      // Persistir esquemas si la validacion no tuvo errores
+      if (!validation.errors.length) {
+        const newRaw = type === 'raw' ? file : rawSchema;
+        const newMaster = type === 'master' ? file : masterSchema;
+        persistSchemas(newRaw, newMaster);
+      }
     } catch (error) {
       // Error de validación (no crítico)
       setValidationErrors([{
         message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`,
         severity: 'warning'
       }]);
+      // Aún así persistir — la validación es opcional
+      const newRaw = type === 'raw' ? file : rawSchema;
+      const newMaster = type === 'master' ? file : masterSchema;
+      persistSchemas(newRaw, newMaster);
     }
   };
 
@@ -74,9 +121,10 @@ export const SchemaUploadSection = ({
 
 
   return (
+    <>
     <div className="space-y-4">
       {/* Component Type and Schema Upload Combined */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <h3 className="text-base font-semibold text-gray-900 mb-3">Configuración y Subida de Schemas</h3>
 
         {/* Component Type Selection */}
@@ -146,15 +194,14 @@ export const SchemaUploadSection = ({
                         <p className="text-xs text-gray-500">{(rawSchema.size / 1024).toFixed(2)} KB</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveFile('raw')}
-                      className="p-1"
-                      title="Remover archivo"
-                    >
-                      <XMarkIcon className="h-3 w-3" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => handlePreviewSchema(rawSchema, 'raw')} className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors" title="Ver schema">
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleRemoveFile('raw')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -191,15 +238,14 @@ export const SchemaUploadSection = ({
                       <p className="text-xs text-gray-500">{(masterSchema.size / 1024).toFixed(2)} KB</p>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveFile('master')}
-                    className="p-1"
-                    title="Remover archivo"
-                  >
-                    <XMarkIcon className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handlePreviewSchema(masterSchema, 'master')} className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors" title="Ver schema">
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleRemoveFile('master')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -207,12 +253,9 @@ export const SchemaUploadSection = ({
         </div>
       </div>
 
-      {/* Pipeline Progress */}
-      <PipelineProgressBar completedGenerators={completedGenerators} />
-
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <h3 className="text-base font-semibold text-gray-900 mb-3">Validaciones</h3>
           <div className="space-y-2">
             {validationErrors.map((error, index) => (
@@ -233,5 +276,23 @@ export const SchemaUploadSection = ({
         </div>
       )}
     </div>
+
+      {schemaPreview && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setSchemaPreview(null)} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">{schemaPreview.title}</h2>
+              <button onClick={() => setSchemaPreview(null)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="overflow-auto p-4">
+              <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap">{schemaPreview.content}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

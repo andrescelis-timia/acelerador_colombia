@@ -297,6 +297,14 @@ export interface ControlMArtifact extends GeneratedArtifactBase {
 
 export type GeneratedArtifact = KirbyArtifact | HammurabiArtifact | SmartCleanerArtifact | ControlMArtifact;
 
+export interface SchemasArtifactData {
+  raw_schema_data?: Record<string, unknown>;
+  master_schema_data: Record<string, unknown>;
+  component_type: 'tabla' | 'tablon';
+  raw_file_name?: string;
+  master_file_name: string;
+}
+
 export interface GeneratedArtifactsResponse {
   object_id: string;
   artifacts: {
@@ -304,6 +312,8 @@ export interface GeneratedArtifactsResponse {
     hammurabi?: HammurabiArtifact;
     smartcleaner?: SmartCleanerArtifact;
     controlm?: ControlMArtifact;
+    sample?: { artifacts_data?: Record<string, unknown>; s3_urls?: Record<string, string>; };
+    schemas?: { artifacts_data?: SchemasArtifactData; };
   };
 }
 
