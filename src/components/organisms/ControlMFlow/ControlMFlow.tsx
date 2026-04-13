@@ -61,7 +61,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Trigger type: datax o filewatcher
   const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
   const [fwAlias, setFwAlias] = useState('');
-  const [fwStagingPath, setFwStagingPath] = useState('');
+  const [stagingPath, setStagingPath] = useState('');
 
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
@@ -161,17 +161,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objectId]);
 
-  // Update staging path date variable when periodicity changes
-  useEffect(() => {
-    if (!fwStagingPath) return;
-    const isMonthlyOrAnnual = dataxConfig.periodicity === 'mensual' || dataxConfig.periodicity === 'anual';
-    const newVar = isMonthlyOrAnnual ? '%%PDATE' : '%%$ODATE';
-    const oldVar = isMonthlyOrAnnual ? '%%$ODATE' : '%%PDATE';
-    if (fwStagingPath.includes(oldVar)) {
-      setFwStagingPath(fwStagingPath.replace(oldVar, newVar));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataxConfig.periodicity]);
 
   // Cargar jobs desde Pipeline Generator
   const loadJobsFromPipelineGenerator = async () => {
@@ -203,21 +192,18 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         if (extractedAlias) {
           setFwAlias(extractedAlias);
         }
-        // Extraer staging path: primero de metadata, luego del contenido del config raw
-        if (metadata.stagingInputPath) {
-          setFwStagingPath(metadata.stagingInputPath);
-        } else if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
+        // Extraer staging path: primero del raw config (fuente de verdad), luego de metadata como fallback
+        if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
           const rawContent = artifacts.kirby.artifacts_data.configs.raw.content;
-          // El input_path tiene comillas internas: "...D02_"${?YEAR}..."  → capturar toda la línea entre paths = [ y ]
           const pathMatch = rawContent.match(/paths\s*=\s*\[\s*[\n\r]?\s*(.+?)\s*[\n\r]?\s*\]/);
           if (pathMatch) {
-            // Limpiar comillas externas e internas del HOCON
             const rawPath = pathMatch[1].replace(/"/g, '').trim();
-            // Convertir formato HOCON a formato Control-M según periodicidad
-            const dateVar = (dataxConfig.periodicity === 'mensual' || dataxConfig.periodicity === 'anual') ? '%%PDATE' : '%%$ODATE';
-            const stagingPath = rawPath.replace(/\$\{[?]?YEAR\}\$\{[?]?MONTH\}\$\{[?]?DAY\}/, dateVar);
-            setFwStagingPath(stagingPath);
+            setStagingPath(rawPath);
+          } else if (metadata.stagingInputPath) {
+            setStagingPath(metadata.stagingInputPath);
           }
+        } else if (metadata.stagingInputPath) {
+          setStagingPath(metadata.stagingInputPath);
         }
       }
 
@@ -488,7 +474,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         type: 'W',
         description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
         phase: 'filewatcher',
-        originalJob: fwStagingPath,
+        originalJob: stagingPath,
         order: order++
       });
     } else {
@@ -702,7 +688,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         transferName: triggerType === 'datax' ? transferName : undefined,
         triggerType: triggerType,
         alias: triggerType === 'filewatcher' ? fwAlias : undefined,
-        stagingPath: triggerType === 'filewatcher' ? fwStagingPath : undefined,
+        stagingPath: stagingPath || undefined,
         generatedJobs: jobs.map(j => ({
           jobName: j.jobName,
           type: j.type,
@@ -789,7 +775,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   // En modo aditivo, UUAA puede venir del XML; en modo normal es requerida
   const canGenerate = triggerType === 'filewatcher'
-    ? fwStagingPath.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0
+    ? stagingPath.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0
     : transferName.trim() !== '' && uuaa.trim() !== '' && ingestaJobs.length > 0;
 
   const getJobTypeColor = (type: 'T' | 'C' | 'D' | 'W') => {
@@ -873,14 +859,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Ruta staging {fwStagingPath && <span className="text-green-600">✓</span>}</label>
+                    <label className="block text-xs text-gray-500 mb-1">Ruta staging {stagingPath && <span className="text-green-600">✓</span>}</label>
                     <input
                       type="text"
                       placeholder="Se autocompleta al cargar jobs de Pipeline Generator"
-                      value={fwStagingPath}
-                      onChange={(e) => setFwStagingPath(e.target.value)}
+                      value={stagingPath}
+                      onChange={(e) => setStagingPath(e.target.value)}
                       className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 ${
-                        fwStagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
+                        stagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
                       }`}
                     />
                   </div>
