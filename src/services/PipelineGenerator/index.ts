@@ -127,6 +127,24 @@ class PipelineGeneratorService {
   }
 
   // ========================
+  // PERSISTENCIA DE SCHEMAS
+  // ========================
+
+  async saveSchemas(data: {
+    object_id: string;
+    raw_schema_data?: Record<string, unknown>;
+    master_schema_data: Record<string, unknown>;
+    component_type: string;
+    raw_file_name?: string;
+    master_file_name: string;
+  }): Promise<{ success: boolean }> {
+    return this.makeRequest<{ success: boolean }>('/schemas', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ========================
   // GENERADORES INDIVIDUALES
   // ========================
 

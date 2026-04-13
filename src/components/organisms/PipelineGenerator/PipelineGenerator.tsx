@@ -7,11 +7,9 @@ import { SmartCleanerGeneratorPanel } from './panels/SmartCleanerGeneratorPanel'
 import { SchemaUploadSection } from './components/SchemaUploadSection';
 import { PipelineGeneratorProps } from './types';
 import { usePipelineGeneratorService, GeneratedArtifactsResponse } from '@/services/PipelineGenerator';
-import {
-  CubeIcon,
-  ShieldCheckIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
+import { CubeIcon, ShieldCheckIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { SampleAnalysis } from '@/components/organisms/SampleAnalysis';
 
 export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
@@ -40,6 +38,22 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
         if (response.artifacts.hammurabi) completed.push('hammurabi');
         if (response.artifacts.smartcleaner) completed.push('smartcleaner');
         setCompletedGenerators(completed);
+
+        // Restaurar esquemas desde artefacto
+        const schemasData = response.artifacts.schemas?.artifacts_data;
+        if (schemasData) {
+          if (schemasData.component_type) {
+            setComponentType(schemasData.component_type);
+          }
+          if (schemasData.master_schema_data) {
+            const masterBlob = new Blob([JSON.stringify(schemasData.master_schema_data)], { type: 'application/json' });
+            setMasterSchema(new File([masterBlob], schemasData.master_file_name || 'master.schema'));
+          }
+          if (schemasData.raw_schema_data) {
+            const rawBlob = new Blob([JSON.stringify(schemasData.raw_schema_data)], { type: 'application/json' });
+            setRawSchema(new File([rawBlob], schemasData.raw_file_name || 'raw.schema'));
+          }
+        }
       } catch {
         // No hay artefactos guardados, es normal
         console.log('No hay artefactos guardados para este objeto');
@@ -83,50 +97,49 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
   };
 
   const tabs = [
-    { id: 'kirby', name: '🔵 Kirby', icon: CubeIcon, color: 'blue' },
-    { id: 'hammurabi', name: '🟡 Hammurabi', icon: ShieldCheckIcon, color: 'orange' },
-    { id: 'smartcleaner', name: '🟣 SmartCleaner', icon: TrashIcon, color: 'purple' }
+    { id: 'kirby', name: 'Kirby', icon: CubeIcon, accent: 'text-blue-500' },
+    { id: 'hammurabi', name: 'Hammurabi', icon: ShieldCheckIcon, accent: 'text-amber-500' },
+    { id: 'smartcleaner', name: 'SmartCleaner', icon: TrashIcon, accent: 'text-purple-500' }
   ];
 
   return (
     <div className="space-y-4">
       {/* Schema Upload Section */}
       <SchemaUploadSection
+        objectId={objectId}
         rawSchema={rawSchema}
         masterSchema={masterSchema}
         componentType={componentType}
         onSchemaUpload={handleSchemaUpload}
         onComponentTypeChange={setComponentType}
-        completedGenerators={completedGenerators}
       />
 
+      <SampleAnalysis objectId={objectId} initialData={savedArtifacts?.sample} />
       {/* Generators */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg border border-gray-200">
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      flex items-center py-4 px-2 border-b-2 font-medium text-sm transition-colors
-                      ${isActive 
-                        ? 'text-blue-600 border-blue-500'
-                        : 'text-gray-500 border-transparent hover:text-blue-600 hover:border-blue-300'
-                      }
-                    `}
-                  >
-                    <tab.icon className="h-5 w-5 mr-2" />
-                    {tab.name}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+          <nav className="flex border-b border-gray-200 px-2">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const isCompleted = completedGenerators.includes(tab.id);
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px
+                    ${isActive
+                      ? 'text-[#00A3FF] border-[#00A3FF]'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                    }`}
+                >
+                  <tab.icon className={`h-5 w-5 ${tab.accent}`} />
+                  {tab.name}
+                  {isCompleted && <CheckCircleIcon className="h-5 w-5 text-green-500" />}
+                </button>
+              );
+            })}
+          </nav>
 
           {/* Tab Content */}
           <div>
@@ -136,40 +149,42 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
               </div>
             )}
 
-            {!loadingArtifacts && activeTab === 'kirby' && (
-              <KirbyGeneratorPanel
-                objectId={objectId}
-                rawSchema={rawSchema}
-                masterSchema={masterSchema}
-                componentType={componentType}
-                canGenerate={canGenerate()}
-                onGenerationComplete={() => handleGeneratorComplete('kirby')}
-                initialData={savedArtifacts?.kirby}
-              />
-            )}
-
-            {!loadingArtifacts && activeTab === 'hammurabi' && (
-              <HammurabiGeneratorPanel
-                objectId={objectId}
-                rawSchema={rawSchema}
-                masterSchema={masterSchema}
-                componentType={componentType}
-                canGenerate={canGenerate()}
-                onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
-                initialData={savedArtifacts?.hammurabi}
-              />
-            )}
-
-            {!loadingArtifacts && activeTab === 'smartcleaner' && (
-              <SmartCleanerGeneratorPanel
-                objectId={objectId}
-                rawSchema={rawSchema}
-                masterSchema={masterSchema}
-                componentType={componentType}
-                canGenerate={canGenerate()}
-                onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
-                initialData={savedArtifacts?.smartcleaner}
-              />
+            {!loadingArtifacts && (
+              <>
+                <div className={activeTab === 'kirby' ? '' : 'hidden'}>
+                  <KirbyGeneratorPanel
+                    objectId={objectId}
+                    rawSchema={rawSchema}
+                    masterSchema={masterSchema}
+                    componentType={componentType}
+                    canGenerate={canGenerate()}
+                    onGenerationComplete={() => handleGeneratorComplete('kirby')}
+                    initialData={savedArtifacts?.kirby}
+                  />
+                </div>
+                <div className={activeTab === 'hammurabi' ? '' : 'hidden'}>
+                  <HammurabiGeneratorPanel
+                    objectId={objectId}
+                    rawSchema={rawSchema}
+                    masterSchema={masterSchema}
+                    componentType={componentType}
+                    canGenerate={canGenerate()}
+                    onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
+                    initialData={savedArtifacts?.hammurabi}
+                  />
+                </div>
+                <div className={activeTab === 'smartcleaner' ? '' : 'hidden'}>
+                  <SmartCleanerGeneratorPanel
+                    objectId={objectId}
+                    rawSchema={rawSchema}
+                    masterSchema={masterSchema}
+                    componentType={componentType}
+                    canGenerate={canGenerate()}
+                    onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
+                    initialData={savedArtifacts?.smartcleaner}
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>

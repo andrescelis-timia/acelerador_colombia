@@ -19,12 +19,12 @@ export interface GeneratorPanelProps {
 }
 
 export interface SchemaUploadSectionProps {
+  objectId?: string;
   rawSchema: File | null;
   masterSchema: File | null;
   componentType: 'tabla' | 'tablon';
   onSchemaUpload: (type: 'raw' | 'master', file: File | null) => void;
   onComponentTypeChange: (type: 'tabla' | 'tablon') => void;
-  completedGenerators?: string[];
 }
 
 export interface SchemaFile {

@@ -682,7 +682,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              Formato diccionario
+              Formato Nebula
             </button>
             <button
               onClick={() => setDictionaryMode('full')}
