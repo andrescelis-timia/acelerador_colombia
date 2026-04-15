@@ -10,7 +10,8 @@ import {
   PlusIcon,
   XMarkIcon,
   ArrowPathIcon,
-  DocumentPlusIcon
+  DocumentPlusIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
@@ -60,7 +61,7 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Trigger type: datax o filewatcher
   const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
-  const [fwAlias, setFwAlias] = useState('');
+  const [alias, setAlias] = useState('');
   const [stagingPath, setStagingPath] = useState('');
 
   // Estados para inputs
@@ -190,7 +191,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         }
         // Auto-fill FileWatcher fields
         if (extractedAlias) {
-          setFwAlias(extractedAlias);
+          setAlias(extractedAlias);
         }
         // Extraer staging path: primero del raw config (fuente de verdad), luego de metadata como fallback
         if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
@@ -472,7 +473,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
-        description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
+        description: `Job de validacion de la existencia del archivo de ${alias}`,
         phase: 'filewatcher',
         originalJob: stagingPath,
         order: order++
@@ -494,7 +495,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Staging (Hammurabi)',
+        description: `Calidad de datos en fase Staging - ${alias}`,
         phase: 'staging',
         originalJob: hammurabiStaging.name,
         order: order++
@@ -507,7 +508,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Ingesta de datos en fase Raw (Kirby)',
+        description: `Ingesta de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: kirbyRaw.name,
         order: order++
@@ -520,7 +521,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Raw (Hammurabi)',
+        description: `Calidad de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: hammurabiRaw.name,
         order: order++
@@ -533,7 +534,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Ingesta de datos en fase Master (Kirby)',
+        description: `Ingesta de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: kirbyMaster.name,
         order: order++
@@ -546,7 +547,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Master (Hammurabi)',
+        description: `Calidad de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: hammurabiMaster.name,
         order: order++
@@ -560,7 +561,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
-          description: 'Ingesta de datos en fase Master L1T (Kirby)',
+          description: `Ingesta de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: kirbyL1T.name,
           order: order++
@@ -572,7 +573,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
-          description: 'Calidad de datos en fase Master L1T (Hammurabi)',
+          description: `Calidad de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: hammurabiL1T.name,
           order: order++
@@ -584,7 +585,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     jobs.push({
       jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
       type: 'D',
-      description: 'Borrado de input en fase Staging',
+      description: `Borrado de input en fase Staging - ${alias}`,
       phase: 'staging',
       originalJob: `${uuaa}-co-dfs-rmv-hdfs-01`,
       order: order++
@@ -596,7 +597,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
-        description: 'Borrado de datos en fase Raw (SmartCleaner)',
+        description: `Borrado de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: smartcleanerRaw.name,
         order: order++
@@ -609,7 +610,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
-        description: 'Borrado de datos en fase Master (SmartCleaner)',
+        description: `Borrado de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: smartcleanerMaster.name,
         order: order++
@@ -623,7 +624,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
           type: 'D',
-          description: 'Borrado de datos en fase Master L1T (SmartCleaner)',
+          description: `Borrado de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: smartcleanerL1T.name,
           order: order++
@@ -687,7 +688,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         uuaa: uuaa,
         transferName: triggerType === 'datax' ? transferName : undefined,
         triggerType: triggerType,
-        alias: triggerType === 'filewatcher' ? fwAlias : undefined,
+        alias: triggerType === 'filewatcher' ? alias : undefined,
         stagingPath: stagingPath || undefined,
         generatedJobs: jobs.map(j => ({
           jobName: j.jobName,
@@ -800,7 +801,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     <div className="space-y-3">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-2">
+            <Cog6ToothIcon className="h-5 w-5 text-gray-500" />
             <h3 className="text-base font-medium text-gray-900">Control-M</h3>
           </div>
           {isAdditiveMode && (
