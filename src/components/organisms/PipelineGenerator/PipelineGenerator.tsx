@@ -99,7 +99,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
   const tabs = [
     { id: 'kirby', name: 'Kirby', icon: CubeIcon, accent: 'text-blue-500' },
     { id: 'hammurabi', name: 'Hammurabi', icon: ShieldCheckIcon, accent: 'text-amber-500' },
-    { id: 'smartcleaner', name: 'SmartCleaner', icon: TrashIcon, accent: 'text-purple-500' }
+    { id: 'smartcleaner', name: 'SmartCleaner', icon: TrashIcon, accent: 'text-purple-500' },
   ];
 
   return (

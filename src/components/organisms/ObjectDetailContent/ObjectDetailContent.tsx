@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 import { ControlMFlow } from '@/components/organisms/ControlMFlow';
+import { DeployADA } from '@/components/organisms/DeployADA';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
@@ -56,6 +57,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
             <Tab>Gobierno del dato</Tab>
             <Tab>Generación de Schemas</Tab>
             <Tab>Pipeline Generator</Tab>
+            <Tab>Despliegues ADA</Tab>
             <Tab>Control-M</Tab>
           </TabList>
           <TabPanel>
@@ -71,6 +73,11 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           <TabPanel>
             <div className="p-4">
               <PipelineGenerator objectId={objectId} />
+            </div>
+          </TabPanel>
+          <TabPanel>
+            <div className="p-4">
+              <DeployADA objectId={objectId} />
             </div>
           </TabPanel>
           <TabPanel>
