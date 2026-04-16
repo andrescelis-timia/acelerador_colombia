@@ -320,12 +320,6 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                 {errors.authMethod}
               </p>
             )}
-            <p className="mt-1 text-sm text-gray-500">
-              {formData.authMethod === 'google' 
-                ? 'El usuario podrá autenticarse solo con Google OAuth (no necesita contraseña)'
-                : 'El usuario podrá autenticarse con email y contraseña'
-              }
-            </p>
           </div>
 
           {/* Country Field */}
