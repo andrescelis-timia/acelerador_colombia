@@ -32,14 +32,18 @@ export const useProjectRole = (projectId: string | null) => {
     fetchRole();
   }, [projectId, user?.email, country]);
 
+  const isReadOnly = projectRole === 'OWNER_READONLY';
+
   return {
     projectRole,
     loading,
     isProjectOwner: projectRole === 'OWNER',
     isProjectDeveloper: projectRole === 'DEVELOPER',
+    isReadOnly,
     isProjectMember: projectRole !== null,
     canEditProject: projectRole === 'OWNER',
     canCreateObjects: projectRole === 'OWNER' || projectRole === 'DEVELOPER',
+    canGenerate: projectRole === 'OWNER' || projectRole === 'DEVELOPER',
     canEditObject: (creationUser: string) => {
       if (projectRole === 'OWNER') return true;
       if (projectRole === 'DEVELOPER' && user?.email === creationUser) return true;

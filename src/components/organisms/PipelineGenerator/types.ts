@@ -6,6 +6,7 @@ export type { SchemaField, GeneratorType };
 // PipelineGeneratorProps - props para el componente principal
 export interface PipelineGeneratorProps {
   objectId?: string;
+  readOnly?: boolean;
 }
 
 export interface GeneratorPanelProps {

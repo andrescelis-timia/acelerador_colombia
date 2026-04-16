@@ -1,5 +1,6 @@
 export interface SchemaGenerationFlowProps {
   objectId: string;
+  readOnly?: boolean;
 }
 
 export interface SchemaField {
