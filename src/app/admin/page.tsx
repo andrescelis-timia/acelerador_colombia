@@ -24,7 +24,11 @@ export default function AdminPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [activeTab, setActiveTab] = useState<'users' | 'create' | 'assignments'>('users');
+  const [userSearch, setUserSearch] = useState('');
+  const [sortField, setSortField] = useState<'email' | 'country' | 'role'>('email');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'users' | 'assignments'>('users');
   const { isAdmin, loading } = useUserRole();
   const { user } = useAuth();
 
@@ -45,6 +49,10 @@ export default function AdminPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userProjects, setUserProjects] = useState<{ id_project: string; project_name: string; project_role: string; creation_date: string | null }[]>([]);
   const [loadingUserProjects, setLoadingUserProjects] = useState(false);
+  const [assignProjectId, setAssignProjectId] = useState('');
+  const [assignProjectSearch, setAssignProjectSearch] = useState('');
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const [assignProjectRole, setAssignProjectRole] = useState<'OWNER' | 'OWNER_READONLY' | 'DEVELOPER'>('DEVELOPER');
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -161,6 +169,24 @@ export default function AdminPage() {
     }
   };
 
+  const handleAssignProjectToUser = async () => {
+    if (!user?.email || !selectedUserId || !assignProjectId) return;
+    const selectedUser = users.find(u => u.id_user === selectedUserId);
+    if (!selectedUser) return;
+    try {
+      const service = new ProjectMemberService(user.email, assignCountry);
+      await service.addMember(assignProjectId, { user_email: selectedUser.email, project_role: assignProjectRole });
+      setAssignProjectId('');
+      setAssignProjectSearch('');
+      setSuccessMessage(`Proyecto asignado como ${assignProjectRole}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+      handleSelectUser(selectedUserId);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : 'Error al asignar proyecto');
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
   const handleAddMember = async () => {
     if (!user?.email || !selectedProjectId || !addMemberEmail.trim()) return;
     try {
@@ -213,13 +239,13 @@ export default function AdminPage() {
   const getAuthMethodBadge = (hasGoogle: boolean, hasPassword: boolean) => {
     if (hasPassword) {
       return (
-        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-          User/password
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700">
+          Password
         </span>
       );
     } else {
       return (
-        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700">
           Google
         </span>
       );
@@ -260,51 +286,25 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Administración de Usuarios
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Gestiona usuarios y crea nuevos usuarios del sistema
-          </p>
+    <>
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
         </div>
+      )}
+      {errorMessage && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+          {errorMessage}
+          <button onClick={() => setErrorMessage('')} className="ml-2 font-bold">&times;</button>
+        </div>
+      )}
 
-        {/* Success/Error Messages */}
-        {successMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-green-700">{successMessage}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{errorMessage}</p>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-[#00A3FF] text-xl font-semibold">Administracion</h2>
+      </div>
 
         {/* Tabs */}
-        <div className="mb-6">
+        <div className="mb-3">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               <button
@@ -314,16 +314,7 @@ export default function AdminPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
-                Lista de Usuarios
-              </button>
-              <button
-                onClick={() => setActiveTab('create')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'create'
-                  ? 'border-[#0A3977] text-[#0A3977]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-              >
-                Crear Usuario
+                Usuarios
               </button>
               <button
                 onClick={() => setActiveTab('assignments')}
@@ -340,49 +331,70 @@ export default function AdminPage() {
 
         {/* Tab Content */}
         {activeTab === 'users' && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                Usuarios del Sistema
-              </h3>
+          <div className="bg-white border border-gray-200 rounded-lg">
+            <div className="px-4 py-3">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-gray-700">{users.length} usuarios</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Buscar por email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="px-2.5 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977] w-56"
+                  />
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="px-3 py-1 bg-[#0A3977] text-white rounded text-xs font-medium hover:bg-blue-700"
+                  >
+                    + Nuevo
+                  </button>
+                </div>
+              </div>
 
               {loadingUsers ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A3977] mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Cargando usuarios...</p>
+                <div className="text-center py-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200 text-xs">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
+                        {([['email', 'Email'], ['country', 'País'], ['role', 'Rol']] as const).map(([field, label]) => (
+                          <th
+                            key={field}
+                            onClick={() => { setSortDir(sortField === field && sortDir === 'asc' ? 'desc' : 'asc'); setSortField(field); }}
+                            className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+                          >
+                            {label} {sortField === field && (sortDir === 'asc' ? '↑' : '↓')}
+                          </th>
+                        ))}
+                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">
+                          Auth
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          País
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rol
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Método de Auth
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-right text-[10px] font-medium text-gray-500 uppercase">
                           Acciones
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((u) => (
+                    <tbody className="divide-y divide-gray-100">
+                      {users
+                        .filter(u => !userSearch || u.email.toLowerCase().includes(userSearch.toLowerCase()))
+                        .sort((a, b) => {
+                          const valA = a[sortField].toLowerCase();
+                          const valB = b[sortField].toLowerCase();
+                          return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                        })
+                        .map((u) => (
                         <tr key={u.id_user} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-3 py-2 whitespace-nowrap font-medium text-gray-900">
                             {u.email}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-3 py-2 whitespace-nowrap text-gray-500">
                             {u.country}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-2 whitespace-nowrap">
                             {editingUserId === u.id_user ? (
                               <select
                                 value={u.role}
@@ -414,19 +426,19 @@ export default function AdminPage() {
                                 <option value="ADMIN">ADMIN</option>
                               </select>
                             ) : (
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                u.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                                u.role === 'OWNER' ? 'bg-purple-100 text-purple-800' :
-                                'bg-blue-100 text-blue-800'
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                u.role === 'ADMIN' ? 'bg-red-50 text-red-700' :
+                                u.role === 'OWNER' ? 'bg-purple-50 text-purple-700' :
+                                'bg-blue-50 text-blue-700'
                               }`}>
                                 {u.role}
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-2 whitespace-nowrap">
                             {getAuthMethodBadge(u.has_google_auth, u.has_password_auth)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-2">
+                          <td className="px-3 py-2 whitespace-nowrap text-right flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => setEditingUserId(editingUserId === u.id_user ? null : u.id_user)}
                               className="text-indigo-600 hover:text-indigo-800"
@@ -463,7 +475,7 @@ export default function AdminPage() {
                   </table>
 
                   {users.length === 0 && (
-                    <div className="text-center py-8">
+                    <div className="text-center py-4">
                       <p className="text-gray-500">No se encontraron usuarios</p>
                     </div>
                   )}
@@ -473,31 +485,14 @@ export default function AdminPage() {
           </div>
         )}
 
-        {activeTab === 'create' && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                Crear Nuevo Usuario
-              </h3>
-              <p className="mt-1 text-sm text-gray-600 mb-6">
-                Crea un nuevo usuario que podra autenticarse usando Google OAuth o email y contrasena.
-              </p>
-              <CreateUserWithPasswordForm
-                onSuccess={handleSuccess}
-                onError={handleError}
-              />
-            </div>
-          </div>
-        )}
-
         {activeTab === 'assignments' && (
           <div>
-            <div className="mb-4 flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700">Pais:</label>
+            <div className="mb-3 flex items-center gap-3">
+              <label className="text-xs font-medium text-gray-500">Pais:</label>
               <select
                 value={assignCountry}
                 onChange={(e) => setAssignCountry(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
               >
                 <option value="CO">Colombia</option>
                 <option value="PE">Peru</option>
@@ -519,11 +514,10 @@ export default function AdminPage() {
             </div>
 
             {assignView === 'project' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Project selector */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Proyectos</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="px-3 py-3">
+                <span className="text-xs font-medium text-gray-700">Proyectos</span>
                 {loadingProjects ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
@@ -534,7 +528,7 @@ export default function AdminPage() {
                       <button
                         key={proj.id_project}
                         onClick={() => handleSelectProject(proj.id_project)}
-                        className={`w-full text-left px-3 py-2 rounded text-sm ${
+                        className={`w-full text-left px-3 py-2 rounded text-xs ${
                           selectedProjectId === proj.id_project
                             ? 'bg-[#0A3977] text-white'
                             : 'hover:bg-gray-100 text-gray-700'
@@ -547,7 +541,7 @@ export default function AdminPage() {
                       </button>
                     ))}
                     {projects.length === 0 && (
-                      <p className="text-sm text-gray-500 text-center py-4">No hay proyectos</p>
+                      <p className="text-xs text-gray-500 text-center py-4">No hay proyectos</p>
                     )}
                   </div>
                 )}
@@ -555,22 +549,22 @@ export default function AdminPage() {
             </div>
 
             {/* Members panel */}
-            <div className="lg:col-span-2 bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg">
+              <div className="px-3 py-3">
+                <span className="text-xs font-medium text-gray-700 mb-2 block">
                   Miembros {selectedProjectId ? `del proyecto` : ''}
-                </h3>
+                </span>
 
                 {!selectedProjectId ? (
-                  <p className="text-sm text-gray-500 text-center py-8">Selecciona un proyecto para ver sus miembros</p>
+                  <p className="text-xs text-gray-500 text-center py-4">Selecciona un proyecto para ver sus miembros</p>
                 ) : (
                   <>
                     {/* Add member form */}
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-2 mb-3">
                       <div className="flex-1 relative">
                         <input
                           type="text"
-                          placeholder="Buscar usuario por email..."
+                          placeholder="Buscar email..." autoComplete="off"
                           value={addMemberEmail}
                           onChange={(e) => {
                             setAddMemberEmail(e.target.value);
@@ -578,9 +572,9 @@ export default function AdminPage() {
                           }}
                           onFocus={() => setShowUserDropdown(true)}
                           onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
                         />
-                        {showUserDropdown && addMemberEmail.length > 0 && (
+                        {showUserDropdown && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
                             {users
                               .filter(u => u.email.toLowerCase().includes(addMemberEmail.toLowerCase()))
@@ -593,7 +587,7 @@ export default function AdminPage() {
                                     setAddMemberEmail(u.email);
                                     setShowUserDropdown(false);
                                   }}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                  className="w-full text-left px-2.5 py-1.5 text-xs hover:bg-gray-100 flex justify-between items-center"
                                 >
                                   <span>{u.email}</span>
                                   <span className="text-xs text-gray-400">{u.role}</span>
@@ -605,7 +599,7 @@ export default function AdminPage() {
                       <select
                         value={addMemberRole}
                         onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
-                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
                       >
                         <option value="DEVELOPER">Developer</option>
                         <option value="OWNER">Owner</option>
@@ -614,7 +608,7 @@ export default function AdminPage() {
                       <button
                         onClick={handleAddMember}
                         disabled={!addMemberEmail.trim()}
-                        className="px-4 py-2 bg-[#0A3977] text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1.5 bg-[#0A3977] text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Agregar
                       </button>
@@ -629,16 +623,16 @@ export default function AdminPage() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            <th className="px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase">Email</th>
+                            <th className="px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase">Rol</th>
+                            <th className="px-3 py-1.5 text-right text-[10px] font-medium text-gray-500 uppercase">Acciones</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {members.map((member) => (
                             <tr key={member.id_project_member} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 text-sm text-gray-900">{member.user_email}</td>
-                              <td className="px-4 py-3">
+                              <td className="px-3 py-2 text-xs text-gray-900">{member.user_email}</td>
+                              <td className="px-3 py-2">
                                 <select
                                   value={member.project_role}
                                   onChange={(e) => handleChangeRole(member.id_user, e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
@@ -649,7 +643,7 @@ export default function AdminPage() {
                                   <option value="OWNER_READONLY">Owner (Solo lectura)</option>
                                 </select>
                               </td>
-                              <td className="px-4 py-3 text-right">
+                              <td className="px-3 py-2 text-right">
                                 <button
                                   onClick={() => handleRemoveMember(member.id_user)}
                                   className="text-red-600 hover:text-red-800 text-xs font-medium"
@@ -661,7 +655,7 @@ export default function AdminPage() {
                           ))}
                           {members.length === 0 && (
                             <tr>
-                              <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
+                              <td colSpan={3} className="px-3 py-4 text-center text-xs text-gray-500">
                                 Sin miembros asignados
                               </td>
                             </tr>
@@ -677,10 +671,10 @@ export default function AdminPage() {
             )}
 
             {assignView === 'user' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-white shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Usuarios</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg">
+                <div className="px-3 py-3">
+                  <h3 className="text-xs font-medium text-gray-700">Usuarios</h3>
                   {loadingUsers ? (
                     <div className="text-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
@@ -691,7 +685,7 @@ export default function AdminPage() {
                         <button
                           key={u.id_user}
                           onClick={() => handleSelectUser(u.id_user)}
-                          className={`w-full text-left px-3 py-2 rounded text-sm ${
+                          className={`w-full text-left px-3 py-2 rounded text-xs ${
                             selectedUserId === u.id_user
                               ? 'bg-[#0A3977] text-white'
                               : 'hover:bg-gray-100 text-gray-700'
@@ -704,21 +698,78 @@ export default function AdminPage() {
                         </button>
                       ))}
                       {users.length === 0 && (
-                        <p className="text-sm text-gray-500 text-center py-4">No hay usuarios</p>
+                        <p className="text-xs text-gray-500 text-center py-4">No hay usuarios</p>
                       )}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="lg:col-span-2 bg-white shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg">
+                <div className="px-3 py-3">
+                  <h3 className="text-xs font-medium text-gray-700 mb-2">
                     Proyectos asignados {selectedUserId ? `al usuario` : ''}
                   </h3>
                   {!selectedUserId ? (
-                    <p className="text-sm text-gray-500 text-center py-8">Selecciona un usuario para ver sus proyectos</p>
-                  ) : loadingUserProjects ? (
+                    <p className="text-xs text-gray-500 text-center py-4">Selecciona un usuario para ver sus proyectos</p>
+                  ) : (
+                  <>
+                    <div className="flex gap-2 mb-3">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          placeholder="Buscar proyecto..."
+                          value={assignProjectSearch}
+                          onChange={(e) => {
+                            setAssignProjectSearch(e.target.value);
+                            setAssignProjectId('');
+                            setShowProjectDropdown(true);
+                          }}
+                          onFocus={() => setShowProjectDropdown(true)}
+                          onBlur={() => setTimeout(() => setShowProjectDropdown(false), 200)}
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                        />
+                        {showProjectDropdown && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                            {projects
+                              .filter(p => !userProjects.some(up => up.id_project === p.id_project))
+                              .filter(p => p.name.toLowerCase().includes(assignProjectSearch.toLowerCase()))
+                              .map(p => (
+                                <button
+                                  key={p.id_project}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    setAssignProjectId(p.id_project);
+                                    setAssignProjectSearch(p.name);
+                                    setShowProjectDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2.5 py-1.5 text-xs hover:bg-gray-100 flex justify-between items-center"
+                                >
+                                  <span>{p.name}</span>
+                                  <span className="text-[10px] text-gray-400">{p.ticket_jira}</span>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      <select
+                        value={assignProjectRole}
+                        onChange={(e) => setAssignProjectRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
+                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      >
+                        <option value="DEVELOPER">Developer</option>
+                        <option value="OWNER">Owner</option>
+                        <option value="OWNER_READONLY">Owner (Solo lectura)</option>
+                      </select>
+                      <button
+                        onClick={handleAssignProjectToUser}
+                        disabled={!assignProjectId}
+                        className="px-3 py-1.5 bg-[#0A3977] text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Asignar
+                      </button>
+                    </div>
+                  {loadingUserProjects ? (
                     <div className="text-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
                     </div>
@@ -726,15 +777,15 @@ export default function AdminPage() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Proyecto</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                          <th className="px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase">Proyecto</th>
+                          <th className="px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase">Rol</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {userProjects.map((p) => (
                           <tr key={p.id_project} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm text-gray-900">{p.project_name || p.id_project}</td>
-                            <td className="px-4 py-3">
+                            <td className="px-3 py-2 text-xs text-gray-900">{p.project_name || p.id_project}</td>
+                            <td className="px-3 py-2">
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
                                 p.project_role === 'OWNER' ? 'bg-amber-100 text-amber-700' : p.project_role === 'OWNER_READONLY' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700'
                               }`}>
@@ -745,13 +796,15 @@ export default function AdminPage() {
                         ))}
                         {userProjects.length === 0 && (
                           <tr>
-                            <td colSpan={2} className="px-4 py-6 text-center text-sm text-gray-500">
+                            <td colSpan={2} className="px-3 py-4 text-center text-xs text-gray-500">
                               Sin proyectos asignados
                             </td>
                           </tr>
                         )}
                       </tbody>
                     </table>
+                  )}
+                  </>
                   )}
                 </div>
               </div>
@@ -760,7 +813,26 @@ export default function AdminPage() {
 
           </div>
         )}
-      </div>
-    </div>
+
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowCreateModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200">
+              <h3 className="text-xs font-semibold text-gray-900">Crear Nuevo Usuario</h3>
+              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                <svg className="h-3.5 w-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-4 [&_label]:text-xs [&_input]:text-xs [&_input]:py-1.5 [&_select]:text-xs [&_select]:py-1.5 [&_button[type=submit]]:text-xs [&_button[type=submit]]:py-1.5 [&_.space-y-6]:space-y-3 [&_.space-y-4]:space-y-3 [&_.space-y-6]:!space-y-3">
+              <CreateUserWithPasswordForm
+                onSuccess={(u) => { handleSuccess(u); setShowCreateModal(false); }}
+                onError={handleError}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

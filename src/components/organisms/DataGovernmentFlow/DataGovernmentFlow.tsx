@@ -21,7 +21,7 @@ import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
 import { getById } from '@/services/Object';
 import { ObjectUpdateWithId } from '@/services/Object/types';
 
-export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProps) => {
+export const DataGovernmentFlow = ({ objectId, country, readOnly }: DataGovernmentFlowProps) => {
   const { user } = useAuth();
 
   // Estados principales - DEBEN estar antes de cualquier return
