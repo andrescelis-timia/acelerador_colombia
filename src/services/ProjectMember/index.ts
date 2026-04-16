@@ -36,6 +36,10 @@ export class ProjectMemberService {
     });
   }
 
+
+  async getUserProjects(userId: string): Promise<{ id_project: string; project_name: string; project_role: string; creation_date: string | null }[]> {
+    return await this.fetcher(`${API_URL}/admin/users/${userId}/projects`);
+  }
   async getMyRole(projectId: string): Promise<string | null> {
     const data = await this.fetcher(`${API_URL}/projects/${projectId}/my-role`);
     return data.role;
