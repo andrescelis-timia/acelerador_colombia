@@ -41,6 +41,10 @@ export default function AdminPage() {
   const [assignCountry, setAssignCountry] = useState<string>(
     typeof window !== 'undefined' ? localStorage.getItem('selectedCountry') || 'CO' : 'CO'
   );
+  const [assignView, setAssignView] = useState<'project' | 'user'>('project');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userProjects, setUserProjects] = useState<{ id_project: string; project_name: string; project_role: string; creation_date: string | null }[]>([]);
+  const [loadingUserProjects, setLoadingUserProjects] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -140,6 +144,21 @@ export default function AdminPage() {
   const handleSelectProject = (projectId: string) => {
     setSelectedProjectId(projectId);
     fetchMembers(projectId);
+  };
+
+  const handleSelectUser = async (userId: string) => {
+    if (!user?.email) return;
+    setSelectedUserId(userId);
+    setLoadingUserProjects(true);
+    try {
+      const service = new ProjectMemberService(user.email, assignCountry);
+      const projects = await service.getUserProjects(userId);
+      setUserProjects(projects);
+    } catch {
+      setUserProjects([]);
+    } finally {
+      setLoadingUserProjects(false);
+    }
   };
 
   const handleAddMember = async () => {
@@ -473,7 +492,7 @@ export default function AdminPage() {
 
         {activeTab === 'assignments' && (
           <div>
-            <div className="mb-4 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-4">
               <label className="text-sm font-medium text-gray-700">Pais:</label>
               <select
                 value={assignCountry}
@@ -483,7 +502,23 @@ export default function AdminPage() {
                 <option value="CO">Colombia</option>
                 <option value="PE">Peru</option>
               </select>
+              <div className="flex bg-gray-100 rounded-md p-0.5 ml-auto">
+                <button
+                  onClick={() => { setAssignView('project'); setSelectedUserId(null); }}
+                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'project' ? 'bg-white shadow text-[#0A3977]' : 'text-gray-500'}`}
+                >
+                  Por Proyecto
+                </button>
+                <button
+                  onClick={() => { setAssignView('user'); setSelectedProjectId(null); }}
+                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'user' ? 'bg-white shadow text-[#0A3977]' : 'text-gray-500'}`}
+                >
+                  Por Usuario
+                </button>
+              </div>
             </div>
+
+            {assignView === 'project' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Project selector */}
             <div className="bg-white shadow rounded-lg">
@@ -637,6 +672,90 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+            )}
+
+            {assignView === 'user' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Usuarios</h3>
+                  {loadingUsers ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 max-h-96 overflow-y-auto">
+                      {users.map((u) => (
+                        <button
+                          key={u.id_user}
+                          onClick={() => handleSelectUser(u.id_user)}
+                          className={`w-full text-left px-3 py-2 rounded text-sm ${
+                            selectedUserId === u.id_user
+                              ? 'bg-[#0A3977] text-white'
+                              : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          <div className="font-medium truncate">{u.email}</div>
+                          <div className={`text-xs ${selectedUserId === u.id_user ? 'text-blue-200' : 'text-gray-400'}`}>
+                            {u.role} · {u.country}
+                          </div>
+                        </button>
+                      ))}
+                      {users.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-4">No hay usuarios</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="lg:col-span-2 bg-white shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Proyectos asignados {selectedUserId ? `al usuario` : ''}
+                  </h3>
+                  {!selectedUserId ? (
+                    <p className="text-sm text-gray-500 text-center py-8">Selecciona un usuario para ver sus proyectos</p>
+                  ) : loadingUserProjects ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                    </div>
+                  ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Proyecto</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {userProjects.map((p) => (
+                          <tr key={p.id_project} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm text-gray-900">{p.project_name || p.id_project}</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                p.project_role === 'OWNER' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                              }`}>
+                                {p.project_role}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {userProjects.length === 0 && (
+                          <tr>
+                            <td colSpan={2} className="px-4 py-6 text-center text-sm text-gray-500">
+                              Sin proyectos asignados
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+            )}
+
           </div>
         )}
       </div>
