@@ -1,7 +1,6 @@
 export interface DataGovernmentFlowProps {
   objectId: string;
   country: 'CO' | 'PE';
-  readOnly?: boolean;
 }
 
 export interface CountryConfig {
