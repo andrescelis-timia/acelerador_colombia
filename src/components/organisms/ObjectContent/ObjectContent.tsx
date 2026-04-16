@@ -190,7 +190,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   const handleRowClick = (id: string) => {
     const selectedObj = objects.find(obj => obj.id_object === id);
     if (selectedObj) {
-      router.push(`/object-detail/${id}?name=${encodeURIComponent(selectedObj.name)}`);
+      router.push(`/object-detail/${id}?name=${encodeURIComponent(selectedObj.name)}&projectId=${projectId || ''}`);
     }
   };
 

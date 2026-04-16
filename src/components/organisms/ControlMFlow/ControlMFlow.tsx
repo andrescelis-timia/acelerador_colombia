@@ -18,6 +18,7 @@ import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 
 interface ControlMFlowProps {
   objectId: string;
+  readOnly?: boolean;
 }
 
 interface IngestaJob {

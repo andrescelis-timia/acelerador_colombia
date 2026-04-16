@@ -1,4 +1,4 @@
-export type ProjectRole = 'OWNER' | 'DEVELOPER';
+export type ProjectRole = 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER';
 
 export interface ProjectMember {
   id_project_member: string;

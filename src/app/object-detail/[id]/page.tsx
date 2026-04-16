@@ -8,11 +8,13 @@ export default function ObjectDetailPage() {
   const searchParams = useSearchParams();
   const objectId = params.id as string;
   const objectName = searchParams.get('name');
+  const projectId = searchParams.get('projectId');
 
   return (
-    <ObjectDetailContent 
+    <ObjectDetailContent
       objectId={objectId}
       objectName={objectName || ''}
+      projectId={projectId || undefined}
     />
   );
 } 
