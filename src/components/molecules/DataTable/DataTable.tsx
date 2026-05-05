@@ -36,26 +36,42 @@ export const DataTable = <T extends Record<string, unknown> & { id: string }>({
                 <th
                   key={column.accessor}
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   {column.header}
                 </th>
               ))}
-              {renderActions && <th key="actions" scope="col" className="relative px-6 py-3" />}
+              {renderActions && <th key="actions" scope="col" className="relative px-4 py-3" />}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {data.map((item) => (
               <tr key={item.id} onClick={() => onEdit?.(item.id)} className="hover:bg-gray-50 cursor-pointer">
-                {columns.map((column) => (
-                  <td key={`${item.id}-${column.accessor}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {column.render
-                      ? column.render(item[column.accessor], item as Record<string, unknown>)
-                      : item[column.accessor]?.toString()}
-                  </td>
-                ))}
+                {columns.map((column) => {
+                  const rawValue = item[column.accessor];
+                  const rendered = column.render
+                    ? column.render(rawValue, item as Record<string, unknown>)
+                    : rawValue?.toString();
+                  if (column.truncate) {
+                    const tooltip = typeof rawValue === 'string' ? rawValue : rawValue?.toString();
+                    return (
+                      <td
+                        key={`${item.id}-${column.accessor}`}
+                        className="px-4 py-4 text-sm text-gray-500"
+                        style={{ maxWidth: column.maxWidth ?? '20rem' }}
+                      >
+                        <div className="truncate" title={tooltip}>{rendered}</div>
+                      </td>
+                    );
+                  }
+                  return (
+                    <td key={`${item.id}-${column.accessor}`} className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {rendered}
+                    </td>
+                  );
+                })}
                 {renderActions && (
-                  <td key={`${item.id}-actions`} className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td key={`${item.id}-actions`} className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {renderActions(item)}
                   </td>
                 )}
