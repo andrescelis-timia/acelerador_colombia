@@ -99,8 +99,8 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   };
 
   const columns: Column[] = [
-    { header: 'Nombre del Objeto', accessor: 'name' },
-    { header: 'Proyecto', accessor: 'project_name' },
+    { header: 'Nombre del Objeto', accessor: 'name', truncate: true, maxWidth: '28ch' },
+    { header: 'Proyecto', accessor: 'project_name', truncate: true, maxWidth: '24ch' },
     {
       header: 'Estado',
       accessor: 'status',

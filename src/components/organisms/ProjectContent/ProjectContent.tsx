@@ -19,7 +19,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 
 const columns: Column[] = [
   { header: 'Código SDA', accessor: 'ticket_jira' },
-  { header: 'Nombre del Proyecto', accessor: 'name' },
+  { header: 'Nombre del Proyecto', accessor: 'name', truncate: true, maxWidth: '32ch' },
   {
     header: 'Fecha de Creación',
     accessor: 'creation_date',
