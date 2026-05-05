@@ -23,11 +23,11 @@ const formatTimeAgo = (timestamp: string): string => {
 };
 
 const PHASE_COLORS: Record<string, { bar: string; bg: string; text: string }> = {
-  gobierno:     { bar: 'from-blue-500 to-blue-600',    bg: 'bg-blue-50',    text: 'text-blue-600' },
-  kirby:        { bar: 'from-indigo-500 to-indigo-600', bg: 'bg-indigo-50', text: 'text-indigo-600' },
+  gobierno:     { bar: 'from-rose-500 to-rose-600',      bg: 'bg-rose-50',    text: 'text-rose-600' },
+  kirby:        { bar: 'from-indigo-500 to-indigo-600',   bg: 'bg-indigo-50',  text: 'text-indigo-600' },
   hammurabi:    { bar: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-600' },
-  smartcleaner: { bar: 'from-amber-500 to-amber-600',  bg: 'bg-amber-50',  text: 'text-amber-600' },
-  controlm:     { bar: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-600' },
+  smartcleaner: { bar: 'from-amber-500 to-amber-600',    bg: 'bg-amber-50',   text: 'text-amber-600' },
+  controlm:     { bar: 'from-violet-500 to-violet-600',  bg: 'bg-violet-50',  text: 'text-violet-600' },
 };
 
 const PHASE_ICONS: Record<string, typeof BookOpenIcon> = {
@@ -39,7 +39,7 @@ const PHASE_ICONS: Record<string, typeof BookOpenIcon> = {
 };
 
 const ACTION_ICONS: Record<string, { icon: typeof BookOpenIcon; color: string }> = {
-  'gobierno': { icon: BookOpenIcon, color: 'text-blue-500 bg-blue-50' },
+  'gobierno': { icon: BookOpenIcon, color: 'text-rose-500 bg-rose-50' },
   'kirby': { icon: CubeTransparentIcon, color: 'text-indigo-500 bg-indigo-50' },
   'hammurabi': { icon: ShieldCheckIcon, color: 'text-emerald-500 bg-emerald-50' },
   'smartcleaner': { icon: TrashIcon, color: 'text-amber-500 bg-amber-50' },
@@ -50,10 +50,10 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-[#00A3FF] text-xl font-semibold">Dashboard</h2>
+        <h2 className="text-gray-900 text-xl font-semibold">Dashboard</h2>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0A3977] mx-auto mb-3"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-timia-accent mx-auto mb-3"></div>
             <p className="text-gray-500 text-sm">Cargando metricas...</p>
           </div>
         </div>
@@ -64,14 +64,14 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
   if (!stats) {
     return (
       <div className="space-y-6">
-        <h2 className="text-[#00A3FF] text-xl font-semibold">Dashboard</h2>
+        <h2 className="text-gray-900 text-xl font-semibold">Dashboard</h2>
         <div className="text-center py-20 text-gray-500">No se pudieron cargar las metricas</div>
       </div>
     );
   }
 
   const metricCards = [
-    { title: 'Total Proyectos', value: stats.projects.total, icon: FolderIcon, gradient: 'from-blue-500 to-blue-700' },
+    { title: 'Total Proyectos', value: stats.projects.total, icon: FolderIcon, gradient: 'from-[#9D012A] to-[#D4023A]' },
     { title: 'Total Objetos', value: stats.objects.total, icon: CubeIcon, gradient: 'from-indigo-500 to-indigo-700' },
     { title: 'Campos Procesados', value: stats.total_fields, icon: CheckCircleIcon, gradient: 'from-teal-500 to-teal-700' },
     { title: 'Objetos En Curso', value: stats.objects.by_status.in_progress, icon: ArrowPathIcon, gradient: 'from-amber-500 to-amber-600' },
@@ -86,14 +86,14 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
   }));
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-[#00A3FF] text-xl font-semibold">Dashboard</h2>
+    <div className="space-y-6 animate-fade-in">
+      <h2 className="text-gray-900 text-xl font-semibold">Dashboard</h2>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {metricCards.map((card) => (
-          <div key={card.title} className={`bg-gradient-to-br ${card.gradient} rounded-xl shadow-md p-5 text-white relative overflow-hidden`}>
-            <div className="absolute -right-3 -top-3 opacity-10">
+          <div key={card.title} className={`bg-gradient-to-br ${card.gradient} rounded-xl shadow-md p-5 text-white relative overflow-hidden group hover:shadow-lg transition-smooth`}>
+            <div className="absolute -right-3 -top-3 opacity-10 group-hover:opacity-15 transition-smooth">
               <card.icon className="h-20 w-20" />
             </div>
             <div className="relative">
@@ -107,7 +107,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
       {/* Phase Progress + Objects by Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Phase Progress */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-5">Progreso por Fase</h3>
           <div className="space-y-4">
             {phaseOrder.map((key) => {
@@ -143,7 +143,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
         </div>
 
         {/* Objects by Status */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-5">Objetos por Estado</h3>
           {(() => {
             const total = stats.objects.total || 1;
@@ -189,7 +189,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
 
       {/* Objects by Month + Project Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Objetos Creados por Mes</h3>
           {stats.objects_by_month && stats.objects_by_month.length > 0 ? (
             <BarChart data={stats.objects_by_month} />
@@ -198,7 +198,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Objetos por Proyecto</h3>
           {projectChartData.length > 0 ? (
             <BarChart data={projectChartData} />
@@ -209,7 +209,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Actividad Reciente</h3>
         {stats.recent_activity.length > 0 ? (
           <div className="space-y-0">
@@ -218,7 +218,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
               const iconInfo = ACTION_ICONS[genType];
               const ActivityIcon = iconInfo.icon;
               return (
-                <div key={i} className="flex items-center gap-2.5 py-2 text-sm">
+                <div key={i} className="flex items-center gap-2.5 py-2.5 text-sm hover:bg-gray-50/50 rounded-lg px-2 -mx-2 transition-smooth">
                   <ActivityIcon className={`h-4 w-4 flex-shrink-0 ${iconInfo.color.split(' ')[0]}`} />
                   <span className="text-gray-400 text-xs w-14 flex-shrink-0">{formatTimeAgo(activity.timestamp)}</span>
                   <span className="font-medium text-gray-800 truncate">{activity.project_name}</span>

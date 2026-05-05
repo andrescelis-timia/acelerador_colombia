@@ -34,7 +34,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
         <span>Volver a Objetos</span>
       </button>
 
-      <h2 className="text-[#00A3FF] text-xl font-medium flex items-center gap-2">
+      <h2 className="text-gray-900 text-xl font-medium flex items-center gap-2">
         Objeto: {objectName}
         {isReadOnly && (
           <span className="text-xs font-normal text-gray-400 flex items-center gap-1">
@@ -46,7 +46,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
 
       {loading ? (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A3977]"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-timia-accent"></div>
           <span className="ml-2 text-gray-600">Cargando...</span>
         </div>
       ) : !country ? (

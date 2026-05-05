@@ -516,7 +516,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             centerContent={
               <button
                 onClick={() => handleOpenForm('pre-dictionary')}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm text-timia-accent hover:text-blue-800"
                 title="Campos adicionales"
               >
                 {progress}
@@ -543,7 +543,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             rightIcons={[{
               icon: <ArrowDownTrayIcon className="h-5 w-5" />,
               onClick: handleDownload,
-              className: "text-blue-500 hover:text-blue-600",
+              className: "text-gray-500 hover:text-timia-accent",
               disabled: !dictionaryJsonHeader,
               tooltip: !dictionaryJsonHeader ? 'No hay JSON disponible' : undefined
             }]}
@@ -574,7 +574,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                 ]);
                 setPopupLinksTitle('Archivos generados para diccionario');
               },
-              className: "text-blue-500 hover:text-blue-600",
+              className: "text-gray-500 hover:text-timia-accent",
               disabled: !ingestaOutput,
               tooltip: !ingestaOutput ? 'No hay links disponibles' : undefined
             }]}
@@ -611,7 +611,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                 ]);
                 setPopupLinksTitle('Archivos generados para diccionario L1T');
               },
-              className: "text-blue-500 hover:text-blue-600",
+              className: "text-gray-500 hover:text-timia-accent",
               disabled: isL1TDisabled || !ingestaOutput,
               tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
                 !ingestaOutput ? 'No hay links disponibles' : undefined
@@ -678,7 +678,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
               onClick={() => setDictionaryMode('lite_co')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 dictionaryMode === 'lite_co'
-                  ? 'bg-white text-blue-700 shadow-sm'
+                  ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -688,7 +688,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
               onClick={() => setDictionaryMode('full')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 dictionaryMode === 'full'
-                  ? 'bg-white text-blue-700 shadow-sm'
+                  ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -705,13 +705,13 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* Card principal - Formato BoxFlowCard */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-blue-700">Generar Diccionario</h3>
+                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-gray-800">Generar Diccionario</h3>
                 </div>
               </div>
-              <div className="w-[200px] h-[150px] flex-shrink-0 rounded-lg border-2 border-[#94B5F0]">
+              <div className="w-[200px] h-[150px] flex-shrink-0 rounded-lg border-2 border-gray-200">
                 <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
-                  <div className="border-b border-[#94B5F0] p-2 bg-white h-[40px] flex items-center">
+                  <div className="border-b border-gray-200 p-2 bg-white h-[40px] flex items-center">
                     <BoxFlowControls
                       leftIcons={[{
                         icon: <PlayIcon className="h-5 w-5" />,
@@ -724,7 +724,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                       rightIcons={[{
                         icon: <EyeIcon className="h-5 w-5" />,
                         onClick: handleViewLiteSheet,
-                        className: "text-blue-500 hover:text-blue-600",
+                        className: "text-gray-500 hover:text-timia-accent",
                         disabled: !liteSheetUrl,
                         tooltip: !liteSheetUrl ? 'Genera el diccionario primero' : 'Ver en Google Sheets'
                       }]}
@@ -783,8 +783,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard Muestra */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-blue-700">Procesar Pre-diccionario</h3>
+                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-gray-800">Procesar Pre-diccionario</h3>
                 </div>
               </div>
               <BoxFlowCard
@@ -793,7 +793,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                 schema="txt, csv"
                 selectedFile={sampleFile}
                 onFileClick={handleSampleFileSelect}
-                className="border-2 border-[#94B5F0]"
+                className="border-2 border-gray-200"
                 controls={getControls('sample')}
               />
             </div>
@@ -801,8 +801,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard Diccionario */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-blue-700">Generar Diccionarios</h3>
+                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-gray-800">Generar Diccionarios</h3>
                 </div>
               </div>
               <BoxFlowCard
@@ -811,7 +811,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                 schema="json"
                 selectedFile={dictionaryFile}
                 onFileClick={handleDictionaryFileSelect}
-                className="border-2 border-[#94B5F0]"
+                className="border-2 border-gray-200"
                 controls={getControls('dictionary')}
               />
             </div>
@@ -819,14 +819,14 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard L1T */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-blue-700">Generar L1T</h3>
+                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                  <h3 className="text-sm font-semibold text-gray-800">Generar L1T</h3>
                 </div>
               </div>
               <BoxFlowCard
                 title="Diccionario L1T"
                 isStatic={true}
-                className="border-2 border-[#94B5F0]"
+                className="border-2 border-gray-200"
                 controls={getControls('l1t')}
               />
             </div>
@@ -883,7 +883,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
       {isLiteLoading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" viewBox="0 0 24 24">
+            <svg className="animate-spin h-8 w-8 text-timia-accent" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>

@@ -129,7 +129,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
           href={value as string}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 underline"
+          className="text-timia-accent hover:text-timia-accent hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           Ver Documento
@@ -197,13 +197,13 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   return (
     <>
       {successMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+        <div className="fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-dark-md z-50 animate-fade-in-out">
           {successMessage}
         </div>
       )}
       
       {errorMessage && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-xl shadow-dark-md z-50 animate-fade-in-out">
           {errorMessage}
           <button 
             onClick={() => setErrorMessage(null)}
@@ -215,7 +215,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-[#00A3FF] text-xl font-semibold">Mis Objetos</h2>
+        <h2 className="text-gray-900 text-xl font-semibold">Mis Objetos</h2>
       </div>
 
       <div className="flex justify-between items-center mb-6">
@@ -226,7 +226,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
           <input
             type="text"
             placeholder="Ingrese el criterio de búsqueda"
-            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-1 focus:ring-timia-accent/30 focus:border-timia-accent transition-smooth"
             value={props.searchTerm}
             onChange={(e) => onSearch(e.target.value)}
           />
@@ -249,7 +249,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
                   e.stopPropagation();
                   handleEdit(item.id);
                 }}
-                className="text-indigo-600 hover:text-indigo-900 mr-4"
+                className="text-gray-500 hover:text-timia-accent mr-4 transition-smooth"
                 title="Editar Objeto"
               >
                 <PencilIcon className="h-5 w-5 inline" />
@@ -261,7 +261,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
                   e.stopPropagation();
                   handleArchiveClick(item.id);
                 }}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-400 hover:text-gray-700 transition-smooth"
                 title="Archivar Objeto"
               >
                 <ArchiveBoxIcon className="h-5 w-5 inline" />
@@ -276,17 +276,17 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
         <button
           onClick={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-smooth"
         >
           Anterior
         </button>
-        <span className="px-3 py-1 bg-blue-100 rounded-md">
+        <span className="px-3 py-1.5 bg-timia-accent/10 text-timia-accent rounded-lg text-sm font-medium">
           Página {currentPage} de {Math.ceil(totalItems / itemsPerPage)}
         </span>
         <button
           onClick={() => setCurrentPage(currentPage + 1)}
           disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-smooth"
         >
           Siguiente
         </button>
@@ -304,9 +304,9 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
         onClose={() => setIsArchiveModalOpen(false)}
         className="relative z-50"
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
+          <Dialog.Panel className="mx-auto max-w-sm rounded-xl bg-white p-6 shadow-dark-lg animate-slide-up">
             <div className="flex items-center">
               <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mr-2" />
               <Dialog.Title className="text-lg font-medium">Confirmar archivo</Dialog.Title>
@@ -319,14 +319,14 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg transition-smooth"
                 onClick={() => setIsArchiveModalOpen(false)}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-white bg-timia-accent hover:bg-timia-accent-hover rounded-lg transition-smooth"
                 onClick={handleConfirmArchive}
               >
                 Archivar

@@ -19,8 +19,8 @@ export const Header = ({ email, onSignOut }: HeaderProps) => {
 
   return (
     <>
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-12 py-3 flex justify-between items-center">
+      <header className="bg-timia-surface/80 backdrop-blur-md border-b border-timia-border sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-8 py-3 flex justify-between items-center">
           <UserInfo email={email} />
           <UserMenu email={email} onSignOut={handleSignOut} />
         </div>
@@ -32,4 +32,4 @@ export const Header = ({ email, onSignOut }: HeaderProps) => {
       />
     </>
   );
-}; 
+};

@@ -206,7 +206,7 @@ export const KirbyGeneratorPanel = ({
             <button
               onMouseEnter={() => setShowInfoTooltip(true)}
               onMouseLeave={() => setShowInfoTooltip(false)}
-              className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+              className="p-1.5 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded transition-colors"
               title="Configuraciones generadas"
             >
               <InformationCircleIcon className="h-5 w-5" />
@@ -217,14 +217,14 @@ export const KirbyGeneratorPanel = ({
                 <div className="space-y-2 text-xs text-gray-600">
                   {componentType === 'tabla' && (
                     <div>
-                      <span className="font-medium text-blue-700">Raw:</span> CSV → Table ingestion, partitioning, schema validation
+                      <span className="font-medium text-gray-800">Raw:</span> CSV → Table ingestion, partitioning, schema validation
                     </div>
                   )}
                   <div>
-                    <span className="font-medium text-blue-700">Master:</span> Partition filtering, type casting, trim operations
+                    <span className="font-medium text-gray-800">Master:</span> Partition filtering, type casting, trim operations
                   </div>
                   <div>
-                    <span className="font-medium text-blue-700">Master L1T:</span> Auto-generated for L2 security level
+                    <span className="font-medium text-gray-800">Master L1T:</span> Auto-generated for L2 security level
                   </div>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export const KirbyGeneratorPanel = ({
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => viewFileContent(file)}
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          className="p-1 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded"
                           title="Ver contenido"
                         >
                           <EyeIcon className="h-4 w-4" />
@@ -340,7 +340,7 @@ export const KirbyGeneratorPanel = ({
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => viewFileContent(file)}
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          className="p-1 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded"
                           title="Ver contenido"
                         >
                           <EyeIcon className="h-4 w-4" />

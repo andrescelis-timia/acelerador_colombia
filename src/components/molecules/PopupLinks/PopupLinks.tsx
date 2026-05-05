@@ -20,7 +20,7 @@ export const PopupLinks = ({ isOpen, onClose, links, title }: PopupLinksProps) =
                   disabled={!link.url}
                   className={`p-2 rounded-full transition-colors ${
                     link.url 
-                      ? 'text-blue-600 hover:text-blue-800' 
+                      ? 'text-timia-accent hover:text-blue-800' 
                       : 'text-gray-400 cursor-not-allowed'
                   }`}
                 >

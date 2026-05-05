@@ -22,13 +22,13 @@ export const BarChart = ({ data }: BarChartProps) => {
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-gray-600 truncate max-w-[60%]">{item.label}</span>
-                <span className={`text-xs font-semibold transition-colors ${isHovered ? 'text-[#0A3977]' : 'text-gray-500'}`}>
+                <span className={`text-xs font-semibold transition-smooth ${isHovered ? 'text-timia-accent' : 'text-gray-500'}`}>
                   {item.value}
                 </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                 <div
-                  className={`h-2.5 rounded-full transition-all duration-500 ${isHovered ? 'bg-[#0A3977]' : 'bg-[#0A3977]/70'}`}
+                  className={`h-2.5 rounded-full transition-all duration-500 ${isHovered ? 'bg-timia-accent' : 'bg-timia-accent/60'}`}
                   style={{ width: `${Math.max(pct, 3)}%` }}
                 />
               </div>

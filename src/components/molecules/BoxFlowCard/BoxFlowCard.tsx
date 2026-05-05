@@ -19,7 +19,7 @@ export const BoxFlowCard = ({
   return (
     <div className={cn("w-[200px] h-[150px] flex-shrink-0 rounded-lg", className)}>
       <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
-        <div className="border-b border-[#94B5F0] p-2 bg-white h-[40px] flex items-center">
+        <div className="border-b border-gray-200 p-2 bg-gray-50/80 h-[40px] flex items-center">
           {controls}
         </div>
         <div className="flex-1 p-4 flex flex-col justify-center">
@@ -34,7 +34,7 @@ export const BoxFlowCard = ({
               className="flex items-center justify-center mb-2 cursor-pointer group"
               onClick={onFileClick}
             >
-              <span className={cn(titleClasses, "group-hover:text-blue-600 transition-colors")} title={isStringTitle ? title as string : undefined}>
+              <span className={cn(titleClasses, "group-hover:text-timia-accent transition-colors")} title={isStringTitle ? title as string : undefined}>
                 {title}
               </span>
               {onFileClick && (
@@ -43,7 +43,7 @@ export const BoxFlowCard = ({
                     "h-4 w-4 ml-2 flex-shrink-0 transition-colors",
                     selectedFile 
                       ? "text-green-500" 
-                      : "text-gray-500 group-hover:text-blue-600"
+                      : "text-gray-500 group-hover:text-timia-accent"
                   )}
                 />
               )}

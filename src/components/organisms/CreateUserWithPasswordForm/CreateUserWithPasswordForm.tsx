@@ -268,7 +268,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
               disabled={isFormDisabled}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.email
+              className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.email
                 ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300'
                 }`}
@@ -305,7 +305,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               }}
               required
               disabled={isFormDisabled}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.authMethod
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.authMethod
                 ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300'
                 }`}
@@ -336,7 +336,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               onChange={(e) => handleInputChange('country', e.target.value as 'CO' | 'PE')}
               required
               disabled={isFormDisabled}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.country
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.country
                 ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300'
                 }`}
@@ -367,7 +367,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               onChange={(e) => handleInputChange('role', e.target.value as 'ADMIN' | 'USER')}
               required
               disabled={isFormDisabled}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.role
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.role
                 ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300'
                 }`}
@@ -402,7 +402,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required
                 disabled={isFormDisabled}
-                className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.password
+                className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.password
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                   : 'border-gray-300'
                   }`}
@@ -440,14 +440,14 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.score <= 1 ? 'bg-red-500 w-1/4' :
                         passwordStrength.score === 2 ? 'bg-yellow-500 w-2/4' :
-                          passwordStrength.score === 3 ? 'bg-blue-500 w-3/4' :
+                          passwordStrength.score === 3 ? 'bg-gray-500 w-3/4' :
                             'bg-green-500 w-full'
                         }`}
                     />
                   </div>
                   <span className={`text-xs font-medium ${passwordStrength.score <= 1 ? 'text-red-600' :
                     passwordStrength.score === 2 ? 'text-yellow-600' :
-                      passwordStrength.score === 3 ? 'text-blue-600' :
+                      passwordStrength.score === 3 ? 'text-timia-accent' :
                         'text-green-600'
                     }`}>
                     {passwordStrength.score <= 1 ? 'Débil' :
@@ -494,7 +494,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                 onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 required
                 disabled={isFormDisabled}
-                className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.confirmPassword
+                className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.confirmPassword
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                   : 'border-gray-300'
                   }`}
@@ -552,7 +552,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
           <button
             type="submit"
             disabled={isFormDisabled || !formData.email || (formData.authMethod === 'password' && (!formData.password || !formData.confirmPassword))}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0A3977] hover:bg-[#082f5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0A3977] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-timia-accent hover:bg-timia-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-timia-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isSubmitting ? (
               <>

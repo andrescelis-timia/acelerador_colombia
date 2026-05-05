@@ -132,7 +132,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             onChange={(e) => handleInputChange('email', e.target.value)}
             required
             disabled={isFormDisabled}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.email
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.email
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
               : 'border-gray-300'
               }`}
@@ -163,7 +163,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             onChange={(e) => handleInputChange('password', e.target.value)}
             required
             disabled={isFormDisabled}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0A3977] focus:border-[#0A3977] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.password
+            className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.password
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
               : 'border-gray-300'
               }`}
@@ -206,7 +206,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
         <button
           type="submit"
           disabled={isFormDisabled || !formData.email || !formData.password}
-          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0A3977] hover:bg-[#082f5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0A3977] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-timia-accent hover:bg-timia-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-timia-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           aria-describedby="submit-button-status"
         >
           {isSubmitting ? (
