@@ -12,6 +12,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { ObjectForm } from '@/components/organisms/ObjectForm';
 import { ObjectCreate } from '@/services/Object/types';
+import NProgress from 'nprogress';
 import { Column } from '@/components/molecules/DataTable/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -90,6 +91,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
   };
 
   const handleRowClick = (id: string) => {    
+    NProgress.start();
     router.push(`/object?projectId=${id}`);
   };
 

@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { RootProvider } from '@/components/templates/root-layout/RootProvider';
 
+import NextTopLoader from 'nextjs-toploader';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -18,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body className={inter.className}>
+        <NextTopLoader color="#00A3FF" showSpinner={false} />
         <RootProvider>
           {children}
         </RootProvider>

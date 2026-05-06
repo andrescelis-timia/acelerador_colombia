@@ -15,6 +15,7 @@ import { useProjectRole } from '@/hooks/useProjectRole';
 import { PipelineStatusIndicator } from '@/components/molecules/PipelineStatusIndicator';
 import { PipelineStatusModal } from '@/components/molecules/PipelineStatusModal';
 import { usePipelineGeneratorService, ArtifactsStatus } from '@/services/PipelineGenerator';
+import NProgress from 'nprogress';
 
 const getStatusLabel = (status: string) => {
   const statusMap: { [key: string]: string } = {
@@ -190,6 +191,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
   const handleRowClick = (id: string) => {
     const selectedObj = objects.find(obj => obj.id_object === id);
     if (selectedObj) {
+      NProgress.start();
       router.push(`/object-detail/${id}?name=${encodeURIComponent(selectedObj.name)}&projectId=${projectId || ''}`);
     }
   };
