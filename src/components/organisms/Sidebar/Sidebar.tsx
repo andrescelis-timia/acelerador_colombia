@@ -21,28 +21,36 @@ export const Sidebar = ({ isExpanded, onToggle, navItems }: SidebarProps) => {
   };
 
   return (
-    <div className={`fixed top-0 left-0 h-full bg-timia-surface flex flex-col py-6 transition-all duration-300 border-r border-timia-border scrollbar-dark ${
-      isExpanded ? 'w-[200px]' : 'w-[64px]'
+    <div className={`fixed top-0 left-0 h-full bg-timia-surface flex flex-col py-6 transition-all duration-500 ease-in-out border-r border-timia-border scrollbar-dark ${
+      isExpanded ? 'w-[180px]' : 'w-[64px]'
     }`}>
       {/* Logo / Toggle */}
-      <div className="px-3 mb-8 flex items-center justify-between">
+      <div className="px-3 mb-8 flex items-center justify-between h-7">
         {isExpanded ? (
           <img
+            key="logo"
             src="/logo_timia_white.svg"
             alt="TIMIA"
             width={100}
             height={20}
-            className="ml-1 opacity-90"
+            className="ml-1 opacity-90 animate-[fadeIn_400ms_ease-in-out]"
           />
         ) : (
-          <span className="text-white text-lg font-bold ml-1.5">T</span>
+          <img
+            key="favicon"
+            src="/Favicon-TIMIA-150x150.png"
+            alt="TIMIA"
+            width={28}
+            height={28}
+            className="ml-0.5 rounded animate-[fadeIn_400ms_ease-in-out]"
+          />
         )}
         <button
           onClick={onToggle}
-          className="p-1.5 rounded-lg hover:bg-white/5 transition-smooth ml-auto"
+          className="p-1 rounded-lg hover:bg-white/5 transition-smooth ml-auto"
         >
           <ChevronDoubleRightIcon 
-            className={`w-4 h-4 text-timia-subtle transition-transform duration-300 ${
+            className={`w-4 h-4 text-timia-subtle transition-transform duration-500 ease-in-out ${
               isExpanded ? 'rotate-180' : ''
             }`}
           />

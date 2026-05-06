@@ -57,7 +57,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         onToggle={() => setIsExpanded(!isExpanded)}
         navItems={navItems}
       />
-      <main className={`flex-1 transition-all duration-300 ${isExpanded ? 'pl-[200px]' : 'pl-[64px]'
+      <main className={`flex-1 overflow-x-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'pl-[180px]' : 'pl-[64px]'
         }`}>
         <div className="max-w-7xl mx-auto">
           <Header

@@ -165,7 +165,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
                     e.stopPropagation();
                     handleAddObject(item.id);
                   }}
-                  className="bg-timia-blue text-white px-2.5 py-1.5 rounded-lg hover:bg-timia-accent-hover mr-4 inline-flex items-center text-xs font-medium transition-smooth"
+                  className="bg-timia-accent text-white px-2.5 py-1.5 rounded-lg hover:bg-timia-accent-hover mr-4 inline-flex items-center text-xs font-medium transition-smooth"
                   title="Añadir Objeto"
                 >
                   <PlusIcon className="h-4 w-4 mr-1" />
