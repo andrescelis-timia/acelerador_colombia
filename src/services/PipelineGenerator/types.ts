@@ -43,6 +43,12 @@ export interface GenerateControlMRequest {
   generatedJobs?: ControlMJobGenerated[];
   existingT04Xml?: string;
   existingT02Xml?: string;
+  /**
+   * Campos de partición del schema. Sirven al backend para derivar las
+   * variables de SENTRY_PARM (YEAR/MONTH/DAY/CUTOFF_DATE) según los
+   * nombres de las particiones reales de la tabla.
+   */
+  partitions?: string[];
 }
 
 export interface AnalyzeSequencesRequest {
