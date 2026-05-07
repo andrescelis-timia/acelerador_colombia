@@ -88,6 +88,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     annualDay: 1
   });
 
+  // Particiones del schema raw (para que el backend derive las variables SENTRY_PARM)
+  const [schemaPartitions, setSchemaPartitions] = useState<string[]>([]);
+
   // Mallas existentes (modo aditivo)
   const [existingT04Xml, setExistingT04Xml] = useState<string | null>(null);
   const [existingT02Xml, setExistingT02Xml] = useState<string | null>(null);
@@ -176,6 +179,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const artifacts = response.artifacts;
       const jobs: IngestaJob[] = [];
 
+      // Extraer particiones desde el artefacto de schemas (raw o master).
+      // Sirven al backend para derivar variables YEAR/MONTH/DAY/CUTOFF_DATE
+      // del SENTRY_PARM segun el nombre real de las particiones del schema.
+      const schemasData = artifacts.schemas?.artifacts_data;
+      const rawPartitions = (schemasData?.raw_schema_data as { partitions?: string[] } | undefined)?.partitions;
+      const masterPartitions = (schemasData?.master_schema_data as { partitions?: string[] } | undefined)?.partitions;
+      const detectedPartitions = rawPartitions && rawPartitions.length > 0 ? rawPartitions : (masterPartitions ?? []);
+      setSchemaPartitions(detectedPartitions);
 
       // Extraer UUAA del primer job encontrado o del metadata
       let extractedUuaa = '';
@@ -700,7 +711,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           order: j.order
         })),
         existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
-        existingT02Xml: existingT02Xml || undefined
+        existingT02Xml: existingT02Xml || undefined,
+        partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
       });
 
       if (!response.success) {
