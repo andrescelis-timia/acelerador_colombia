@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ArrowTopRightOnSquareIcon,
   RocketLaunchIcon,
@@ -72,7 +72,7 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
   useEffect(() => {
     if (!initialLoadDone.current) return;
     setSaveStatus('idle');
-    debounceTimer.current && clearTimeout(debounceTimer.current);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(async () => {
       setSaveStatus('saving');
       try {
@@ -82,8 +82,9 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
       }
       catch { setSaveStatus('idle'); }
     }, 800);
-    return () => { debounceTimer.current && clearTimeout(debounceTimer.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [config, objectId]);
 
   const handleDeploy = async (generatorType: string) => {
