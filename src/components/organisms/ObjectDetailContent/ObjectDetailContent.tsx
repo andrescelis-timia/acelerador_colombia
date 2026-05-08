@@ -9,13 +9,16 @@ import { TabPanel } from '@/components/atoms/TabPanel';
 import { ObjectDetailContentProps } from './types';
 import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 import { ControlMFlow } from '@/components/organisms/ControlMFlow';
+import { DeployADA } from '@/components/organisms/DeployADA';
 import { useProjectRole } from '@/hooks/useProjectRole';
 
 export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { isReadOnly } = useProjectRole(projectId ?? null);
 
   return (
@@ -44,7 +47,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
         )}
       </h2>
 
-      {loading ? (
+      {(loading || roleLoading) ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-timia-accent"></div>
           <span className="ml-2 text-gray-600">Cargando...</span>
@@ -63,8 +66,9 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
-            <Tab>Generación de Schemas</Tab>
+            {isAdmin && <Tab>Generación de Schemas</Tab>}
             <Tab>Pipeline Generator</Tab>
+            {isAdmin && <Tab>Despliegues ADA</Tab>}
             <Tab>Control-M</Tab>
           </TabList>
           <TabPanel>
@@ -72,16 +76,25 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
               <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
-              <SchemaGenerationFlow objectId={objectId} />
-            </div>
-          </TabPanel>
+          {isAdmin && (
+            <TabPanel>
+              <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
+                <SchemaGenerationFlow objectId={objectId} />
+              </div>
+            </TabPanel>
+          )}
           <TabPanel>
             <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
               <PipelineGenerator objectId={objectId} />
             </div>
           </TabPanel>
+          {isAdmin && (
+            <TabPanel>
+              <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
+                <DeployADA objectId={objectId} />
+              </div>
+            </TabPanel>
+          )}
           <TabPanel>
             <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
               <ControlMFlow objectId={objectId} />

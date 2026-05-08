@@ -339,6 +339,51 @@ export interface ArtifactsStatusResponse {
 }
 
 // ========================
+// DEPLOY
+// ========================
+
+export interface DeployConfig {
+  repositories: {
+    kirby?: string;
+    hammurabi?: string;
+    smartcleaner?: string;
+  };
+  jira_hus: {
+    kirby?: string;
+    hammurabi?: string;
+    smartcleaner?: string;
+  };
+  owner_emails: string[];
+  datum_link?: string;
+}
+
+export interface DeployResult {
+  success: boolean;
+  generator_type: string;
+  branch_name?: string;
+  commit_sha?: string;
+  pr_url?: string;
+  pr_id?: number;
+  deployed_files?: string[];
+  error?: string;
+  step?: string;
+}
+
+export interface DeployStatusItem {
+  status: 'not_deployed' | 'success' | 'error';
+  pr_url?: string;
+  branch_name?: string;
+  deployed_at?: string;
+  error_message?: string;
+}
+
+export interface DeployStatusResponse {
+  kirby?: DeployStatusItem;
+  hammurabi?: DeployStatusItem;
+  smartcleaner?: DeployStatusItem;
+}
+
+// ========================
 // TIPOS DE ERROR
 // ========================
 

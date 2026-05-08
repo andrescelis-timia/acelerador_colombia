@@ -17,7 +17,10 @@ import {
   ArtifactsStatus,
   ArtifactsStatusResponse,
   AnalyzeSequencesRequest,
-  AnalyzeSequencesResponse
+  AnalyzeSequencesResponse,
+  DeployConfig,
+  DeployResult,
+  DeployStatusResponse
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -318,6 +321,31 @@ class PipelineGeneratorService {
       { method: 'GET' }
     );
     await this.downloadFile(response.download_url, response.file_name);
+  }
+
+  // ========================
+  // DEPLOY A REPOSITORIO
+  // ========================
+
+  async saveDeployConfig(objectId: string, config: DeployConfig): Promise<{ success: boolean }> {
+    return this.makeRequest<{ success: boolean }>(`/deploy/config/${objectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getDeployConfig(objectId: string): Promise<DeployConfig> {
+    return this.makeRequest<DeployConfig>(`/deploy/config/${objectId}`, { method: 'GET' });
+  }
+
+  async executeDeploy(objectId: string, generatorType: string): Promise<DeployResult> {
+    return this.makeRequest<DeployResult>(`/deploy/execute/${objectId}/${generatorType}`, {
+      method: 'POST',
+    });
+  }
+
+  async getDeployStatus(objectId: string): Promise<DeployStatusResponse> {
+    return this.makeRequest<DeployStatusResponse>(`/deploy/status/${objectId}`, { method: 'GET' });
   }
 
   // ========================
