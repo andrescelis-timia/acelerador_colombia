@@ -6,7 +6,8 @@ export const transformToTableData = (projects: ProjectResponse[]): ProjectTableD
     ticket_jira: project.ticket_jira,
     name: project.name,
     status: project.status,
-    creation_date: project.creation_date
+    creation_date: project.creation_date,
+    my_role: project.my_role,
   }));
 };
 
