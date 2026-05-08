@@ -158,7 +158,7 @@ export const ProjectContent = ({ data, onSearch, onEdit, currentPage, setCurrent
           const proj = projects.find(p => p.id_project === item.id);
           const myRole = proj?.my_role;
           const canEdit = isAdmin || myRole === 'OWNER';
-          const canAddObj = isAdmin || myRole === 'OWNER' || myRole === 'DEVELOPER';
+          const canAddObj = isAdmin || myRole === 'OWNER' || myRole === 'DATA_ENGINEER';
           return (
             <div key={`actions-${item.id}`} className="flex items-center justify-end">
               {canAddObj && (

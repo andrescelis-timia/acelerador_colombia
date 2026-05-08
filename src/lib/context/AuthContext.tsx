@@ -32,7 +32,7 @@ export interface CreateUserWithPasswordRequest {
   email: string;
   password: string;
   country: 'CO' | 'PE';
-  role: 'ADMIN' | 'OWNER' | 'DEVELOPER';
+  role: 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER';
 }
 
 export interface CreateUserResult {
@@ -390,7 +390,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               sub: authUserEmail,
               email: authUserEmail,
               country: authUserCountry as 'CO' | 'PE',
-              role: authUserRole as 'ADMIN' | 'OWNER' | 'DEVELOPER',
+              role: authUserRole as 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER',
               iat: Date.now() / 1000, // issued at (now)
               exp: Date.now() / 1000 + 86400 // expires at (24 horas)
             };
