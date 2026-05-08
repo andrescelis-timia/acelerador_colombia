@@ -9,6 +9,7 @@ import { TabPanel } from '@/components/atoms/TabPanel';
 import { ObjectDetailContentProps } from './types';
 import { DataGovernmentFlow } from '@/components/organisms/DataGovernmentFlow';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlow';
 import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 import { ControlMFlow } from '@/components/organisms/ControlMFlow';
@@ -16,6 +17,7 @@ import { DeployADA } from '@/components/organisms/DeployADA';
 
 export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   return (
     <motion.div
@@ -37,7 +39,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         Objeto: {objectName}
       </h2>
 
-      {loading ? (
+      {(loading || roleLoading) ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A3977]"></div>
           <span className="ml-2 text-gray-600">Cargando...</span>
@@ -55,9 +57,9 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
-            <Tab>Generación de Schemas</Tab>
+            {isAdmin && <Tab>Generación de Schemas</Tab>}
             <Tab>Pipeline Generator</Tab>
-            <Tab>Despliegues ADA</Tab>
+            {isAdmin && <Tab>Despliegues ADA</Tab>}
             <Tab>Control-M</Tab>
           </TabList>
           <TabPanel>
@@ -65,21 +67,25 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
               <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <SchemaGenerationFlow objectId={objectId} />
-            </div>
-          </TabPanel>
+          {isAdmin && (
+            <TabPanel>
+              <div className="p-4">
+                <SchemaGenerationFlow objectId={objectId} />
+              </div>
+            </TabPanel>
+          )}
           <TabPanel>
             <div className="p-4">
               <PipelineGenerator objectId={objectId} />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className="p-4">
-              <DeployADA objectId={objectId} />
-            </div>
-          </TabPanel>
+          {isAdmin && (
+            <TabPanel>
+              <div className="p-4">
+                <DeployADA objectId={objectId} />
+              </div>
+            </TabPanel>
+          )}
           <TabPanel>
             <div className="p-4">
               <ControlMFlow objectId={objectId} />
