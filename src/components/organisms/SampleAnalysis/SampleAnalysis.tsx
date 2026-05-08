@@ -9,7 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1
 
 const TYPE_COLORS: Record<string, string> = {
   string: 'bg-gray-100 text-gray-700',
-  integer: 'bg-blue-100 text-blue-700',
+  integer: 'bg-blue-100 text-gray-800',
   decimal: 'bg-purple-100 text-purple-700',
   date: 'bg-green-100 text-green-700',
   timestamp: 'bg-teal-100 text-teal-700',
@@ -176,7 +176,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               {previewContent && (
                 <button
                   onClick={() => setPreviewOpen(true)}
-                  className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-1.5 text-gray-500 hover:text-timia-accent hover:bg-gray-50 rounded-lg transition-colors"
                   title="Ver muestra"
                 >
                   <EyeIcon className="h-4 w-4" />
@@ -191,7 +191,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               </button>
               <button
                 onClick={() => setModalOpen(true)}
-                className="px-3 py-1.5 text-sm font-medium text-[#0A3977] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-blue-100 rounded-lg transition-colors"
               >
                 Ver Resultados
               </button>
@@ -200,7 +200,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
           {!result && (
             <button
               onClick={() => setModalOpen(true)}
-              className="px-3 py-1.5 text-sm font-medium text-[#0A3977] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-blue-100 rounded-lg transition-colors"
             >
               Analizar
             </button>
@@ -225,7 +225,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-lg p-3 text-center transition-colors ${
-                  file || result ? 'border-green-300 bg-green-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                  file || result ? 'border-green-300 bg-green-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
                 }`}
               >
                 {file ? (
@@ -241,7 +241,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                   <div className="flex items-center justify-center gap-3">
                     <CheckCircleIcon className="h-4 w-4 text-green-500" />
                     <p className="font-medium text-gray-900">{result.metadata.file_name}</p>
-                    <label className="text-blue-600 hover:text-blue-800 cursor-pointer ml-2">
+                    <label className="text-timia-accent hover:text-blue-800 cursor-pointer ml-2">
                       Cambiar archivo
                       <input type="file" className="hidden" accept=".csv,.txt,.tsv,.parquet" onChange={handleFileChange} />
                     </label>
@@ -260,7 +260,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="px-4 py-1.5 bg-[#0A3977] text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-1.5 bg-timia-accent text-white rounded-lg text-xs font-medium hover:bg-timia-accent-hover disabled:opacity-50 flex items-center gap-2"
                 >
                   {analyzing && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
                   {analyzing ? 'Analizando...' : 'Analizar Muestra'}

@@ -200,7 +200,8 @@ class PipelineGeneratorService {
         staging_path: request.stagingPath,
         generated_jobs: request.generatedJobs,
         existing_t04_xml: request.existingT04Xml,
-        existing_t02_xml: request.existingT02Xml
+        existing_t02_xml: request.existingT02Xml,
+        partitions: request.partitions,
       }),
     });
   }

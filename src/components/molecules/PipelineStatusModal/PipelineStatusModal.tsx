@@ -64,10 +64,10 @@ export const PipelineStatusModal = ({
 }: PipelineStatusModalProps) => {
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-lg w-full rounded-lg bg-white shadow-xl">
+        <Dialog.Panel className="mx-auto max-w-lg w-full rounded-xl bg-white shadow-dark-lg animate-slide-up">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div>
@@ -97,8 +97,8 @@ export const PipelineStatusModal = ({
                   <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     {/* Stage Icon */}
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <StageIcon className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <StageIcon className="h-5 w-5 text-gray-600" />
                       </div>
                     </div>
 

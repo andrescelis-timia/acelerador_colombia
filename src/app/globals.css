@@ -5,16 +5,102 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-/* Forzar tema claro */
-.light {
-  --background: #ffffff;
-  --foreground: #171717;
+  --timia-black: #000000;
+  --timia-surface: #0A0A0F;
+  --timia-elevated: #141419;
+  --timia-accent: #9D012A;
+  --timia-accent-hover: #B8013A;
+  --timia-blue: #2E5BFF;
+  --timia-border: rgba(255, 255, 255, 0.08);
+  --timia-border-strong: rgba(255, 255, 255, 0.15);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== TIMIA Glassmorphism ===== */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ===== TIMIA Dark Scrollbar ===== */
+.scrollbar-dark::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ===== TIMIA Glow Effects ===== */
+.glow-accent {
+  box-shadow: 0 0 20px rgba(157, 1, 42, 0.3);
+}
+.glow-blue {
+  box-shadow: 0 0 20px rgba(46, 91, 255, 0.3);
+}
+
+/* ===== TIMIA Transitions ===== */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Toast animation ===== */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+.animate-fade-in-out {
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+/* ===== Focus ring for TIMIA ===== */
+.focus-timia:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(157, 1, 42, 0.5);
+}
+
+/* ===== Sidebar active indicator ===== */
+.sidebar-active-indicator {
+  position: relative;
+}
+.sidebar-active-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--timia-accent);
+  border-radius: 0 2px 2px 0;
 }

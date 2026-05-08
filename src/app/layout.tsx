@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { RootProvider } from '@/components/templates/root-layout/RootProvider';
 
+import NextTopLoader from 'nextjs-toploader';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -16,8 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="light">
+    <html lang="es" className="dark">
       <body className={inter.className}>
+        <NextTopLoader color="#9D012A" showSpinner={false} />
         <RootProvider>
           {children}
         </RootProvider>

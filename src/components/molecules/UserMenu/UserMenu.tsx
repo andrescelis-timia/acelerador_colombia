@@ -7,7 +7,7 @@ export const UserMenu = ({ email, onSignOut }: UserMenuProps) => {
     <div className="flex items-center space-x-4">
       <button 
         onClick={onSignOut}
-        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+        className="px-4 py-2 text-gray-400 hover:text-white transition-smooth text-sm"
       >
         Cerrar Sesión
       </button>

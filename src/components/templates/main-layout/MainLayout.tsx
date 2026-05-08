@@ -51,13 +51,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#F5F6FA]">
       <Sidebar
         isExpanded={isExpanded}
         onToggle={() => setIsExpanded(!isExpanded)}
         navItems={navItems}
       />
-      <main className={`flex-1 transition-all duration-300 ${isExpanded ? 'pl-[180px]' : 'pl-[60px]'
+      <main className={`flex-1 overflow-x-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'pl-[180px]' : 'pl-[64px]'
         }`}>
         <div className="max-w-7xl mx-auto">
           <Header

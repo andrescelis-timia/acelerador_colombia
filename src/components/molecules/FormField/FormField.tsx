@@ -33,6 +33,8 @@ export const FormField = ({
 
   const inputValue = value === 0 ? '0' : value ?? '';
 
+  const inputClasses = "mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-timia-accent focus:outline-none focus:ring-1 focus:ring-timia-accent/30 transition-smooth";
+
   return (
     <div className="space-y-2">
       {children ? children : type === 'checkbox' ? (
@@ -42,11 +44,11 @@ export const FormField = ({
               type="checkbox"
               checked={value === 'true' || value === true}
               onChange={handleChange}
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="h-4 w-4 rounded border-gray-300 text-timia-accent focus:ring-timia-accent/50"
             />
             <label className="ml-2 block text-sm font-medium text-gray-700">
               {label}
-              {required && <span className="text-red-500 ml-1">*</span>}
+              {required && <span className="text-timia-accent ml-1">*</span>}
             </label>
           </div>
           {helperText && (
@@ -57,13 +59,13 @@ export const FormField = ({
         <>
           <label className="block text-sm font-medium text-gray-700">
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-timia-accent ml-1">*</span>}
           </label>
           {type === 'select' ? (
             <select
               value={inputValue as string}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+              className={inputClasses}
             >
               {options?.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -77,7 +79,7 @@ export const FormField = ({
               value={inputValue as string}
               onChange={handleChange}
               placeholder={placeholder}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+              className={inputClasses}
             />
           ) : (
             <div>
@@ -90,10 +92,10 @@ export const FormField = ({
                 pattern={pattern}
                 min={min}
                 inputMode={inputMode}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className={inputClasses}
               />
               {errorMessage && pattern && inputValue && !(new RegExp(pattern).test(inputValue as string)) && (
-                <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+                <p className="mt-1 text-sm text-red-500">{errorMessage}</p>
               )}
               {helperText && !errorMessage && (
                 <p className="mt-1 text-sm text-gray-500">{helperText}</p>
@@ -104,4 +106,4 @@ export const FormField = ({
       )}
     </div>
   );
-}; 
+};

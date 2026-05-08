@@ -113,7 +113,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
               <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                 <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
                   <div className="flex-1">
-                    <div className="bg-[#0A3977] px-4 py-6 sm:px-6">
+                    <div className="bg-timia-surface px-4 py-6 sm:px-6">
                       <div className="flex items-center justify-between">
                         <Dialog.Title className="text-base font-semibold leading-6 text-white">
                           {title}
@@ -121,7 +121,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
                         <div className="ml-3 flex h-7 items-center">
                           <button
                             type="button"
-                            className="rounded-md bg-[#0A3977] text-white hover:text-gray-300"
+                            className="rounded-md bg-transparent text-gray-400 hover:text-white transition-smooth"
                             onClick={() => onClose(false)}
                           >
                             <XMarkIcon className="h-6 w-6" />

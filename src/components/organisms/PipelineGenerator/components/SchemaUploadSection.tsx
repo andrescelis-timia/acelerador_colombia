@@ -138,7 +138,7 @@ export const SchemaUploadSection = ({
                 value="tabla"
                 checked={componentType === 'tabla'}
                 onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
               />
               <span className="ml-2 text-sm font-medium text-gray-700">
                 Tabla (Raw + Master)
@@ -151,7 +151,7 @@ export const SchemaUploadSection = ({
                 value="tablon"
                 checked={componentType === 'tablon'}
                 onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
               />
               <span className="ml-2 text-sm font-medium text-gray-700">
                 Tablón (Solo Master)
@@ -195,7 +195,7 @@ export const SchemaUploadSection = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => handlePreviewSchema(rawSchema, 'raw')} className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors" title="Ver schema">
+                      <button onClick={() => handlePreviewSchema(rawSchema, 'raw')} className="p-1 text-gray-400 hover:text-timia-accent rounded transition-colors" title="Ver schema">
                         <EyeIcon className="h-4 w-4" />
                       </button>
                       <button onClick={() => handleRemoveFile('raw')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">
@@ -239,7 +239,7 @@ export const SchemaUploadSection = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => handlePreviewSchema(masterSchema, 'master')} className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors" title="Ver schema">
+                    <button onClick={() => handlePreviewSchema(masterSchema, 'master')} className="p-1 text-gray-400 hover:text-timia-accent rounded transition-colors" title="Ver schema">
                       <EyeIcon className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleRemoveFile('master')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">

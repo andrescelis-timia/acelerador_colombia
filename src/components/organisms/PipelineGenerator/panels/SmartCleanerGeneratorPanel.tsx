@@ -206,7 +206,7 @@ export const SmartCleanerGeneratorPanel = ({
             <button
               onMouseEnter={() => setShowInfoTooltip(true)}
               onMouseLeave={() => setShowInfoTooltip(false)}
-              className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+              className="p-1.5 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded transition-colors"
               title="Reglas de retención"
             >
               <InformationCircleIcon className="h-5 w-5" />
@@ -306,7 +306,7 @@ export const SmartCleanerGeneratorPanel = ({
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => viewFileContent(file)}
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          className="p-1 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded"
                           title="Ver contenido"
                         >
                           <EyeIcon className="h-4 w-4" />
@@ -341,7 +341,7 @@ export const SmartCleanerGeneratorPanel = ({
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => viewFileContent(file)}
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          className="p-1 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded"
                           title="Ver contenido"
                         >
                           <EyeIcon className="h-4 w-4" />

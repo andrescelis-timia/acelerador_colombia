@@ -15,7 +15,7 @@ export const AuthStateDisplay = ({ state }: AuthStateDisplayProps) => {
         return {
           spinner: true,
           text: 'Cerrando sesión...',
-          color: 'text-blue-600'
+          color: 'text-timia-accent'
         };
       case 'unauthenticated':
         return {

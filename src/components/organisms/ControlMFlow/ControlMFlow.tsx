@@ -10,13 +10,15 @@ import {
   PlusIcon,
   XMarkIcon,
   ArrowPathIcon,
-  DocumentPlusIcon
+  DocumentPlusIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 
 interface ControlMFlowProps {
   objectId: string;
+  readOnly?: boolean;
 }
 
 interface IngestaJob {
@@ -60,7 +62,7 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Trigger type: datax o filewatcher
   const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
-  const [fwAlias, setFwAlias] = useState('');
+  const [alias, setAlias] = useState('');
   const [stagingPath, setStagingPath] = useState('');
 
   // Estados para inputs
@@ -85,6 +87,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     annualMonth: 1,
     annualDay: 1
   });
+
+  // Particiones del schema raw (para que el backend derive las variables SENTRY_PARM)
+  const [schemaPartitions, setSchemaPartitions] = useState<string[]>([]);
 
   // Mallas existentes (modo aditivo)
   const [existingT04Xml, setExistingT04Xml] = useState<string | null>(null);
@@ -174,6 +179,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const artifacts = response.artifacts;
       const jobs: IngestaJob[] = [];
 
+      // Extraer particiones desde el artefacto de schemas (raw o master).
+      // Sirven al backend para derivar variables YEAR/MONTH/DAY/CUTOFF_DATE
+      // del SENTRY_PARM segun el nombre real de las particiones del schema.
+      const schemasData = artifacts.schemas?.artifacts_data;
+      const rawPartitions = (schemasData?.raw_schema_data as { partitions?: string[] } | undefined)?.partitions;
+      const masterPartitions = (schemasData?.master_schema_data as { partitions?: string[] } | undefined)?.partitions;
+      const detectedPartitions = rawPartitions && rawPartitions.length > 0 ? rawPartitions : (masterPartitions ?? []);
+      setSchemaPartitions(detectedPartitions);
 
       // Extraer UUAA del primer job encontrado o del metadata
       let extractedUuaa = '';
@@ -190,7 +203,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         }
         // Auto-fill FileWatcher fields
         if (extractedAlias) {
-          setFwAlias(extractedAlias);
+          setAlias(extractedAlias);
         }
         // Extraer staging path: primero del raw config (fuente de verdad), luego de metadata como fallback
         if (artifacts.kirby.artifacts_data.configs?.raw?.content) {
@@ -472,7 +485,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
-        description: `Job de validacion de la existencia del archivo de ${fwAlias}`,
+        description: `Job de validacion de la existencia del archivo de ${alias}`,
         phase: 'filewatcher',
         originalJob: stagingPath,
         order: order++
@@ -494,7 +507,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Staging (Hammurabi)',
+        description: `Calidad de datos en fase Staging - ${alias}`,
         phase: 'staging',
         originalJob: hammurabiStaging.name,
         order: order++
@@ -507,7 +520,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Ingesta de datos en fase Raw (Kirby)',
+        description: `Ingesta de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: kirbyRaw.name,
         order: order++
@@ -520,7 +533,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Raw (Hammurabi)',
+        description: `Calidad de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: hammurabiRaw.name,
         order: order++
@@ -533,7 +546,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Ingesta de datos en fase Master (Kirby)',
+        description: `Ingesta de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: kirbyMaster.name,
         order: order++
@@ -546,7 +559,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
-        description: 'Calidad de datos en fase Master (Hammurabi)',
+        description: `Calidad de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: hammurabiMaster.name,
         order: order++
@@ -560,7 +573,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
-          description: 'Ingesta de datos en fase Master L1T (Kirby)',
+          description: `Ingesta de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: kirbyL1T.name,
           order: order++
@@ -572,7 +585,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
-          description: 'Calidad de datos en fase Master L1T (Hammurabi)',
+          description: `Calidad de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: hammurabiL1T.name,
           order: order++
@@ -584,7 +597,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     jobs.push({
       jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
       type: 'D',
-      description: 'Borrado de input en fase Staging',
+      description: `Borrado de input en fase Staging - ${alias}`,
       phase: 'staging',
       originalJob: `${uuaa}-co-dfs-rmv-hdfs-01`,
       order: order++
@@ -596,7 +609,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
-        description: 'Borrado de datos en fase Raw (SmartCleaner)',
+        description: `Borrado de datos en fase Raw - ${alias}`,
         phase: 'raw',
         originalJob: smartcleanerRaw.name,
         order: order++
@@ -609,7 +622,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
-        description: 'Borrado de datos en fase Master (SmartCleaner)',
+        description: `Borrado de datos en fase Master - ${alias}`,
         phase: 'master',
         originalJob: smartcleanerMaster.name,
         order: order++
@@ -623,7 +636,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         jobs.push({
           jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
           type: 'D',
-          description: 'Borrado de datos en fase Master L1T (SmartCleaner)',
+          description: `Borrado de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
           originalJob: smartcleanerL1T.name,
           order: order++
@@ -687,7 +700,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         uuaa: uuaa,
         transferName: triggerType === 'datax' ? transferName : undefined,
         triggerType: triggerType,
-        alias: triggerType === 'filewatcher' ? fwAlias : undefined,
+        alias: triggerType === 'filewatcher' ? alias : undefined,
         stagingPath: stagingPath || undefined,
         generatedJobs: jobs.map(j => ({
           jobName: j.jobName,
@@ -698,7 +711,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           order: j.order
         })),
         existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
-        existingT02Xml: existingT02Xml || undefined
+        existingT02Xml: existingT02Xml || undefined,
+        partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
       });
 
       if (!response.success) {
@@ -780,7 +794,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   const getJobTypeColor = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
-      case 'T': return 'bg-blue-100 text-blue-700';
+      case 'T': return 'bg-blue-100 text-gray-800';
       case 'W': return 'bg-amber-100 text-amber-700';
       case 'C': return 'bg-green-100 text-green-700';
       case 'D': return 'bg-red-100 text-red-700';
@@ -800,7 +814,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     <div className="space-y-3">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-2">
+            <Cog6ToothIcon className="h-5 w-5 text-gray-500" />
             <h3 className="text-base font-medium text-gray-900">Control-M</h3>
           </div>
           {isAdditiveMode && (
@@ -825,7 +840,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     value="datax"
                     checked={triggerType === 'datax'}
                     onChange={() => setTriggerType('datax')}
-                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="h-3.5 w-3.5 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
                   />
                   <span className="text-xs text-gray-700">Datax</span>
                 </label>
@@ -836,7 +851,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     value="filewatcher"
                     checked={triggerType === 'filewatcher'}
                     onChange={() => setTriggerType('filewatcher')}
-                    className="h-3.5 w-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="h-3.5 w-3.5 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
                   />
                   <span className="text-xs text-gray-700">FileWatcher</span>
                 </label>
@@ -854,7 +869,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       placeholder="yyyy_dataxmovimientos_1"
                       value={transferName}
                       onChange={(e) => setTransferName(e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                     />
                   </div>
                 ) : (
@@ -865,7 +880,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       placeholder="Se autocompleta al cargar jobs de Pipeline Generator"
                       value={stagingPath}
                       onChange={(e) => setStagingPath(e.target.value)}
-                      className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 ${
+                      className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 ${
                         stagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
                       }`}
                     />
@@ -877,7 +892,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     <select
                       value={dataxConfig.periodicity}
                       onChange={(e) => setDataxConfig(prev => ({ ...prev, periodicity: e.target.value as DataxConfig['periodicity'] }))}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                     >
                       <option value="diario">Diario</option>
                       <option value="semanal">Semanal</option>
@@ -891,7 +906,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <select
                         value={dataxConfig.periodicityType}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, periodicityType: e.target.value as 'calendario' | 'habil' }))}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                       >
                         <option value="calendario">Calendario</option>
                         <option value="habil">Hábil</option>
@@ -907,7 +922,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         max="31"
                         value={dataxConfig.monthDay}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, monthDay: Math.min(31, Math.max(1, parseInt(e.target.value) || 1)) }))}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 text-center"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center"
                       />
                     </div>
                   )}
@@ -918,7 +933,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         <select
                           value={dataxConfig.businessDayDirection}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayDirection: e.target.value as 'D' | 'L' }))}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                         >
                           <option value="D">Inicio mes</option>
                           <option value="L">Fin mes</option>
@@ -932,7 +947,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           max="31"
                           value={dataxConfig.businessDayNumber}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayNumber: Math.min(31, Math.max(1, parseInt(e.target.value) || 1)) }))}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 text-center"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center"
                         />
                       </div>
                     </>
@@ -943,7 +958,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <select
                         value={dataxConfig.weekDay}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, weekDay: parseInt(e.target.value) }))}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                       >
                         <option value={1}>Lun</option>
                         <option value={2}>Mar</option>
@@ -962,7 +977,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         <select
                           value={dataxConfig.annualMonth}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, annualMonth: parseInt(e.target.value) }))}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                         >
                           <option value={1}>Ene</option>
                           <option value={2}>Feb</option>
@@ -986,7 +1001,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           max="31"
                           value={dataxConfig.annualDay}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, annualDay: Math.min(31, Math.max(1, parseInt(e.target.value) || 1)) }))}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8 text-center"
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center"
                         />
                       </div>
                     </>
@@ -997,7 +1012,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       type="time"
                       value={dataxConfig.startTime}
                       onChange={(e) => setDataxConfig(prev => ({ ...prev, startTime: e.target.value }))}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 h-8"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                     />
                   </div>
                   <div className="h-8 flex items-center gap-2 px-2 border border-gray-200 rounded bg-gray-50">
@@ -1006,7 +1021,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         type="checkbox"
                         checked={dataxConfig.isCyclic}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, isCyclic: e.target.checked }))}
-                        className="h-3.5 w-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="h-3.5 w-3.5 text-timia-accent border-gray-300 rounded focus:ring-timia-accent/50"
                       />
                       Cíclico
                     </label>
@@ -1020,7 +1035,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                             max="24"
                             value={dataxConfig.intervalHours}
                             onChange={(e) => setDataxConfig(prev => ({ ...prev, intervalHours: parseInt(e.target.value) }))}
-                            className="w-10 px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-center"
+                            className="w-10 px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 text-center"
                           />
                           <span className="text-xs text-gray-500">hrs</span>
                         </div>
@@ -1039,12 +1054,12 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   <button
                     onClick={loadJobsFromPipelineGenerator}
                     disabled={isLoadingArtifacts}
-                    className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-400 flex items-center gap-1"
+                    className="text-xs text-timia-accent hover:text-blue-800 disabled:text-gray-400 flex items-center gap-1"
                   >
                     <ArrowPathIcon className={`h-3 w-3 ${isLoadingArtifacts ? 'animate-spin' : ''}`} />
                     Cargar
                   </button>
-                  <button onClick={addManualJob} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                  <button onClick={addManualJob} className="text-xs text-timia-accent hover:text-blue-800 flex items-center gap-1">
                     <PlusIcon className="h-3 w-3" />
                   </button>
                 </div>
@@ -1062,12 +1077,12 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         placeholder="yyyy-co-dfs-rmv-smcmuricm-01"
                         value={job.name}
                         onChange={(e) => updateJob(index, 'name', e.target.value)}
-                        className="flex-1 min-w-0 px-1.5 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-mono text-xs"
+                        className="flex-1 min-w-0 px-1.5 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white font-mono text-xs"
                       />
                       <select
                         value={job.generator}
                         onChange={(e) => updateJob(index, 'generator', e.target.value)}
-                        className="w-20 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-xs"
+                        className="w-20 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
                       >
                         <option value="kirby">Kirby</option>
                         <option value="hammurabi">Hammurabi</option>
@@ -1076,7 +1091,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <select
                         value={job.phase}
                         onChange={(e) => updateJob(index, 'phase', e.target.value)}
-                        className="w-16 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-xs"
+                        className="w-16 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
                       >
                         <option value="staging">Stg</option>
                         <option value="raw">Raw</option>
@@ -1114,7 +1129,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
             <div className="flex justify-center gap-3">
               {/* T04 */}
               {existingT04FileName ? (
-                <span className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded text-xs">
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-gray-800 rounded text-xs">
                   <DocumentPlusIcon className="h-4 w-4" />
                   T04: {existingT04FileName.length > 25 ? existingT04FileName.substring(0, 25) + '...' : existingT04FileName}
                   <button onClick={() => removeExistingXml('t04')} className="hover:text-red-500">
@@ -1122,7 +1137,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   </button>
                 </span>
               ) : (
-                <label className="flex items-center gap-2 px-4 py-1.5 text-gray-500 border border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400 hover:bg-blue-50 text-xs min-w-[140px] justify-center">
+                <label className="flex items-center gap-2 px-4 py-1.5 text-gray-500 border border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400 hover:bg-gray-50 text-xs min-w-[140px] justify-center">
                   <input type="file" accept=".xml" className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleXmlFileUpload(file, 't04');
@@ -1175,7 +1190,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate || isGenerating}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 bg-timia-accent text-white text-sm font-medium rounded hover:bg-timia-accent-hover disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 <PlayIcon className="h-4 w-4" />
                 {isGenerating ? 'Generando...' : isAdditiveMode ? 'Agregar a Mallas' : 'Generar Mallas'}
@@ -1201,7 +1216,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 <button
                   onMouseEnter={() => setShowInfoTooltip(true)}
                   onMouseLeave={() => setShowInfoTooltip(false)}
-                  className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded"
+                  className="p-1.5 text-gray-400 hover:text-timia-accent hover:bg-gray-50 rounded"
                 >
                   <InformationCircleIcon className="h-5 w-5" />
                 </button>
@@ -1250,7 +1265,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           onClick={() => handleDownloadMalla(malla)}
                           disabled={downloadingFile === malla}
                           className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 disabled:opacity-50 ${
-                            malla.includes('-T04') ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                            malla.includes('-T04') ? 'bg-blue-100 text-timia-accent' : 'bg-green-100 text-green-600'
                           }`}
                           title={malla}
                         >

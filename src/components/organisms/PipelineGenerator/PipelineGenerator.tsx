@@ -11,7 +11,7 @@ import { CubeIcon, ShieldCheckIcon, TrashIcon } from '@heroicons/react/24/outlin
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { SampleAnalysis } from '@/components/organisms/SampleAnalysis';
 
-export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
+export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
   const [masterSchema, setMasterSchema] = useState<File | null>(null);
   const [componentType, setComponentType] = useState<'tabla' | 'tablon'>('tabla');
@@ -129,7 +129,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px
                     ${isActive
-                      ? 'text-[#00A3FF] border-[#00A3FF]'
+                      ? 'text-timia-accent border-timia-accent'
                       : 'text-gray-500 border-transparent hover:text-gray-700'
                     }`}
                 >
@@ -157,7 +157,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
                     rawSchema={rawSchema}
                     masterSchema={masterSchema}
                     componentType={componentType}
-                    canGenerate={canGenerate()}
+                    canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('kirby')}
                     initialData={savedArtifacts?.kirby}
                   />
@@ -168,7 +168,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
                     rawSchema={rawSchema}
                     masterSchema={masterSchema}
                     componentType={componentType}
-                    canGenerate={canGenerate()}
+                    canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
                     initialData={savedArtifacts?.hammurabi}
                   />
@@ -179,7 +179,7 @@ export const PipelineGenerator = ({ objectId }: PipelineGeneratorProps) => {
                     rawSchema={rawSchema}
                     masterSchema={masterSchema}
                     componentType={componentType}
-                    canGenerate={canGenerate()}
+                    canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
                     initialData={savedArtifacts?.smartcleaner}
                   />

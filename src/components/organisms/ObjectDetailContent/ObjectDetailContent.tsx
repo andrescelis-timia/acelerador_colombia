@@ -14,10 +14,12 @@ import { SchemaGenerationFlow } from '@/components/organisms/SchemaGenerationFlo
 import { PipelineGenerator } from '@/components/organisms/PipelineGenerator';
 import { ControlMFlow } from '@/components/organisms/ControlMFlow';
 import { DeployADA } from '@/components/organisms/DeployADA';
+import { useProjectRole } from '@/hooks/useProjectRole';
 
-export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailContentProps) => {
+export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectDetailContentProps) => {
   const { country, loading } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isReadOnly } = useProjectRole(projectId ?? null);
 
   return (
     <motion.div
@@ -35,13 +37,19 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
         <span>Volver a Objetos</span>
       </button>
 
-      <h2 className="text-[#00A3FF] text-xl font-medium">
+      <h2 className="text-gray-900 text-xl font-medium flex items-center gap-2">
         Objeto: {objectName}
+        {isReadOnly && (
+          <span className="text-xs font-normal text-gray-400 flex items-center gap-1">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            Solo lectura
+          </span>
+        )}
       </h2>
 
       {(loading || roleLoading) ? (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A3977]"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-timia-accent"></div>
           <span className="ml-2 text-gray-600">Cargando...</span>
         </div>
       ) : !country ? (
@@ -54,6 +62,7 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
           </p>
         </div>
       ) : (country === 'CO' || country === 'PE') ? (
+        <>
         <TabGroup>
           <TabList>
             <Tab>Gobierno del dato</Tab>
@@ -63,35 +72,36 @@ export const ObjectDetailContent = ({ objectId, objectName }: ObjectDetailConten
             <Tab>Control-M</Tab>
           </TabList>
           <TabPanel>
-            <div className="p-4">
+            <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
               <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
             </div>
           </TabPanel>
           {isAdmin && (
             <TabPanel>
-              <div className="p-4">
+              <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
                 <SchemaGenerationFlow objectId={objectId} />
               </div>
             </TabPanel>
           )}
           <TabPanel>
-            <div className="p-4">
+            <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
               <PipelineGenerator objectId={objectId} />
             </div>
           </TabPanel>
           {isAdmin && (
             <TabPanel>
-              <div className="p-4">
+              <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
                 <DeployADA objectId={objectId} />
               </div>
             </TabPanel>
           )}
           <TabPanel>
-            <div className="p-4">
+            <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
               <ControlMFlow objectId={objectId} />
             </div>
           </TabPanel>
         </TabGroup>
+        </>
       ) : (
         <div className="p-4 text-center text-gray-500">
           País no soportado: {country}
