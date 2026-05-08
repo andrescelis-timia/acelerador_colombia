@@ -85,7 +85,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
           )}
           <TabPanel>
             <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
-              <PipelineGenerator objectId={objectId} />
+              <PipelineGenerator objectId={objectId} readOnly={isReadOnly} />
             </div>
           </TabPanel>
           {isAdmin && (
