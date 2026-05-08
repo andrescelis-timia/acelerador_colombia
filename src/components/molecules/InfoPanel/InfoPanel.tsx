@@ -13,7 +13,7 @@ export const InfoPanel = ({
       case 'info':
         return {
           container: 'bg-white border border-blue-200 rounded-lg',
-          header: 'px-4 py-3 border-b border-blue-200 bg-blue-50',
+          header: 'px-4 py-3 border-b border-blue-200 bg-gray-50',
           title: 'text-lg font-medium text-blue-900'
         };
       case 'warning':

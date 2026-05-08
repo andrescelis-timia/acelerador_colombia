@@ -186,7 +186,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
               onClick={() => setSchemaMode('lite_co')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 schemaMode === 'lite_co'
-                  ? 'bg-white text-blue-700 shadow-sm'
+                  ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -196,7 +196,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
               onClick={() => setSchemaMode('full')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 schemaMode === 'full'
-                  ? 'bg-white text-blue-700 shadow-sm'
+                  ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -222,7 +222,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
             <button
               onClick={generateSchemas}
               disabled={status.isGenerating}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#00A3FF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-timia-accent hover:bg-timia-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-timia-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status.isGenerating ? (
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -300,7 +300,7 @@ export default function AdminPage() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-[#00A3FF] text-xl font-semibold">Administracion</h2>
+        <h2 className="text-timia-accent text-xl font-semibold">Administracion</h2>
       </div>
 
         {/* Tabs */}
@@ -310,7 +310,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setActiveTab('users')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'users'
-                  ? 'border-[#0A3977] text-[#0A3977]'
+                  ? 'border-timia-accent text-timia-accent'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
@@ -319,7 +319,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setActiveTab('assignments')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'assignments'
-                  ? 'border-[#0A3977] text-[#0A3977]'
+                  ? 'border-timia-accent text-timia-accent'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
@@ -341,11 +341,11 @@ export default function AdminPage() {
                     placeholder="Buscar por email..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    className="px-2.5 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977] w-56"
+                    className="px-2.5 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-timia-accent w-56"
                   />
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="px-3 py-1 bg-[#0A3977] text-white rounded text-xs font-medium hover:bg-blue-700"
+                    className="px-3 py-1 bg-timia-accent text-white rounded text-xs font-medium hover:bg-timia-accent-hover"
                   >
                     + Nuevo
                   </button>
@@ -354,7 +354,7 @@ export default function AdminPage() {
 
               {loadingUsers ? (
                 <div className="text-center py-6">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-timia-accent mx-auto"></div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -419,7 +419,7 @@ export default function AdminPage() {
                                 }}
                                 onBlur={() => setEditingUserId(null)}
                                 autoFocus
-                                className="text-xs border border-blue-400 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500"
+                                className="text-xs border border-blue-400 rounded px-2 py-1 focus:ring-1 focus:ring-timia-accent/50"
                               >
                                 <option value="DEVELOPER">DEVELOPER</option>
                                 <option value="OWNER">OWNER</option>
@@ -429,7 +429,7 @@ export default function AdminPage() {
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                                 u.role === 'ADMIN' ? 'bg-red-50 text-red-700' :
                                 u.role === 'OWNER' ? 'bg-purple-50 text-purple-700' :
-                                'bg-blue-50 text-blue-700'
+                                'bg-gray-50 text-gray-800'
                               }`}>
                                 {u.role}
                               </span>
@@ -492,7 +492,7 @@ export default function AdminPage() {
               <select
                 value={assignCountry}
                 onChange={(e) => setAssignCountry(e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-timia-accent"
               >
                 <option value="CO">Colombia</option>
                 <option value="PE">Peru</option>
@@ -500,13 +500,13 @@ export default function AdminPage() {
               <div className="flex bg-gray-100 rounded-md p-0.5 ml-auto">
                 <button
                   onClick={() => { setAssignView('project'); setSelectedUserId(null); }}
-                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'project' ? 'bg-white shadow text-[#0A3977]' : 'text-gray-500'}`}
+                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'project' ? 'bg-white shadow text-timia-accent' : 'text-gray-500'}`}
                 >
                   Por Proyecto
                 </button>
                 <button
                   onClick={() => { setAssignView('user'); setSelectedProjectId(null); }}
-                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'user' ? 'bg-white shadow text-[#0A3977]' : 'text-gray-500'}`}
+                  className={`px-3 py-1 text-xs font-medium rounded ${assignView === 'user' ? 'bg-white shadow text-timia-accent' : 'text-gray-500'}`}
                 >
                   Por Usuario
                 </button>
@@ -520,7 +520,7 @@ export default function AdminPage() {
                 <span className="text-xs font-medium text-gray-700">Proyectos</span>
                 {loadingProjects ? (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-timia-accent mx-auto"></div>
                   </div>
                 ) : (
                   <div className="space-y-1 max-h-96 overflow-y-auto">
@@ -530,7 +530,7 @@ export default function AdminPage() {
                         onClick={() => handleSelectProject(proj.id_project)}
                         className={`w-full text-left px-3 py-2 rounded text-xs ${
                           selectedProjectId === proj.id_project
-                            ? 'bg-[#0A3977] text-white'
+                            ? 'bg-timia-accent text-white'
                             : 'hover:bg-gray-100 text-gray-700'
                         }`}
                       >
@@ -572,7 +572,7 @@ export default function AdminPage() {
                           }}
                           onFocus={() => setShowUserDropdown(true)}
                           onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-timia-accent"
                         />
                         {showUserDropdown && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
@@ -608,7 +608,7 @@ export default function AdminPage() {
                       <button
                         onClick={handleAddMember}
                         disabled={!addMemberEmail.trim()}
-                        className="px-3 py-1.5 bg-[#0A3977] text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1.5 bg-timia-accent text-white rounded text-xs hover:bg-timia-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Agregar
                       </button>
@@ -617,7 +617,7 @@ export default function AdminPage() {
                     {/* Members list */}
                     {loadingMembers ? (
                       <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-timia-accent mx-auto"></div>
                       </div>
                     ) : (
                       <table className="min-w-full divide-y divide-gray-200">
@@ -677,7 +677,7 @@ export default function AdminPage() {
                   <h3 className="text-xs font-medium text-gray-700">Usuarios</h3>
                   {loadingUsers ? (
                     <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-timia-accent mx-auto"></div>
                     </div>
                   ) : (
                     <div className="space-y-1 max-h-96 overflow-y-auto">
@@ -687,7 +687,7 @@ export default function AdminPage() {
                           onClick={() => handleSelectUser(u.id_user)}
                           className={`w-full text-left px-3 py-2 rounded text-xs ${
                             selectedUserId === u.id_user
-                              ? 'bg-[#0A3977] text-white'
+                              ? 'bg-timia-accent text-white'
                               : 'hover:bg-gray-100 text-gray-700'
                           }`}
                         >
@@ -727,7 +727,7 @@ export default function AdminPage() {
                           }}
                           onFocus={() => setShowProjectDropdown(true)}
                           onBlur={() => setTimeout(() => setShowProjectDropdown(false), 200)}
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A3977]"
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-timia-accent"
                         />
                         {showProjectDropdown && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
@@ -764,14 +764,14 @@ export default function AdminPage() {
                       <button
                         onClick={handleAssignProjectToUser}
                         disabled={!assignProjectId}
-                        className="px-3 py-1.5 bg-[#0A3977] text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1.5 bg-timia-accent text-white rounded text-xs hover:bg-timia-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Asignar
                       </button>
                     </div>
                   {loadingUserProjects ? (
                     <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0A3977] mx-auto"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-timia-accent mx-auto"></div>
                     </div>
                   ) : (
                     <table className="min-w-full divide-y divide-gray-200">
@@ -787,7 +787,7 @@ export default function AdminPage() {
                             <td className="px-3 py-2 text-xs text-gray-900">{p.project_name || p.id_project}</td>
                             <td className="px-3 py-2">
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                p.project_role === 'OWNER' ? 'bg-amber-100 text-amber-700' : p.project_role === 'OWNER_READONLY' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700'
+                                p.project_role === 'OWNER' ? 'bg-amber-100 text-amber-700' : p.project_role === 'OWNER_READONLY' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-gray-800'
                               }`}>
                                 {p.project_role}
                               </span>

@@ -47,32 +47,43 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-timia-black relative overflow-hidden">
+      {/* Decorative Glow Effects */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-timia-accent/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-timia-blue/8 rounded-full blur-[120px]" />
+      
+      <div className="max-w-md w-full space-y-8 p-8 glass-strong rounded-2xl shadow-dark-lg animate-slide-up relative z-10">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-[#0A3977]">PLATAFORMA DE INGESTAS</h2>
-          <p className="mt-2 text-gray-600">Inicia sesión para continuar</p>
+          <img
+            src="/logo_timia_white.svg"
+            alt="TIMIA"
+            width={140}
+            height={28}
+            className="mx-auto mb-6 opacity-90"
+          />
+          <h2 className="text-2xl font-bold text-white tracking-tight">PLATAFORMA DE INGESTAS</h2>
+          <p className="mt-2 text-gray-400 text-sm">Inicia sesión para continuar</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm">
             {error}
           </div>
         )}
 
         <div className="space-y-4">
           {/* Auth Method Toggle */}
-          <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50" role="tablist">
+          <div className="flex rounded-xl p-1 bg-white/5 border border-white/10" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={authMethod === 'google'}
               onClick={() => handleAuthMethodChange('google')}
               disabled={isLoading}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+              className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-smooth disabled:cursor-not-allowed ${
                 authMethod === 'google'
-                  ? 'bg-white text-[#0A3977] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 disabled:hover:text-gray-500'
+                  ? 'bg-timia-accent text-white shadow-glow-accent'
+                  : 'text-gray-400 hover:text-white disabled:hover:text-gray-400'
               }`}
             >
               Google
@@ -83,10 +94,10 @@ function LoginContent() {
               aria-selected={authMethod === 'password'}
               onClick={() => handleAuthMethodChange('password')}
               disabled={isLoading}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+              className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-smooth disabled:cursor-not-allowed ${
                 authMethod === 'password'
-                  ? 'bg-white text-[#0A3977] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 disabled:hover:text-gray-500'
+                  ? 'bg-timia-accent text-white shadow-glow-accent'
+                  : 'text-gray-400 hover:text-white disabled:hover:text-gray-400'
               }`}
             >
               Email/Contraseña
@@ -99,10 +110,10 @@ function LoginContent() {
               <button
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0A3977] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-white/10 rounded-xl text-sm font-medium text-white bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-timia-accent/50 disabled:opacity-50 disabled:cursor-not-allowed transition-smooth"
               >
                 {isLoading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#0A3977]"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-timia-accent"></div>
                 ) : (
                   <Image
                     src="/google-icon.svg"
@@ -133,11 +144,11 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0A3977]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-timia-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-timia-accent"></div>
       </div>
     }>
       <LoginContent />
     </Suspense>
   );
-} 
+}

@@ -129,7 +129,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 font-medium text-sm transition-colors border-b-2 -mb-px
                     ${isActive
-                      ? 'text-[#00A3FF] border-[#00A3FF]'
+                      ? 'text-timia-accent border-timia-accent'
                       : 'text-gray-500 border-transparent hover:text-gray-700'
                     }`}
                 >
