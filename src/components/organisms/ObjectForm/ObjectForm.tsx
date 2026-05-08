@@ -21,7 +21,20 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
     url_document: '',
     status: 'pending',
     creation_user: user?.email || '',
-    flag_l1t: false
+    flag_l1t: false,
+    component_type: 'tabla'
+  };
+
+  const componentTypeField: FormFieldConfig = {
+    name: 'component_type',
+    label: 'Tipo de componente',
+    type: 'select',
+    options: [
+      { value: 'tabla', label: 'Tabla (Raw + Master)' },
+      { value: 'tablon', label: 'Tablón (Solo Master)' },
+      { value: 'tabla_no_raw', label: 'Tabla (Staging - Master)' },
+    ],
+    helperText: 'Determina las fases que generará el Pipeline. Para "Staging - Master" el archivo en staging es parquet.'
   };
 
   const isEditing = initialData && 'id_object' in initialData;
@@ -94,7 +107,8 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       label: '¿Tiene L1T?',
       type: 'checkbox',
       helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
-    }
+    },
+    componentTypeField
   ];
 
   return (

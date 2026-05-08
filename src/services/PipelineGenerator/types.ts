@@ -10,7 +10,7 @@ export interface GenerateKirbyRequest {
   object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
-  component_type: 'tabla' | 'tablon';
+  component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
 }
 
@@ -18,7 +18,7 @@ export interface GenerateHammurabiRequest {
   object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
-  component_type: 'tabla' | 'tablon';
+  component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
 }
 
@@ -26,14 +26,14 @@ export interface GenerateSmartCleanerRequest {
   object_id?: string;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
-  component_type: 'tabla' | 'tablon';
+  component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
 }
 
 export interface GenerateControlMRequest {
   object_id?: string;
   jobsList: JobEntry[];
-  componentType: 'tabla' | 'tablon';
+  componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
   dataxConfig: DataxConfig;
   uuaa: string;
   transferName?: string;
@@ -134,7 +134,7 @@ export interface GenerateKirbyResponse {
       shouldGenerateL1T: boolean;
       masterSecurityLevel: string;
       detectedTransformations: string[];
-      componentType: 'tabla' | 'tablon';
+      componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
       stagingInputPath?: string;
       extractedInfo: {
         alias: string;
@@ -152,7 +152,7 @@ export interface GenerateHammurabiResponse {
     configs: Record<string, GeneratedFile>;
     jobs: Record<string, GeneratedFile>;
     metadata: {
-      componentType: 'tabla' | 'tablon';
+      componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
       generatedPhases: string[];
       includeL1T: boolean;
       extractedInfo: {
@@ -174,7 +174,7 @@ export interface GenerateSmartCleanerResponse {
     metadata: {
       shouldGenerateL1T: boolean;
       masterSecurityLevel: string;
-      componentType: 'tabla' | 'tablon';
+      componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
       extractedInfo: {
         alias: string;
         namespace: string;
@@ -306,7 +306,7 @@ export type GeneratedArtifact = KirbyArtifact | HammurabiArtifact | SmartCleaner
 export interface SchemasArtifactData {
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
-  component_type: 'tabla' | 'tablon';
+  component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   raw_file_name?: string;
   master_file_name: string;
 }

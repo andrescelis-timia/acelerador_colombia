@@ -137,7 +137,7 @@ export const SchemaUploadSection = ({
                 name="componentType"
                 value="tabla"
                 checked={componentType === 'tabla'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
+                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
                 className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
               />
               <span className="ml-2 text-sm font-medium text-gray-700">
@@ -150,14 +150,32 @@ export const SchemaUploadSection = ({
                 name="componentType"
                 value="tablon"
                 checked={componentType === 'tablon'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon')}
+                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
                 className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
               />
               <span className="ml-2 text-sm font-medium text-gray-700">
                 Tablón (Solo Master)
               </span>
             </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="componentType"
+                value="tabla_no_raw"
+                checked={componentType === 'tabla_no_raw'}
+                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
+                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
+              />
+              <span className="ml-2 text-sm font-medium text-gray-700">
+                Tabla (Staging - Master)
+              </span>
+            </label>
           </div>
+          {componentType === 'tabla_no_raw' && (
+            <p className="mt-2 text-xs text-gray-500">
+              El archivo en staging será parquet y entrará directo a master (sin fase raw).
+            </p>
+          )}
         </div>
 
         {/* Schema Upload Section */}

@@ -13,7 +13,7 @@ export interface GeneratorPanelProps {
   objectId?: string;
   rawSchema: File | null;
   masterSchema: File | null;
-  componentType: 'tabla' | 'tablon';
+  componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
   canGenerate: boolean;
   onGenerationComplete?: () => void;
   initialData?: GeneratedArtifact | null;
@@ -23,9 +23,9 @@ export interface SchemaUploadSectionProps {
   objectId?: string;
   rawSchema: File | null;
   masterSchema: File | null;
-  componentType: 'tabla' | 'tablon';
+  componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
   onSchemaUpload: (type: 'raw' | 'master', file: File | null) => void;
-  onComponentTypeChange: (type: 'tabla' | 'tablon') => void;
+  onComponentTypeChange: (type: 'tabla' | 'tablon' | 'tabla_no_raw') => void;
 }
 
 export interface SchemaFile {
@@ -60,6 +60,6 @@ export interface GeneratorConfig {
   color: string;
   icon: string;
   requiredSchemas: ('raw' | 'master')[];
-  supportedTypes: ('tabla' | 'tablon')[];
+  supportedTypes: ('tabla' | 'tablon' | 'tabla_no_raw')[];
 }
 

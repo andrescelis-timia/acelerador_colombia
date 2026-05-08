@@ -20,6 +20,8 @@ export interface PipelineStatus {
   controlm: PipelineStageState;
 }
 
+export type ComponentType = 'tabla' | 'tablon' | 'tabla_no_raw';
+
 export interface ObjectCreate extends Record<string, unknown> {
   name: string;
   alias: string;
@@ -27,6 +29,7 @@ export interface ObjectCreate extends Record<string, unknown> {
   id_project: string;
   creation_user: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
 }
 
 export interface ObjectUpdate {
@@ -36,6 +39,7 @@ export interface ObjectUpdate {
   url_document: string;
   update_user: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
 }
 
 export interface ObjectUpdateWithId extends Record<string, unknown> {
@@ -56,6 +60,7 @@ export interface ObjectResponse {
   update_date?: string;
   update_user?: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
   active: boolean;
   project_name: string;
   pipeline_status?: PipelineStatus;
