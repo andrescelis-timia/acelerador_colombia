@@ -12,7 +12,7 @@ export interface CreateUserWithPasswordFormData {
   password: string;
   confirmPassword: string;
   country: 'CO' | 'PE';
-  role: 'ADMIN' | 'OWNER' | 'DEVELOPER';
+  role: 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER';
   authMethod: 'google' | 'password';
 }
 

@@ -39,7 +39,7 @@ export default function AdminPage() {
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [addMemberEmail, setAddMemberEmail] = useState('');
-  const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'OWNER_READONLY' | 'DEVELOPER'>('DEVELOPER');
+  const [addMemberRole, setAddMemberRole] = useState<'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER'>('DATA_ENGINEER');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [assignCountry, setAssignCountry] = useState<string>(
@@ -52,7 +52,7 @@ export default function AdminPage() {
   const [assignProjectId, setAssignProjectId] = useState('');
   const [assignProjectSearch, setAssignProjectSearch] = useState('');
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
-  const [assignProjectRole, setAssignProjectRole] = useState<'OWNER' | 'OWNER_READONLY' | 'DEVELOPER'>('DEVELOPER');
+  const [assignProjectRole, setAssignProjectRole] = useState<'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER'>('DATA_ENGINEER');
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -216,7 +216,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleChangeRole = async (userId: string, newRole: 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER') => {
+  const handleChangeRole = async (userId: string, newRole: 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER') => {
     if (!user?.email || !selectedProjectId) return;
     try {
       const service = new ProjectMemberService(user.email, assignCountry);
@@ -421,14 +421,16 @@ export default function AdminPage() {
                                 autoFocus
                                 className="text-xs border border-blue-400 rounded px-2 py-1 focus:ring-1 focus:ring-timia-accent/50"
                               >
-                                <option value="DEVELOPER">DEVELOPER</option>
-                                <option value="OWNER">OWNER</option>
+                                <option value="DATA_ENGINEER">DATA_ENGINEER</option>
+                                <option value="APP_OWNER">APP_OWNER</option>
+                                <option value="SERVICE_OWNER">SERVICE_OWNER</option>
                                 <option value="ADMIN">ADMIN</option>
                               </select>
                             ) : (
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                                 u.role === 'ADMIN' ? 'bg-red-50 text-red-700' :
-                                u.role === 'OWNER' ? 'bg-purple-50 text-purple-700' :
+                                u.role === 'APP_OWNER' ? 'bg-indigo-50 text-indigo-700' :
+                                u.role === 'SERVICE_OWNER' ? 'bg-purple-50 text-purple-700' :
                                 'bg-gray-50 text-gray-800'
                               }`}>
                                 {u.role}
@@ -598,10 +600,10 @@ export default function AdminPage() {
                       </div>
                       <select
                         value={addMemberRole}
-                        onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
+                        onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                         className="px-2 py-1.5 border border-gray-300 rounded text-xs"
                       >
-                        <option value="DEVELOPER">Developer</option>
+                        <option value="DATA_ENGINEER">Data Engineer</option>
                         <option value="OWNER">Owner</option>
                         <option value="OWNER_READONLY">Owner (Solo lectura)</option>
                       </select>
@@ -635,10 +637,10 @@ export default function AdminPage() {
                               <td className="px-3 py-2">
                                 <select
                                   value={member.project_role}
-                                  onChange={(e) => handleChangeRole(member.id_user, e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
+                                  onChange={(e) => handleChangeRole(member.id_user, e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                                   className="text-xs border border-gray-300 rounded px-2 py-1"
                                 >
-                                  <option value="DEVELOPER">Developer</option>
+                                  <option value="DATA_ENGINEER">Data Engineer</option>
                                   <option value="OWNER">Owner</option>
                                   <option value="OWNER_READONLY">Owner (Solo lectura)</option>
                                 </select>
@@ -754,10 +756,10 @@ export default function AdminPage() {
                       </div>
                       <select
                         value={assignProjectRole}
-                        onChange={(e) => setAssignProjectRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DEVELOPER')}
+                        onChange={(e) => setAssignProjectRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                         className="px-2 py-1.5 border border-gray-300 rounded text-xs"
                       >
-                        <option value="DEVELOPER">Developer</option>
+                        <option value="DATA_ENGINEER">Data Engineer</option>
                         <option value="OWNER">Owner</option>
                         <option value="OWNER_READONLY">Owner (Solo lectura)</option>
                       </select>

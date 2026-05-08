@@ -1,11 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 
-export type UserRole = 'ADMIN' | 'OWNER' | 'DEVELOPER' | null;
+export type UserRole = 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER' | null;
 
-// Cache global para evitar múltiples peticiones
 const roleCache = new Map<string, { role: UserRole; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+const CACHE_DURATION = 5 * 60 * 1000;
+
+const normalizeRole = (raw: string | null | undefined): UserRole => {
+  if (!raw) return null;
+  // Legacy mappings: OWNER -> SERVICE_OWNER, DEVELOPER/USER -> DATA_ENGINEER, ADMIN-READONLY -> ADMIN
+  switch (raw) {
+    case 'ADMIN':
+    case 'APP_OWNER':
+    case 'SERVICE_OWNER':
+    case 'DATA_ENGINEER':
+      return raw;
+    case 'OWNER':
+      return 'SERVICE_OWNER';
+    case 'DEVELOPER':
+    case 'USER':
+      return 'DATA_ENGINEER';
+    case 'ADMIN-READONLY':
+      return 'ADMIN';
+    default:
+      return 'DATA_ENGINEER';
+  }
+};
 
 export const useUserRole = () => {
   const { user, sessionData, country, authMethod } = useAuth();
@@ -22,11 +42,7 @@ export const useUserRole = () => {
         fetchingRef.current = true;
 
         if (sessionData && sessionData.role) {
-          // Map legacy roles
-          let role = sessionData.role as string;
-          if (role === 'USER') role = 'DEVELOPER';
-          if (role === 'ADMIN-READONLY') role = 'ADMIN';
-          setUserRole(role as UserRole);
+          setUserRole(normalizeRole(sessionData.role));
           setLoading(false);
           return;
         }
@@ -55,30 +71,21 @@ export const useUserRole = () => {
 
           if (response.ok) {
             const data = await response.json();
-            let role = data.role as string;
-            if (role === 'USER') role = 'DEVELOPER';
-            if (role === 'ADMIN-READONLY') role = 'ADMIN';
-            roleCache.set(cacheKey, { role: role as UserRole, timestamp: Date.now() });
-            setUserRole(role as UserRole);
+            const role = normalizeRole(data.role);
+            roleCache.set(cacheKey, { role, timestamp: Date.now() });
+            setUserRole(role);
           } else {
-            roleCache.set(cacheKey, { role: 'DEVELOPER', timestamp: Date.now() });
-            setUserRole('DEVELOPER');
+            roleCache.set(cacheKey, { role: 'DATA_ENGINEER', timestamp: Date.now() });
+            setUserRole('DATA_ENGINEER');
           }
         } else if (!sessionData) {
           const storedRole = localStorage.getItem('auth_user_role');
-          if (storedRole) {
-            let role = storedRole;
-            if (role === 'USER') role = 'DEVELOPER';
-            if (role === 'ADMIN-READONLY') role = 'ADMIN';
-            roleCache.set(cacheKey, { role: role as UserRole, timestamp: Date.now() });
-            setUserRole(role as UserRole);
-          } else {
-            roleCache.set(cacheKey, { role: 'DEVELOPER', timestamp: Date.now() });
-            setUserRole('DEVELOPER');
-          }
+          const role = normalizeRole(storedRole) || 'DATA_ENGINEER';
+          roleCache.set(cacheKey, { role, timestamp: Date.now() });
+          setUserRole(role);
         }
       } catch {
-        setUserRole('DEVELOPER');
+        setUserRole('DATA_ENGINEER');
       } finally {
         setLoading(false);
         fetchingRef.current = false;
@@ -88,12 +95,17 @@ export const useUserRole = () => {
     fetchUserRole();
   }, [user?.email, sessionData, country, authMethod]);
 
+  const isAppOwner = userRole === 'APP_OWNER';
+  const isServiceOwner = userRole === 'SERVICE_OWNER';
+
   return {
     userRole,
     loading,
     isAdmin: userRole === 'ADMIN',
-    isOwner: userRole === 'OWNER',
-    isDeveloper: userRole === 'DEVELOPER',
-    canCreateProjects: userRole === 'ADMIN' || userRole === 'OWNER',
+    isAppOwner,
+    isServiceOwner,
+    isOwner: isAppOwner || isServiceOwner,
+    isDataEngineer: userRole === 'DATA_ENGINEER',
+    canCreateProjects: userRole === 'ADMIN' || isAppOwner || isServiceOwner,
   };
 };
