@@ -171,11 +171,6 @@ export const SchemaUploadSection = ({
               </span>
             </label>
           </div>
-          {componentType === 'tabla_no_raw' && (
-            <p className="mt-2 text-xs text-gray-500">
-              El archivo en staging será parquet y entrará directo a master (sin fase raw).
-            </p>
-          )}
         </div>
 
         {/* Schema Upload Section */}
