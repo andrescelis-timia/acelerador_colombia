@@ -33,20 +33,21 @@ export const useProjectRole = (projectId: string | null) => {
   }, [projectId, user?.email, country]);
 
   const isReadOnly = projectRole === 'OWNER_READONLY';
+  const isDataEngineer = projectRole === 'DATA_ENGINEER';
 
   return {
     projectRole,
     loading,
     isProjectOwner: projectRole === 'OWNER',
-    isProjectDeveloper: projectRole === 'DEVELOPER',
+    isDataEngineer,
     isReadOnly,
     isProjectMember: projectRole !== null,
     canEditProject: projectRole === 'OWNER',
-    canCreateObjects: projectRole === 'OWNER' || projectRole === 'DEVELOPER',
-    canGenerate: projectRole === 'OWNER' || projectRole === 'DEVELOPER',
+    canCreateObjects: projectRole === 'OWNER' || isDataEngineer,
+    canGenerate: projectRole === 'OWNER' || isDataEngineer,
     canEditObject: (creationUser: string) => {
       if (projectRole === 'OWNER') return true;
-      if (projectRole === 'DEVELOPER' && user?.email === creationUser) return true;
+      if (isDataEngineer && user?.email === creationUser) return true;
       return false;
     },
   };

@@ -22,7 +22,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
     password: '',
     confirmPassword: '',
     country: 'CO',
-    role: 'DEVELOPER',
+    role: 'DATA_ENGINEER',
     authMethod: 'google'
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
@@ -228,7 +228,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
           password: '',
           confirmPassword: '',
           country: 'CO',
-          role: 'DEVELOPER',
+          role: 'DATA_ENGINEER',
           authMethod: 'password'
         });
       } else {
@@ -364,7 +364,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
             <select
               id="create-user-role"
               value={formData.role}
-              onChange={(e) => handleInputChange('role', e.target.value as 'ADMIN' | 'USER')}
+              onChange={(e) => handleInputChange('role', e.target.value as 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER')}
               required
               disabled={isFormDisabled}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-timia-accent disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 ${errors.role
@@ -374,8 +374,9 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               aria-describedby={errors.role ? 'role-error' : undefined}
               aria-invalid={!!errors.role}
             >
-              <option value="DEVELOPER">Developer</option>
-              <option value="OWNER">Owner</option>
+              <option value="DATA_ENGINEER">Data Engineer</option>
+              <option value="APP_OWNER">App Owner</option>
+              <option value="SERVICE_OWNER">Service Owner</option>
               <option value="ADMIN">Administrador</option>
             </select>
             {errors.role && (
