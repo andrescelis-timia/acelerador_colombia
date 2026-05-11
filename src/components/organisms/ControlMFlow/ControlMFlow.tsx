@@ -15,6 +15,16 @@ import {
 } from '@heroicons/react/24/outline';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
+import { getById as getObjectById } from '@/services/Object';
+import type { Periodicity } from '@/services/Object/types';
+import { useAuth } from '@/lib/context/AuthContext';
+
+const PERIODICITY_TO_DATAX: Record<Periodicity, 'diario' | 'semanal' | 'mensual' | 'anual'> = {
+  daily: 'diario',
+  weekly: 'semanal',
+  monthly: 'mensual',
+  annual: 'anual',
+};
 
 interface ControlMFlowProps {
   objectId: string;
@@ -87,6 +97,20 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     annualMonth: 1,
     annualDay: 1
   });
+
+  const { user, country } = useAuth();
+  const [periodicityTouched, setPeriodicityTouched] = useState(false);
+
+  useEffect(() => {
+    if (!objectId || !user?.email || periodicityTouched) return;
+    getObjectById(objectId, user.email, country)
+      .then(obj => {
+        const p = obj?.periodicity as Periodicity | undefined;
+        if (!p) return;
+        setDataxConfig(prev => ({ ...prev, periodicity: PERIODICITY_TO_DATAX[p] }));
+      })
+      .catch(() => {});
+  }, [objectId, user?.email, country, periodicityTouched]);
 
   // Particiones del schema raw (para que el backend derive las variables SENTRY_PARM)
   const [schemaPartitions, setSchemaPartitions] = useState<string[]>([]);
@@ -891,7 +915,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     <label className="block text-xs text-gray-500 mb-1">Periodicidad</label>
                     <select
                       value={dataxConfig.periodicity}
-                      onChange={(e) => setDataxConfig(prev => ({ ...prev, periodicity: e.target.value as DataxConfig['periodicity'] }))}
+                      onChange={(e) => {
+                        setPeriodicityTouched(true);
+                        setDataxConfig(prev => ({ ...prev, periodicity: e.target.value as DataxConfig['periodicity'] }));
+                      }}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                     >
                       <option value="diario">Diario</option>

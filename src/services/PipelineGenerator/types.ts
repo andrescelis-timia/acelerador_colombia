@@ -12,6 +12,7 @@ export interface GenerateKirbyRequest {
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
+  periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
 }
 
 export interface GenerateHammurabiRequest {
@@ -20,6 +21,7 @@ export interface GenerateHammurabiRequest {
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
+  periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
 }
 
 export interface GenerateSmartCleanerRequest {
@@ -28,6 +30,7 @@ export interface GenerateSmartCleanerRequest {
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon';
   include_l1t?: boolean;
+  periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
 }
 
 export interface GenerateControlMRequest {

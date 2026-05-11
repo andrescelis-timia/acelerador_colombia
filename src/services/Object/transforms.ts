@@ -23,5 +23,6 @@ export const transformToUpdateData = (object: ObjectResponse): ObjectUpdateWithI
   status: object.status,
   url_document: object.url_document,
   update_user: object.update_user || '',
-  flag_l1t: object.flag_l1t
-}); 
+  flag_l1t: object.flag_l1t,
+  periodicity: object.periodicity,
+});

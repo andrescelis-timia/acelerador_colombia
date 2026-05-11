@@ -48,8 +48,6 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   const [dictionaryMode, setDictionaryMode] = useState<'full' | 'lite_co'>(
     country === 'CO' ? 'lite_co' : 'full'
   );
-  // Estado para periodicidad (solo modo lite)
-  const [periodicity, setPeriodicity] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   // Estado para loading del modo lite
   const [isLiteLoading, setIsLiteLoading] = useState(false);
   // Estado para guardar URL del sheet generado en modo lite
@@ -636,10 +634,15 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
 
     setIsLiteLoading(true);
 
+    // El AI usa vocabulario 'yearly'; el resto del sistema 'annual'.
+    const objectPeriodicity = (objectData?.periodicity ?? 'monthly') as 'daily' | 'weekly' | 'monthly' | 'annual';
+    const aiPeriodicity: 'daily' | 'weekly' | 'monthly' | 'yearly' =
+      objectPeriodicity === 'annual' ? 'yearly' : objectPeriodicity;
+
     try {
       const response = await generateDictionaryLiteCo({
         object_id: objectId,
-        periodicity: periodicity
+        periodicity: aiPeriodicity
       }, user.email, country);
 
       // Guardar URL del sheet para habilitar el botón de ver
@@ -729,25 +732,6 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                         tooltip: !liteSheetUrl ? 'Genera el diccionario primero' : 'Ver en Google Sheets'
                       }]}
                     />
-                  </div>
-                  <div className="flex-1 px-4 flex flex-col items-center justify-center gap-1">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wide">Periodicidad</span>
-                    <div className="relative">
-                      <select
-                        value={periodicity}
-                        onChange={(e) => setPeriodicity(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-                        disabled={isLiteLoading}
-                        className="w-32 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md pl-3 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer appearance-none hover:border-gray-400 transition-colors"
-                      >
-                        <option value="daily">Diario</option>
-                        <option value="weekly">Semanal</option>
-                        <option value="monthly">Mensual</option>
-                        <option value="yearly">Anual</option>
-                      </select>
-                      <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
                   </div>
                 </div>
               </div>
