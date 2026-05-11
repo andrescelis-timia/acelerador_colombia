@@ -2,36 +2,43 @@
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { PasswordLoginForm } from '@/components/organisms/PasswordLoginForm';
 import { ResponseUserDto } from '@/services/User/types';
 
 function LoginContent() {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, isAuthenticated } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [authMethod, setAuthMethod] = useState<'google' | 'password'>('google');
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+
+  // signInWithGoogle solo abre el popup; el cookie 'session' y el state
+  // se setean async en onAuthStateChanged. Empujar antes mete race con el
+  // middleware.
+  useEffect(() => {
+    if (pendingRedirect && isAuthenticated) {
+      router.replace(callbackUrl);
+    }
+  }, [pendingRedirect, isAuthenticated, callbackUrl, router]);
 
   const handleGoogleLogin = async () => {
     try {
       setError(null);
       setIsLoading(true);
       await signInWithGoogle();
-      router.push(callbackUrl);
+      setPendingRedirect(true);
     } catch (error) {
       setError((error as Error).message || 'Error al iniciar sesión');
-    } finally {
       setIsLoading(false);
     }
   };
 
-  const handlePasswordLoginSuccess = (token: string, user: ResponseUserDto) => {
-    console.log('Password login successful:', { token, user });
-    // The AuthContext should already be updated by the PasswordLoginForm
-    router.push(callbackUrl);
+  const handlePasswordLoginSuccess = (_token: string, _user: ResponseUserDto) => {
+    setPendingRedirect(true);
   };
 
   const handlePasswordLoginError = (errorMessage: string) => {
