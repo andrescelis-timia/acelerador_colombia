@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useState, Suspense, useEffect } from 'react';
 import { PasswordLoginForm } from '@/components/organisms/PasswordLoginForm';
-import { ResponseUserDto } from '@/services/User/types';
 
 function LoginContent() {
   const { signInWithGoogle, isAuthenticated } = useAuth();
@@ -37,7 +36,7 @@ function LoginContent() {
     }
   };
 
-  const handlePasswordLoginSuccess = (_token: string, _user: ResponseUserDto) => {
+  const handlePasswordLoginSuccess = () => {
     setPendingRedirect(true);
   };
 
