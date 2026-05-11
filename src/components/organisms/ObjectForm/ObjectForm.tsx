@@ -21,7 +21,21 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
     url_document: '',
     status: 'pending',
     creation_user: user?.email || '',
-    flag_l1t: false
+    flag_l1t: false,
+    periodicity: 'daily'
+  };
+
+  const periodicityField: FormFieldConfig = {
+    name: 'periodicity',
+    label: 'Periodicidad',
+    type: 'select',
+    options: [
+      { value: 'daily', label: 'Diaria' },
+      { value: 'weekly', label: 'Semanal' },
+      { value: 'monthly', label: 'Mensual' },
+      { value: 'annual', label: 'Anual' },
+    ],
+    helperText: 'Define la retencion en SmartCleaner, la etiqueta en Hammurabi y el scheduling sugerido en Control-M.'
   };
 
   const isEditing = initialData && 'id_object' in initialData;
@@ -65,12 +79,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
       inputMode: 'url'
     },
-    {
-      name: 'flag_l1t',
-      label: '¿Tiene L1T?',
-      type: 'checkbox',
-      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
-    }
+    periodicityField
   ] : [
     {
       name: 'name',
@@ -89,12 +98,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
       inputMode: 'url'
     },
-    {
-      name: 'flag_l1t',
-      label: '¿Tiene L1T?',
-      type: 'checkbox',
-      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
-    }
+    periodicityField
   ];
 
   return (

@@ -10,6 +10,9 @@ import { usePipelineGeneratorService, GeneratedArtifactsResponse } from '@/servi
 import { CubeIcon, ShieldCheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { SampleAnalysis } from '@/components/organisms/SampleAnalysis';
+import { getById as getObjectById } from '@/services/Object';
+import type { Periodicity } from '@/services/Object/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
@@ -19,8 +22,17 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
   const [activeTab, setActiveTab] = useState<string>('kirby');
   const [savedArtifacts, setSavedArtifacts] = useState<GeneratedArtifactsResponse['artifacts'] | null>(null);
   const [loadingArtifacts, setLoadingArtifacts] = useState(false);
+  const [periodicity, setPeriodicity] = useState<Periodicity | undefined>(undefined);
 
   const pipelineService = usePipelineGeneratorService();
+  const { user, country } = useAuth();
+
+  useEffect(() => {
+    if (!objectId || !user?.email) return;
+    getObjectById(objectId, user.email, country)
+      .then(obj => setPeriodicity(obj?.periodicity as Periodicity | undefined))
+      .catch(() => {});
+  }, [objectId, user?.email, country]);
 
   // Cargar artefactos guardados cuando hay objectId
   useEffect(() => {
@@ -171,6 +183,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
                     initialData={savedArtifacts?.hammurabi}
+                    periodicity={periodicity}
                   />
                 </div>
                 <div className={activeTab === 'smartcleaner' ? '' : 'hidden'}>
@@ -182,6 +195,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
                     initialData={savedArtifacts?.smartcleaner}
+                    periodicity={periodicity}
                   />
                 </div>
               </>

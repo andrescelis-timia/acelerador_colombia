@@ -25,7 +25,8 @@ export const SmartCleanerGeneratorPanel = ({
   componentType,
   canGenerate,
   onGenerationComplete,
-  initialData
+  initialData,
+  periodicity,
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -85,7 +86,8 @@ export const SmartCleanerGeneratorPanel = ({
         raw_schema_data: rawSchemaData,
         master_schema_data: masterSchemaData,
         component_type: componentType,
-        include_l1t: true
+        include_l1t: true,
+        periodicity,
       };
 
       const response = await pipelineGeneratorService.generateSmartCleaner(requestData);

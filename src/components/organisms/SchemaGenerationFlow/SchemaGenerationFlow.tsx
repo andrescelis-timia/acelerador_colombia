@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { ProgressDialog } from '@/components/organisms/ProgressDialog';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
 import { API_CONFIG } from '@/lib/api/config';
+import { getById as getObjectById, updateData as updateObjectData } from '@/services/Object';
+import type { ObjectUpdateWithId } from '@/services/Object/types';
 import {SchemaField, SchemaGenerationFlowProps, GenerationStatus, SchemaGenerationResponse } from './types';
 
 export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
@@ -23,6 +25,35 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
     error: null,
     generatedSchemas: null
   });
+  const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
+  const [flagL1t, setFlagL1t] = useState(false);
+  const [savingFlag, setSavingFlag] = useState(false);
+
+  useEffect(() => {
+    if (!objectId || !user?.email) return;
+    getObjectById(objectId, user.email, country)
+      .then(obj => {
+        if (!obj) return;
+        setObjectData(obj);
+        setFlagL1t(!!obj.flag_l1t);
+      })
+      .catch(() => {});
+  }, [objectId, user?.email, country]);
+
+  const handleToggleL1T = useCallback(async (checked: boolean) => {
+    if (!user?.email || !objectData) return;
+    setFlagL1t(checked);
+    setSavingFlag(true);
+    try {
+      await updateObjectData({ ...objectData, flag_l1t: checked } as ObjectUpdateWithId, user.email, country);
+      setObjectData({ ...objectData, flag_l1t: checked });
+    } catch {
+      // revertir el toggle si falla la persistencia
+      setFlagL1t(!checked);
+    } finally {
+      setSavingFlag(false);
+    }
+  }, [user?.email, country, objectData]);
 
   const generateSchemas = useCallback(async () => {
     if (!user?.email) {
@@ -217,7 +248,21 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
             }
           </p>
         </div>
-        
+
+        <div className="flex items-center justify-center mb-5">
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={flagL1t}
+              onChange={(e) => handleToggleL1T(e.target.checked)}
+              disabled={savingFlag || status.isGenerating}
+              className="h-4 w-4 text-timia-accent rounded border-gray-300 focus:ring-timia-accent/50"
+            />
+            <span>¿Tiene L1T? (objeto con identificativos personales)</span>
+            {savingFlag && <span className="text-xs text-gray-400">guardando…</span>}
+          </label>
+        </div>
+
         <div className="flex justify-center">
             <button
               onClick={generateSchemas}
