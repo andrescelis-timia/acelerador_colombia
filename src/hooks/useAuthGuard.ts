@@ -3,9 +3,9 @@ import { useAuth } from '@/lib/context/AuthContext';
 export const useAuthGuard = () => {
   const { user, loading, loggingOut } = useAuth();
 
+  // loggingOut no se traduce a authState: el LogoutOverlay cubre la pantalla.
   const getAuthState = () => {
     if (loading) return 'loading';
-    if (loggingOut) return 'loggingOut';
     if (!user?.email) return 'unauthenticated';
     return 'authenticated';
   };
