@@ -2,10 +2,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getUserByEmail } from '@/services/User';
 import { ResponseUserDto } from '@/services/User/types';
 import { ErrorModal } from '@/components/molecules/ErrorModal';
+import { LogoutOverlay } from '@/components/molecules/LogoutOverlay';
 import { 
   tokenStorage, 
   isTokenExpired, 
@@ -99,6 +100,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -459,7 +461,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authMethod, refreshAuthToken, initializeSessionFromToken]);
 
   const handleLogout = useCallback(() => {
-    // Clear all authentication state (but keep loggingOut true for now)
+    // Cookie/storage primero: si no, el middleware rebota la ruta.
+    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    localStorage.removeItem('selectedCountry');
+    localStorage.removeItem('auth_user_email');
+    localStorage.removeItem('auth_user_country');
+    localStorage.removeItem('auth_user_role');
+    tokenStorage.remove();
+
+    // loggingOut se apaga en el effect de pathname cuando /login monta;
+    // si lo apagaramos aqui el overlay se quitaria antes de que termine
+    // router.replace y se veria la pagina original un frame.
+    router.replace('/login');
     setUser(null);
     setCountries([]);
     setCountry('');
@@ -467,23 +480,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     setAuthMethod(null);
     setSessionData(null);
-    
-    // Clear all storage
-    localStorage.removeItem('selectedCountry');
-    localStorage.removeItem('auth_user_email');
-    localStorage.removeItem('auth_user_country');
-    localStorage.removeItem('auth_user_role');
-    tokenStorage.remove();
-    
-    // Clear session cookie
-    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-    
-    // Add a small delay to show "Cerrando sesión..." message, then redirect
-    setTimeout(() => {
-      setLoggingOut(false);
-      router.push('/login');
-    }, 1000); // 1 second delay
   }, [router]);
+
+  useEffect(() => {
+    if (loggingOut && pathname === '/login') {
+      setLoggingOut(false);
+    }
+  }, [loggingOut, pathname]);
 
   // Save session state whenever authentication state changes
   useEffect(() => {
@@ -569,7 +572,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionData
     }}>
       {children}
-      <ErrorModal 
+      <LogoutOverlay visible={loggingOut} />
+      <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage(null)}
       />

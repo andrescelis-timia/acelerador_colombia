@@ -1,4 +1,5 @@
 import { SchemaField, GeneratorType, GeneratedArtifact } from '@/services/PipelineGenerator/types';
+import type { Periodicity } from '@/services/Object/types';
 
 // Re-exportar tipos centralizados para uso en componentes
 export type { SchemaField, GeneratorType };
@@ -17,6 +18,7 @@ export interface GeneratorPanelProps {
   canGenerate: boolean;
   onGenerationComplete?: () => void;
   initialData?: GeneratedArtifact | null;
+  periodicity?: Periodicity;
 }
 
 export interface SchemaUploadSectionProps {

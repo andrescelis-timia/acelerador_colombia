@@ -22,7 +22,8 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
     status: 'pending',
     creation_user: user?.email || '',
     flag_l1t: false,
-    component_type: 'tabla'
+    component_type: 'tabla',
+    periodicity: 'daily'
   };
 
   const componentTypeField: FormFieldConfig = {
@@ -34,7 +35,20 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       { value: 'tablon', label: 'Tablón (Solo Master)' },
       { value: 'tabla_no_raw', label: 'Tabla (Staging - Master)' },
     ],
-    helperText: 'Determina las fases que generará el Pipeline. Para "Staging - Master" el archivo en staging es parquet.'
+    helperText: 'Determina las fases que generará el Pipeline.'
+  };
+
+  const periodicityField: FormFieldConfig = {
+    name: 'periodicity',
+    label: 'Periodicidad',
+    type: 'select',
+    options: [
+      { value: 'daily', label: 'Diaria' },
+      { value: 'weekly', label: 'Semanal' },
+      { value: 'monthly', label: 'Mensual' },
+      { value: 'annual', label: 'Anual' },
+    ],
+    helperText: 'Define la retencion en SmartCleaner, la etiqueta en Hammurabi y el scheduling sugerido en Control-M.'
   };
 
   const isEditing = initialData && 'id_object' in initialData;
@@ -78,12 +92,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
       inputMode: 'url'
     },
-    {
-      name: 'flag_l1t',
-      label: '¿Tiene L1T?',
-      type: 'checkbox',
-      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
-    }
+    periodicityField
   ] : [
     {
       name: 'name',
@@ -102,13 +111,8 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
       inputMode: 'url'
     },
-    {
-      name: 'flag_l1t',
-      label: '¿Tiene L1T?',
-      type: 'checkbox',
-      helperText: 'La marca L1T aplica a objetos que contengan identificativos personales (IP)'
-    },
-    componentTypeField
+    componentTypeField,
+    periodicityField
   ];
 
   return (
@@ -148,4 +152,4 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       mode={isEditing ? 'edit' : 'create'}
     />
   );
-}; 
+};
