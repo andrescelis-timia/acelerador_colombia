@@ -22,20 +22,7 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
     status: 'pending',
     creation_user: user?.email || '',
     flag_l1t: false,
-    component_type: 'tabla',
     periodicity: 'daily'
-  };
-
-  const componentTypeField: FormFieldConfig = {
-    name: 'component_type',
-    label: 'Tipo de componente',
-    type: 'select',
-    options: [
-      { value: 'tabla', label: 'Tabla (Raw + Master)' },
-      { value: 'tablon', label: 'Tablón (Solo Master)' },
-      { value: 'tabla_no_raw', label: 'Tabla (Staging - Master)' },
-    ],
-    helperText: 'Determina las fases que generará el Pipeline.'
   };
 
   const periodicityField: FormFieldConfig = {
@@ -111,7 +98,6 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       errorMessage: 'Por favor ingrese una URL válida (debe comenzar con http:// o https://)',
       inputMode: 'url'
     },
-    componentTypeField,
     periodicityField
   ];
 
