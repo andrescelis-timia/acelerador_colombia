@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { BoxFlowCard } from '@/components/molecules/BoxFlowCard';
 import { BoxFlowControls } from '@/components/molecules/BoxFlowControls';
 import { PopupLinks } from '@/components/molecules/PopupLinks';
@@ -863,9 +864,10 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
         />
       )}
 
-      {/* Modal simple de carga para modo lite */}
-      {isLiteLoading && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      {/* Modal simple de carga para modo lite. Portal a body para escapar
+          del contexto de apilamiento creado por el motion.div padre. */}
+      {isLiteLoading && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
             <svg className="animate-spin h-8 w-8 text-timia-accent" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -873,7 +875,8 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             </svg>
             <span className="text-sm font-medium text-gray-700">Generando diccionario...</span>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <ErrorModal
