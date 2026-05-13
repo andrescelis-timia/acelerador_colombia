@@ -66,6 +66,7 @@ export interface AnalyzeSequencesResponse {
     T: number;
     C: number;
     D: number;
+    W: number;
   };
   folder_info: Record<string, {
     folderName: string;
@@ -97,10 +98,10 @@ export interface DataxConfig {
   timezone: string;
   isCyclic: boolean;
   intervalHours?: number;
-  monthDay?: number;
+  monthDay?: string; // CSV: "1" o "1,15,30"
   weekDay?: number;
   businessDayDirection?: 'D' | 'L';
-  businessDayNumber?: number;
+  businessDayNumber?: string; // CSV: "1" o "1,2,3"
   annualMonth?: number;
   annualDay?: number;
 }
