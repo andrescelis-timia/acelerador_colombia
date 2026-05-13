@@ -138,4 +138,4 @@ export const ObjectForm: React.FC<ObjectFormProps> = ({ isOpen, onClose, project
       mode={isEditing ? 'edit' : 'create'}
     />
   );
-}; 
+};

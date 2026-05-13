@@ -20,6 +20,7 @@ export interface PipelineStatus {
   controlm: PipelineStageState;
 }
 
+export type ComponentType = 'tabla' | 'tablon' | 'tabla_no_raw';
 export type Periodicity = 'daily' | 'weekly' | 'monthly' | 'annual';
 
 export interface ObjectCreate extends Record<string, unknown> {
@@ -29,6 +30,7 @@ export interface ObjectCreate extends Record<string, unknown> {
   id_project: string;
   creation_user: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
   periodicity?: Periodicity;
 }
 
@@ -39,6 +41,7 @@ export interface ObjectUpdate {
   url_document: string;
   update_user: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
   periodicity?: Periodicity;
 }
 
@@ -60,6 +63,7 @@ export interface ObjectResponse {
   update_date?: string;
   update_user?: string;
   flag_l1t: boolean;
+  component_type?: ComponentType;
   periodicity?: Periodicity;
   active: boolean;
   project_name: string;
@@ -76,4 +80,4 @@ export interface ObjectTableData {
   creation_user: string;
   project_name: string;
   pipeline_status?: PipelineStatus;
-} 
+}

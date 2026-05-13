@@ -17,7 +17,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps) => {
   const [rawSchema, setRawSchema] = useState<File | null>(null);
   const [masterSchema, setMasterSchema] = useState<File | null>(null);
-  const [componentType, setComponentType] = useState<'tabla' | 'tablon'>('tabla');
+  const [componentType, setComponentType] = useState<'tabla' | 'tablon' | 'tabla_no_raw'>('tabla');
   const [completedGenerators, setCompletedGenerators] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('kirby');
   const [savedArtifacts, setSavedArtifacts] = useState<GeneratedArtifactsResponse['artifacts'] | null>(null);
@@ -88,9 +88,9 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
   const canGenerate = () => {
     if (componentType === 'tabla') {
       return rawSchema !== null && masterSchema !== null;
-    } else {
-      return masterSchema !== null;
     }
+    // tablon y tabla_no_raw: solo requieren master schema
+    return masterSchema !== null;
   };
 
   const handleGeneratorComplete = async (generatorId: string) => {
