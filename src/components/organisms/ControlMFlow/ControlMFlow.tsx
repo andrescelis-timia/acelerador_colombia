@@ -54,13 +54,24 @@ interface DataxConfig {
   timezone: string;
   isCyclic: boolean;
   intervalHours: number;
-  monthDay: number;
+  monthDay: string; // CSV: "1" o "1,15,30"
   weekDay: number;
   businessDayDirection: 'D' | 'L';
-  businessDayNumber: number;
+  businessDayNumber: string; // CSV: "1" o "1,2,3"
   annualMonth: number;
   annualDay: number;
 }
+
+const DAYS_CSV_PATTERN = /^\s*\d{1,2}\s*(,\s*\d{1,2}\s*)*$/;
+const isValidDaysCsv = (value: string): boolean => {
+  if (!DAYS_CSV_PATTERN.test(value)) return false;
+  return value.split(',').every(d => {
+    const n = parseInt(d.trim(), 10);
+    return n >= 1 && n <= 31;
+  });
+};
+const normalizeDaysCsv = (value: string): string =>
+  value.split(',').map(d => d.trim()).filter(Boolean).join(',');
 
 const TEMPORALIDAD_CODES: Record<string, string> = {
   'diario': '0',
@@ -86,14 +97,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [dataxConfig, setDataxConfig] = useState<DataxConfig>({
     periodicity: 'diario',
     periodicityType: 'calendario',
-    startTime: '02:00',
-    timezone: 'GMT-5',
+    startTime: '',
+    timezone: '',
     isCyclic: false,
-    intervalHours: 4,
-    monthDay: 1,
+    intervalHours: 6,
+    monthDay: '1',
     weekDay: 6,
     businessDayDirection: 'D',
-    businessDayNumber: 1,
+    businessDayNumber: '1',
     annualMonth: 1,
     annualDay: 1
   });
@@ -120,7 +131,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [existingT02Xml, setExistingT02Xml] = useState<string | null>(null);
   const [existingT04FileName, setExistingT04FileName] = useState<string>('');
   const [existingT02FileName, setExistingT02FileName] = useState<string>('');
-  const [nextSequences, setNextSequences] = useState<{ T: number; C: number; D: number } | null>(null);
+  const [nextSequences, setNextSequences] = useState<{ T: number; C: number; D: number; W: number } | null>(null);
   const [isAnalyzingXml, setIsAnalyzingXml] = useState(false);
 
   // Estados de descarga
@@ -505,7 +516,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
     // 1. Job iniciador: Datax o FileWatcher
     if (triggerType === 'filewatcher') {
-      const wSequence = nextSequences?.T ?? 1;
+      const wSequence = nextSequences?.W ?? 1;
       jobs.push({
         jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
@@ -714,10 +725,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           timezone: dataxConfig.timezone,
           isCyclic: dataxConfig.isCyclic,
           intervalHours: dataxConfig.intervalHours,
-          monthDay: dataxConfig.monthDay,
+          monthDay: normalizeDaysCsv(dataxConfig.monthDay),
           weekDay: dataxConfig.weekDay,
           businessDayDirection: dataxConfig.businessDayDirection,
-          businessDayNumber: dataxConfig.businessDayNumber,
+          businessDayNumber: normalizeDaysCsv(dataxConfig.businessDayNumber),
           annualMonth: dataxConfig.annualMonth,
           annualDay: dataxConfig.annualDay
         },
@@ -910,6 +921,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     />
                   </div>
                 )}
+                <div className="space-y-2">
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">
                     <label className="block text-xs text-gray-500 mb-1">Periodicidad</label>
@@ -928,7 +940,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     </select>
                   </div>
                   {(dataxConfig.periodicity === 'diario' || dataxConfig.periodicity === 'mensual') && (
-                    <div className="w-24">
+                    <div className="w-28">
                       <label className="block text-xs text-gray-500 mb-1">Tipo</label>
                       <select
                         value={dataxConfig.periodicityType}
@@ -941,15 +953,17 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     </div>
                   )}
                   {dataxConfig.periodicity === 'mensual' && dataxConfig.periodicityType === 'calendario' && (
-                    <div className="w-16">
-                      <label className="block text-xs text-gray-500 mb-1">Día</label>
+                    <div className="w-28">
+                      <label className="block text-xs text-gray-500 mb-1">Día(s)</label>
                       <input
-                        type="number"
-                        min="1"
-                        max="31"
+                        type="text"
                         value={dataxConfig.monthDay}
-                        onChange={(e) => setDataxConfig(prev => ({ ...prev, monthDay: Math.min(31, Math.max(1, parseInt(e.target.value) || 1)) }))}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center"
+                        onChange={(e) => setDataxConfig(prev => ({ ...prev, monthDay: e.target.value }))}
+                        placeholder="1 o 1,15,30"
+                        title="Uno o varios días (1-31) separados por coma"
+                        className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center ${
+                          isValidDaysCsv(dataxConfig.monthDay) ? 'border-gray-300' : 'border-red-300 bg-red-50'
+                        }`}
                       />
                     </div>
                   )}
@@ -966,15 +980,17 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           <option value="L">Fin mes</option>
                         </select>
                       </div>
-                      <div className="w-16">
-                        <label className="block text-xs text-gray-500 mb-1">Día hábil</label>
+                      <div className="w-28">
+                        <label className="block text-xs text-gray-500 mb-1">Día(s) hábil</label>
                         <input
-                          type="number"
-                          min="1"
-                          max="31"
+                          type="text"
                           value={dataxConfig.businessDayNumber}
-                          onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayNumber: Math.min(31, Math.max(1, parseInt(e.target.value) || 1)) }))}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center"
+                          onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayNumber: e.target.value }))}
+                          placeholder="1 o 1,2,3"
+                          title="Uno o varios números (1-31) separados por coma. Se prefijan con D/L."
+                          className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center ${
+                            isValidDaysCsv(dataxConfig.businessDayNumber) ? 'border-gray-300' : 'border-red-300 bg-red-50'
+                          }`}
                         />
                       </div>
                     </>
@@ -1033,17 +1049,41 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       </div>
                     </>
                   )}
-                  <div className="w-24">
-                    <label className="block text-xs text-gray-500 mb-1">Hora</label>
-                    <input
-                      type="time"
-                      value={dataxConfig.startTime}
-                      onChange={(e) => setDataxConfig(prev => ({ ...prev, startTime: e.target.value }))}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
-                    />
+                </div>
+                <div className="flex gap-2 items-center flex-wrap pt-2 border-t border-gray-100">
+                  <span className="text-[11px] uppercase tracking-wide text-gray-400 font-medium mr-1">Opciones</span>
+                  <div className={`h-8 flex items-center gap-2 px-2.5 border rounded-full transition-colors ${
+                    dataxConfig.startTime !== '' ? 'border-timia-accent/40 bg-timia-accent/5' : 'border-gray-200 bg-white'
+                  }`}>
+                    <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dataxConfig.startTime !== ''}
+                        onChange={(e) => setDataxConfig(prev => ({ ...prev, startTime: e.target.checked ? '02:00' : '' }))}
+                        className="h-3.5 w-3.5 text-timia-accent border-gray-300 rounded focus:ring-timia-accent/50"
+                      />
+                      Horario
+                      <InformationCircleIcon
+                        className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600"
+                        title="Si no se marca, se toma la hora del servidor (Mx: 7am, Co: 8am)"
+                      />
+                    </label>
+                    {dataxConfig.startTime !== '' && (
+                      <>
+                        <span className="text-gray-300">|</span>
+                        <input
+                          type="time"
+                          value={dataxConfig.startTime}
+                          onChange={(e) => setDataxConfig(prev => ({ ...prev, startTime: e.target.value }))}
+                          className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white"
+                        />
+                      </>
+                    )}
                   </div>
-                  <div className="h-8 flex items-center gap-2 px-2 border border-gray-200 rounded bg-gray-50">
-                    <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                  <div className={`h-8 flex items-center gap-2 px-2.5 border rounded-full transition-colors ${
+                    dataxConfig.isCyclic ? 'border-timia-accent/40 bg-timia-accent/5' : 'border-gray-200 bg-white'
+                  }`}>
+                    <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={dataxConfig.isCyclic}
@@ -1062,13 +1102,27 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                             max="24"
                             value={dataxConfig.intervalHours}
                             onChange={(e) => setDataxConfig(prev => ({ ...prev, intervalHours: parseInt(e.target.value) }))}
-                            className="w-10 px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 text-center"
+                            className="w-10 px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 text-center bg-white"
                           />
                           <span className="text-xs text-gray-500">hrs</span>
                         </div>
                       </>
                     )}
                   </div>
+                  <div className={`h-8 flex items-center px-2.5 border rounded-full transition-colors ${
+                    dataxConfig.timezone === 'GMT-5' ? 'border-timia-accent/40 bg-timia-accent/5' : 'border-gray-200 bg-white'
+                  }`}>
+                    <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer" title='Si está marcado, el XML incluye TIMEZONE="EST"'>
+                      <input
+                        type="checkbox"
+                        checked={dataxConfig.timezone === 'GMT-5'}
+                        onChange={(e) => setDataxConfig(prev => ({ ...prev, timezone: e.target.checked ? 'GMT-5' : '' }))}
+                        className="h-3.5 w-3.5 text-timia-accent border-gray-300 rounded focus:ring-timia-accent/50"
+                      />
+                      Hora Colombia
+                    </label>
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -1109,7 +1163,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <select
                         value={job.generator}
                         onChange={(e) => updateJob(index, 'generator', e.target.value)}
-                        className="w-20 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
+                        className="w-28 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
                       >
                         <option value="kirby">Kirby</option>
                         <option value="hammurabi">Hammurabi</option>
@@ -1118,11 +1172,11 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <select
                         value={job.phase}
                         onChange={(e) => updateJob(index, 'phase', e.target.value)}
-                        className="w-16 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
+                        className="w-20 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
                       >
-                        <option value="staging">Stg</option>
-                        <option value="raw">Raw</option>
-                        <option value="master">Mst</option>
+                        <option value="staging">STG</option>
+                        <option value="raw">RAW</option>
+                        <option value="master">MASTER</option>
                         <option value="master-l1t">L1T</option>
                       </select>
                       <button
@@ -1149,7 +1203,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               {isAnalyzingXml && <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-gray-400" />}
               {nextSequences && !isAnalyzingXml && (
                 <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                  Seq: T={nextSequences.T}, C={nextSequences.C}, D={nextSequences.D}
+                  Seq: T={nextSequences.T}, C={nextSequences.C}, D={nextSequences.D}, W={nextSequences.W}
                 </span>
               )}
             </div>
