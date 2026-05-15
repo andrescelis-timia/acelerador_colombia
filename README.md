@@ -1,60 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BBVA Ingesta App
 
-## Getting Started
+Frontend Next.js 15 (App Router) que consume `bbva-ingesta-api`. Es la interfaz para gestionar proyectos, objetos, diccionarios, generar artefactos del pipeline (Kirby, Hammurabi, SmartCleaner, Control-M) y disparar despliegues a Bitbucket.
 
-First, run the development server:
+---
 
-## Configure backend project
-- bbva-ingesta-api
+## Stack
 
-## Configure firebase project
-### Create project and add web app in firebase if not exist
-- https://console.firebase.google.com/
-### Enable authentication for Google
-- https://console.firebase.google.com/project/<projectId>/authentication
+- **Next.js 15.5** con App Router y Turbopack en dev.
+- **React 19** + **TypeScript**.
+- **TailwindCSS** para estilos; sigue tokens `timia-*` (tema corporativo).
+- **Framer Motion** para transiciones; **Headless UI** + **Heroicons** para componentes.
+- **Firebase Auth** (Google OAuth + email/password) — autenticación de usuarios.
+- **NextAuth** para gestión de sesión en Next.
 
-### Set environment variables file .env.local
-- NEXT_PUBLIC_FIREBASE_API_KEY=apiKey
-- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=projectId.firebaseapp.com
-- NEXT_PUBLIC_FIREBASE_PROJECT_ID=projectId
-- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=projectId.firebasestorage.app
-- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=messagingSenderId
-- NEXT_PUBLIC_FIREBASE_APP_ID=appId
-- NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=measurementId
+---
 
-## install dependencies
-```bash
-npm install
+## Estructura del repo
+
+```
+src/
+├── app/                  # Rutas (App Router): /, /login, /project, /object, /object-detail/[id], /admin
+├── components/
+│   ├── atoms/            # Botones, inputs, etc.
+│   ├── molecules/        # ErrorModal, ProgressDialog, AuthStateDisplay, LogoutOverlay…
+│   └── organisms/        # Bloques grandes: ObjectForm, PipelineGenerator, ControlMFlow,
+│                         #                  DataGovernmentFlow, SchemaGenerationFlow, DeployADA…
+├── hooks/                # useAuthGuard, useUserRole, useProjectRole
+├── lib/
+│   ├── api/              # Cliente HTTP base + config
+│   ├── auth/             # Helpers JWT y Firebase
+│   └── context/          # AuthContext
+├── services/             # Una carpeta por dominio (Object, Project, Dictionary,
+│                         # PipelineGenerator, ProjectMember, User…) — types + api calls
+└── middleware.ts         # Redirige a /login sin sesión
 ```
 
-## run local
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Organismos clave
+
+| Organismo | Responsabilidad |
+|---|---|
+| `ObjectForm` | Crear / editar objeto (nombre, URL del pre-diccionario, periodicidad) |
+| `DataGovernmentFlow` | Genera diccionario via servicio IA (Nebula `lite_co` o DATUM) |
+| `SchemaGenerationFlow` | Llama a POST `/schemas` con opción de URL externa, persiste L1T |
+| `PipelineGenerator` | Sube schemas, decide `component_type` (tabla / tablón / tabla_no_raw), genera Kirby/Hammurabi/SmartCleaner |
+| `ControlMFlow` | Configura Datax / FileWatcher, genera mallas T04/T02 (modo nuevo o aditivo) |
+| `DeployADA` | Dispara PR automático a Bitbucket con los artefactos generados |
+
+---
+
+## Requisitos
+
+- **Node.js 20+** y npm.
+- Backend (`bbva-ingesta-api`) corriendo en `http://localhost:8000` (ver repo hermano).
+- Proyecto Firebase con autenticación Google habilitada.
+
+### `.env.local` necesario
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<projectId>.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=<projectId>.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Crea/configura el proyecto en https://console.firebase.google.com/ y habilita Google como método de autenticación.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Arranque rápido
 
-## Learn More
+```bash
+npm install        # instalar dependencias
+npm run dev        # arrancar dev server (turbopack)
+```
 
-To learn more about Next.js, take a look at the following resources:
+Abre [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Otros scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build      # build de producción
+npm run start      # servir el build
+npm run lint       # ESLint
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Convenciones del repo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Hexagonal en el frontend**: cada dominio en `services/<Domain>/` con sus `types.ts`, `transforms.ts`, `index.ts`. Los organismos NO llaman a `fetch` directo — siempre vía service.
+- **Sin backwards-compat shims**: si un campo se renombra, se cambia en todos lados; nada de aliases temporales.
+- **Modal stacking**: para modales sobre `framer-motion`, usar `createPortal(..., document.body)` para escapar del stacking context.
+- **Tokens de color**: `timia-accent`, `timia-accent-hover` para acciones primarias.
+
+---
+
+## Autenticación y roles
+
+- Header `X-User` y `X-Country` se inyectan en cada request desde `AuthContext`.
+- Acceso a `/admin` controlado por `useUserRole().isAdmin`.
+- Permisos por proyecto controlados por `useProjectRole(projectId)` — expone `isReadOnly`, `canGenerate`, `canEditProject`, `canCreateObjects`, `canEditObject(creatorEmail)`.
+- El detalle del modelo RBAC vive en la doc transversal del workspace (`docs/1_operacion_soporte/`).
+
+---
+
+## Repos hermanos
+
+- `bbva-ingesta-api` — Backend principal (FastAPI)
+- `bbva-ingesta-api-ai` — Servicio de IA (Anthropic + Qdrant)
