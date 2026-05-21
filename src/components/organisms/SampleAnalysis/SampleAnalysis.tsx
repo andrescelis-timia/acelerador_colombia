@@ -86,9 +86,14 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
       if (objectId) formData.append('object_id', objectId);
       const response = await fetch(`${API_URL}/pipeline-generator/sample/analyze`, {
         method: 'POST',
+        redirect: 'manual',
         headers: { 'X-User': user.email, 'X-Country': country || 'CO' },
         body: formData,
       });
+      if (response.type === 'opaqueredirect') {
+        setError('Bloqueado por la política de seguridad de BBVA (Zscaler DLP). El archivo coincide con un patrón sensible (p. ej. número de cuenta colombiana). Anonimiza los valores o prueba desde fuera de la red corporativa.');
+        return;
+      }
       const data: SampleAnalysisResult = await response.json();
       if (!response.ok) {
         setError((data as { detail?: string }).detail || 'Error al analizar');
