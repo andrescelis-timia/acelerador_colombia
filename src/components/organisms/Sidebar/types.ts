@@ -13,5 +13,7 @@ export interface SidebarProps {
     icon: React.ComponentType<{ className?: string }>;
     label: string;
     href: string;
+    /** Rutas adicionales que tambien activan este item (prefijos). Ej: '/object' acepta '/object-detail' */
+    matchPrefixes?: string[];
   }[];
-} 
+}

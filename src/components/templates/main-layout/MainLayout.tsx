@@ -2,7 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, ArrowPathRoundedSquareIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -32,7 +32,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const baseNavItems = [
     { icon: HomeIcon, label: 'Inicio', href: '/' },
     { icon: BeakerIcon, label: 'Proyectos', href: '/project' },
-    { icon: TableCellsIcon, label: 'Objetos', href: '/object' }
+    { icon: TableCellsIcon, label: 'Objetos', href: '/object', matchPrefixes: ['/object-detail'] }
   ];
 
   // Agregar elementos específicos por país
@@ -45,9 +45,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     ];
   }
 
-  // Agregar Admin solo para usuarios con rol ADMIN
+  // Agregar Admin + Documentación solo para usuarios con rol ADMIN
   if (isAdmin) {
     navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
+    navItems.push({ icon: BookOpenIcon, label: 'Documentación', href: '/admin/docs' });
   }
 
   return (

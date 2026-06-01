@@ -14,6 +14,26 @@ export const Sidebar = ({ isExpanded, onToggle, navItems }: SidebarProps) => {
   const [showCountries, setShowCountries] = useState(false);
   const { country, countries, setCountry } = useAuth();
 
+  // Active match: el item cuyo href (o algun matchPrefix) es el prefijo mas
+  // especifico (mas largo) del pathname. Asi /admin/docs/roles mantiene
+  // 'Documentacion' activo en lugar de 'Admin', y rutas como /object-detail/X
+  // activan 'Objetos' via matchPrefixes.
+  const matchesItem = (item: typeof navItems[number]): { ok: boolean; matchedLen: number } => {
+    if (item.href === '/') return { ok: pathname === '/', matchedLen: 1 };
+    const candidates = [item.href, ...(item.matchPrefixes || [])];
+    let best = 0;
+    for (const c of candidates) {
+      if (pathname === c || pathname.startsWith(c + '/')) {
+        if (c.length > best) best = c.length;
+      }
+    }
+    return { ok: best > 0, matchedLen: best };
+  };
+  const activeHref = navItems
+    .map(item => ({ item, ...matchesItem(item) }))
+    .filter(x => x.ok)
+    .sort((a, b) => b.matchedLen - a.matchedLen)[0]?.item.href;
+
   const handleCountrySelect = (selectedCountry: string) => {
     setCountry(selectedCountry);
     setShowCountries(false);
@@ -60,14 +80,14 @@ export const Sidebar = ({ isExpanded, onToggle, navItems }: SidebarProps) => {
       {/* Navigation Items */}
       <div className="flex-1 flex flex-col px-2 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = item.href === activeHref;
           return (
-            <Link 
+            <Link
               key={item.href}
-              href={item.href} 
+              href={item.href}
               className={`group relative p-3 rounded-lg transition-smooth flex items-center ${
-                isActive 
-                  ? 'bg-timia-accent/15 text-white sidebar-active-indicator' 
+                isActive
+                  ? 'bg-timia-accent/15 text-white sidebar-active-indicator'
                   : 'text-timia-subtle hover:bg-white/5 hover:text-white'
               }`}
             >
