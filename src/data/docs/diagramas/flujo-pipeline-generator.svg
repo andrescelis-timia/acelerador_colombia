@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.10"/>
+    </filter>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5A7A9C"/>
+    </marker>
+    <marker id="arPhase" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0EA5E9"/>
+    </marker>
+    <marker id="arOpt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="720" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="40" y="42" font-size="24" font-weight="700" fill="#1A2433">Detalle: flujo del Pipeline Generator</text>
+  <text x="40" y="64" font-size="13" fill="#5A7A9C">Generación determinista de configs, jobs y mallas Control-M · análisis automático de muestras</text>
+
+  <!-- ============ SECTION A: SEQUENCE ============ -->
+  <text x="40" y="105" font-size="14" font-weight="700" fill="#1A2433">
+    <tspan fill="#FF9900">1 ·</tspan> Flujo end-to-end
+  </text>
+
+  <!-- LANE HEADERS -->
+  <g transform="translate(40, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
+    <rect width="190" height="3" rx="1" fill="#6B7280"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Usuario</text>
+  </g>
+
+  <g transform="translate(240, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.5"/>
+    <rect width="190" height="3" rx="1" fill="#DD344C"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#DD344C">AWS AMPLIFY</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-app</text>
+  </g>
+
+  <g transform="translate(440, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
+    <rect width="190" height="3" rx="1" fill="#ED7100"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">ECS FARGATE</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-api</text>
+  </g>
+
+  <g transform="translate(640, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <rect width="190" height="3" rx="1" fill="#64748B"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#64748B">MÓDULOS · api</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">GeneratorService</text>
+  </g>
+
+  <g transform="translate(840, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
+    <rect width="190" height="3" rx="1" fill="#C925D1"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#C925D1">AURORA POSTGRESQL</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">generated_artifact</text>
+  </g>
+
+  <g transform="translate(1040, 120)">
+    <rect width="190" height="44" rx="6" fill="#FFFFFF" stroke="#7AA116" stroke-width="1.5"/>
+    <rect width="190" height="3" rx="1" fill="#7AA116"/>
+    <text x="95" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#7AA116">AMAZON S3</text>
+    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">pipeline-artifacts</text>
+  </g>
+
+  <!-- LIFELINES -->
+  <line x1="135" y1="170" x2="135" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="335" y1="170" x2="335" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="535" y1="170" x2="535" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="735" y1="170" x2="735" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="935" y1="170" x2="935" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="1135" y1="170" x2="1135" y2="440" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- PHASE DIVIDERS -->
+  <line x1="40" y1="280" x2="1240" y2="280" stroke="#E0E4EA" stroke-width="0.8" stroke-dasharray="2,3"/>
+  <text x="44" y="276" font-size="9" font-weight="700" fill="#94A3B8" letter-spacing="1">FASE 1 · SETUP + ANÁLISIS DE MUESTRA</text>
+  <text x="44" y="292" font-size="9" font-weight="700" fill="#0EA5E9" letter-spacing="1">FASE 2 · GENERADORES DETERMINISTAS</text>
+
+  <line x1="40" y1="367" x2="1240" y2="367" stroke="#E0E4EA" stroke-width="0.8" stroke-dasharray="2,3"/>
+  <text x="44" y="379" font-size="9" font-weight="700" fill="#0EA5E9" letter-spacing="1">FASE 3 · CONTROL-M</text>
+
+  <!-- ===== FASE 1: SETUP + SAMPLE ===== -->
+
+  <!-- STEP 1: Usuario → Amplify (schemas) -->
+  <line x1="135" y1="190" x2="335" y2="190" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="235" y="184" text-anchor="middle" font-size="10" fill="#5A7A9C">sube .schema raw + master</text>
+  <circle cx="135" cy="190" r="11" fill="#FF9900"/>
+  <text x="135" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">1</text>
+
+  <!-- STEP 2: Amplify → api (POST /schemas) -->
+  <line x1="335" y1="213" x2="535" y2="213" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="435" y="207" text-anchor="middle" font-size="10" fill="#5A7A9C">POST /pipeline-generator/schemas</text>
+  <circle cx="335" cy="213" r="11" fill="#FF9900"/>
+  <text x="335" y="217" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">2</text>
+
+  <!-- STEP 3: Usuario → Amplify (sample, OPCIONAL) -->
+  <line x1="135" y1="237" x2="335" y2="237" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arOpt)"/>
+  <text x="235" y="231" text-anchor="middle" font-size="10" fill="#94A3B8" font-style="italic">(opcional) sube CSV/TXT muestra</text>
+  <circle cx="135" cy="237" r="11" fill="#FF9900"/>
+  <text x="135" y="241" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">3</text>
+
+  <!-- STEP 4: Amplify → api (POST /sample/analyze) -->
+  <line x1="335" y1="260" x2="535" y2="260" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="435" y="254" text-anchor="middle" font-size="10" fill="#5A7A9C">POST /sample/analyze · delimiter, header, tipos</text>
+  <circle cx="335" cy="260" r="11" fill="#FF9900"/>
+  <text x="335" y="264" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">4</text>
+
+  <!-- STEP 5: api → Aurora + S3 (persiste schemas + sample) -->
+  <line x1="535" y1="305" x2="1135" y2="305" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="835" y="299" text-anchor="middle" font-size="10" fill="#0EA5E9">INSERT artifact 'schemas' + 'sample' · PutObject S3</text>
+  <circle cx="535" cy="305" r="11" fill="#FF9900"/>
+  <text x="535" y="309" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">5</text>
+
+  <!-- ===== FASE 2: GENERADORES DETERMINISTAS ===== -->
+
+  <!-- STEP 6: Amplify → api (generators) -->
+  <line x1="335" y1="328" x2="535" y2="328" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="435" y="322" text-anchor="middle" font-size="10" fill="#0EA5E9">POST /generators/{kirby, hammurabi, smartcleaner}</text>
+  <circle cx="335" cy="328" r="11" fill="#FF9900"/>
+  <text x="335" y="332" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">6</text>
+
+  <!-- STEP 7: api → Generadores -->
+  <line x1="535" y1="350" x2="735" y2="350" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="635" y="344" text-anchor="middle" font-size="10" fill="#0EA5E9">orquesta 3 servicios (sin IA)</text>
+  <circle cx="535" cy="350" r="11" fill="#FF9900"/>
+  <text x="535" y="354" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">7</text>
+
+  <!-- STEP 8: Generadores → S3 (HOCON + JSON) -->
+  <line x1="735" y1="395" x2="1135" y2="395" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="935" y="389" text-anchor="middle" font-size="10" fill="#0EA5E9">PutObject HOCON configs + JSON jobs</text>
+  <circle cx="735" cy="395" r="11" fill="#FF9900"/>
+  <text x="735" y="399" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">8</text>
+
+  <!-- ===== FASE 3: CONTROL-M ===== -->
+
+  <!-- STEP 9: Amplify → api (Control-M) -->
+  <line x1="335" y1="418" x2="535" y2="418" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="435" y="412" text-anchor="middle" font-size="10" fill="#0EA5E9">POST /controlm/analyze-sequences + /controlm</text>
+  <circle cx="335" cy="418" r="11" fill="#FF9900"/>
+  <text x="335" y="422" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">9</text>
+
+  <!-- STEP 10: Generadores → S3 (XMLs + ZIP) -->
+  <line x1="735" y1="438" x2="1135" y2="438" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
+  <text x="935" y="432" text-anchor="middle" font-size="10" fill="#0EA5E9">PutObject mallas t04/t02 XML + docs ZIP</text>
+  <circle cx="735" cy="438" r="11" fill="#FF9900"/>
+  <text x="735" y="442" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">10</text>
+
+  <!-- ============ SECTION B: ZOOM ============ -->
+  <text x="40" y="478" font-size="14" font-weight="700" fill="#1A2433">
+    <tspan fill="#FF9900">2 ·</tspan> Zoom: análisis de muestra · 4 generadores · Control-M
+  </text>
+
+  <!-- LEFT CARD: Sample Analyzer + 4 generadores -->
+  <g transform="translate(40, 492)" filter="url(#cs)">
+    <rect width="600" height="208" rx="10" fill="#FFFFFF" stroke="#0EA5E9" stroke-width="1.5"/>
+    <rect width="600" height="4" rx="2" fill="#0EA5E9"/>
+    <text x="20" y="26" font-size="9" font-weight="700" fill="#0EA5E9">SETUP + GENERADORES DETERMINISTAS · SIN IA</text>
+    <text x="20" y="46" font-size="15" font-weight="700" fill="#1A2433">Análisis de muestra + 4 servicios especializados</text>
+
+    <!-- Sample Analyzer (highlighted) -->
+    <g transform="translate(20, 60)">
+      <rect width="560" height="44" rx="6" fill="#FFFAF0" stroke="#FF9900" stroke-width="1"/>
+      <rect width="3" height="44" rx="1" fill="#FF9900"/>
+      <text x="12" y="17" font-size="9" font-weight="700" fill="#FF9900">SAMPLE ANALYZER · POST /sample/analyze</text>
+      <text x="12" y="33" font-size="10" font-weight="600" fill="#1A2433">Detección automática: delimitador · header · tipos por columna</text>
+      <text x="500" y="33" text-anchor="end" font-size="9" fill="#5A7A9C" font-style="italic">opcional · CSV/TXT/TSV</text>
+    </g>
+
+    <!-- Kirby -->
+    <g transform="translate(20, 112)">
+      <rect width="275" height="42" rx="6" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="0.8"/>
+      <rect width="3" height="42" rx="1" fill="#0EA5E9"/>
+      <text x="12" y="16" font-size="9" font-weight="700" fill="#0EA5E9">KIRBY · ingesta raw + master</text>
+      <text x="12" y="32" font-size="9" fill="#5A7A9C">configs HOCON · jobs JSON · L1T opcional</text>
+    </g>
+
+    <!-- Hammurabi -->
+    <g transform="translate(305, 112)">
+      <rect width="275" height="42" rx="6" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="0.8"/>
+      <rect width="3" height="42" rx="1" fill="#0EA5E9"/>
+      <text x="12" y="16" font-size="9" font-weight="700" fill="#0EA5E9">HAMMURABI · calidad de datos</text>
+      <text x="12" y="32" font-size="9" fill="#5A7A9C">reglas 2.x completitud · 3.x validación · 4.x dup</text>
+    </g>
+
+    <!-- SmartCleaner -->
+    <g transform="translate(20, 160)">
+      <rect width="275" height="42" rx="6" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="0.8"/>
+      <rect width="3" height="42" rx="1" fill="#0EA5E9"/>
+      <text x="12" y="16" font-size="9" font-weight="700" fill="#0EA5E9">SMARTCLEANER · retención</text>
+      <text x="12" y="32" font-size="9" fill="#5A7A9C">retention.hocon + retention_jobs.json</text>
+    </g>
+
+    <!-- Control-M -->
+    <g transform="translate(305, 160)">
+      <rect width="275" height="42" rx="6" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="0.8"/>
+      <rect width="3" height="42" rx="1" fill="#0EA5E9"/>
+      <text x="12" y="16" font-size="9" font-weight="700" fill="#0EA5E9">CONTROL-M · mallas + docs</text>
+      <text x="12" y="32" font-size="9" fill="#5A7A9C">2 XMLs + ZIP (Excel + Word)</text>
+    </g>
+  </g>
+
+  <!-- RIGHT CARD: Control-M zoom -->
+  <g transform="translate(660, 492)" filter="url(#cs)">
+    <rect width="580" height="208" rx="10" fill="#FFFFFF" stroke="#0EA5E9" stroke-width="2"/>
+    <rect width="580" height="4" rx="2" fill="#0EA5E9"/>
+    <text x="20" y="26" font-size="9" font-weight="700" fill="#0EA5E9">CONTROL-M · GENERADOR MÁS COMPLEJO</text>
+    <text x="20" y="48" font-size="16" font-weight="700" fill="#1A2433">2 fases · modo aditivo</text>
+    <text x="20" y="64" font-size="10" fill="#5A7A9C">Genera mallas Datax (t04) + Ingesta (t02) sin pisar existentes</text>
+
+    <!-- Phase 1: analyze -->
+    <g transform="translate(20, 80)">
+      <rect width="265" height="55" rx="6" fill="#E0F4FE" stroke="#0EA5E9" stroke-width="0.8"/>
+      <text x="12" y="17" font-size="9" font-weight="700" fill="#0EA5E9">FASE 1 · ANALYZE-SEQUENCES</text>
+      <text x="12" y="33" font-size="10" font-weight="600" fill="#1A2433">Lee XMLs t04/t02 actuales</text>
+      <text x="12" y="47" font-size="9" fill="#5A7A9C">extrae folder_info · calcula next_sequence</text>
+    </g>
+
+    <!-- Phase 2: generate -->
+    <g transform="translate(295, 80)">
+      <rect width="265" height="55" rx="6" fill="#E0F4FE" stroke="#0EA5E9" stroke-width="0.8"/>
+      <text x="12" y="17" font-size="9" font-weight="700" fill="#0EA5E9">FASE 2 · GENERATE</text>
+      <text x="12" y="33" font-size="10" font-weight="600" fill="#1A2433">2 mallas XML</text>
+      <text x="12" y="47" font-size="9" font-family="Consolas, monospace" fill="#5A7A9C">malla_t04_uuaa_seq · malla_t02_uuaa_seq</text>
+    </g>
+
+    <!-- Modo aditivo -->
+    <g transform="translate(20, 145)">
+      <rect width="265" height="50" rx="6" fill="#E0F4FE" stroke="#0EA5E9" stroke-width="0.8"/>
+      <text x="12" y="17" font-size="9" font-weight="700" fill="#0EA5E9">MODO ADITIVO</text>
+      <text x="12" y="33" font-size="10" font-weight="600" fill="#1A2433">Numera nuevos jobs</text>
+      <text x="12" y="45" font-size="9" fill="#5A7A9C">sin pisar secuencias existentes</text>
+    </g>
+
+    <!-- Docs ZIP -->
+    <g transform="translate(295, 145)">
+      <rect width="265" height="50" rx="6" fill="#E0F4FE" stroke="#0EA5E9" stroke-width="0.8"/>
+      <text x="12" y="17" font-size="9" font-weight="700" fill="#0EA5E9">DOCUMENTACIÓN ZIP</text>
+      <text x="12" y="33" font-size="10" font-weight="600" fill="#1A2433">Excel + Word auto-generados</text>
+      <text x="12" y="45" font-size="9" fill="#5A7A9C">presigned URL S3 para descarga</text>
+    </g>
+  </g>
+
+</svg>
