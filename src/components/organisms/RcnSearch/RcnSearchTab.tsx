@@ -13,11 +13,11 @@ import {
 import { RcnResultsTable } from './RcnResultsTable';
 import { RcnDetailModal } from './RcnDetailModal';
 
-const MODES: { value: SearchMode; label: string; help: string }[] = [
-  { value: 'hybrid', label: 'Híbrido', help: 'Semántico + palabras clave (OR)' },
-  { value: 'strict', label: 'Estricto', help: 'Semántico + todas las palabras' },
-  { value: 'semantic', label: 'Semántico', help: 'Solo similitud vectorial' },
-  { value: 'exact', label: 'Exacto', help: 'Re-ranking por overlap de palabras' },
+const MODES: { value: SearchMode; label: string }[] = [
+  { value: 'hybrid', label: 'Híbrido' },
+  { value: 'strict', label: 'Estricto' },
+  { value: 'semantic', label: 'Semántico' },
+  { value: 'exact', label: 'Exacto' },
 ];
 
 export const RcnSearchTab = () => {
@@ -141,7 +141,6 @@ export const RcnSearchTab = () => {
                     type="button"
                     key={m.value}
                     onClick={() => setMode(m.value)}
-                    title={m.help}
                     className={`px-2.5 py-1.5 text-xs rounded-md border transition-colors ${
                       mode === m.value
                         ? 'border-timia-accent bg-timia-accent/10 text-timia-accent font-medium'
