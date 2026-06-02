@@ -14,7 +14,7 @@ import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDet
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
-import { PlayIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, ArrowDownTrayIcon, EyeIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T, generateDictionaryLiteCo } from '@/services/DictionaryGenerator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
@@ -53,6 +53,10 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   const [isLiteLoading, setIsLiteLoading] = useState(false);
   // Estado para guardar URL del sheet generado en modo lite
   const [liteSheetUrl, setLiteSheetUrl] = useState<string | null>(null);
+  // Modal para regenerar filas puntuales (modo update)
+  const [isLegacyModalOpen, setIsLegacyModalOpen] = useState(false);
+  // Lista de nombres legacy a regenerar (una entrada por linea o separadas por coma)
+  const [liteLegacyNamesText, setLiteLegacyNamesText] = useState<string>('');
 
   // TODOS los hooks deben estar aquí antes de cualquier return
   const fetchDictionaryOutput = useCallback(async () => {
@@ -627,6 +631,21 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   }
 
   // Handler para modo lite - solo espera respuesta del backend
+  // Convierte la periodicidad del objeto al vocabulario que espera el AI
+  const getAiPeriodicity = (): 'daily' | 'weekly' | 'monthly' | 'yearly' => {
+    const objectPeriodicity = (objectData?.periodicity ?? 'monthly') as 'daily' | 'weekly' | 'monthly' | 'annual';
+    return objectPeriodicity === 'annual' ? 'yearly' : objectPeriodicity;
+  };
+
+  // Parsea el textarea de legacy en una lista normalizada (split por coma o salto, trim, sin vacios)
+  const parseLegacyNames = (raw: string): string[] =>
+    raw.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+
+  // Cantidad de legacy actualmente configurados (determina si el Play dispara new o update)
+  const liteLegacyNames = parseLegacyNames(liteLegacyNamesText);
+  const liteLegacyCount = liteLegacyNames.length;
+  const isUpdateMode = liteLegacyCount > 0;
+
   const handleGenerateLiteCo = async () => {
     if (!user?.email) {
       setErrorMessage('Usuario no autenticado');
@@ -635,28 +654,39 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
 
     setIsLiteLoading(true);
 
-    // El AI usa vocabulario 'yearly'; el resto del sistema 'annual'.
-    const objectPeriodicity = (objectData?.periodicity ?? 'monthly') as 'daily' | 'weekly' | 'monthly' | 'annual';
-    const aiPeriodicity: 'daily' | 'weekly' | 'monthly' | 'yearly' =
-      objectPeriodicity === 'annual' ? 'yearly' : objectPeriodicity;
-
     try {
       const response = await generateDictionaryLiteCo({
         object_id: objectId,
-        periodicity: aiPeriodicity
+        periodicity: getAiPeriodicity(),
+        operation_mode: isUpdateMode ? 'update' : 'new',
+        ...(isUpdateMode ? { target_legacy_names: liteLegacyNames } : {})
       }, user.email, country);
 
-      // Guardar URL del sheet para habilitar el botón de ver
       if (response.data?.sheet_url) {
         setLiteSheetUrl(response.data.sheet_url);
       }
-      setSuccessMessage('Diccionario generado correctamente');
+
+      if (isUpdateMode) {
+        const rows = response.data?.rows_updated ?? liteLegacyCount;
+        setSuccessMessage(`Diccionario actualizado (${rows} ${rows === 1 ? 'fila' : 'filas'})`);
+      } else {
+        setSuccessMessage('Diccionario generado correctamente');
+      }
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
     } finally {
       setIsLiteLoading(false);
     }
+  };
+
+  // Guarda los legacy del modal y cierra. No dispara generacion: eso lo hace el Play.
+  const handleSaveLegacyNames = () => {
+    setIsLegacyModalOpen(false);
+  };
+
+  const handleClearLegacyNames = () => {
+    setLiteLegacyNamesText('');
   };
 
   // Handler para ver el sheet generado en modo lite
@@ -717,14 +747,39 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                 <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
                   <div className="border-b border-gray-200 p-2 bg-white h-[40px] flex items-center">
                     <BoxFlowControls
-                      leftIcons={[{
-                        icon: <PlayIcon className="h-5 w-5" />,
-                        onClick: handleGenerateLiteCo,
-                        className: "text-green-500 hover:text-green-600",
-                        disabled: isLiteLoading,
-                        tooltip: 'Generar diccionario',
-                        readOnlyWrapper: true
-                      }]}
+                      leftIcons={[
+                        {
+                          icon: <PlayIcon className="h-5 w-5" />,
+                          onClick: handleGenerateLiteCo,
+                          className: "text-green-500 hover:text-green-600",
+                          disabled: isLiteLoading,
+                          tooltip: isUpdateMode
+                            ? `Regenerar ${liteLegacyCount} ${liteLegacyCount === 1 ? 'campo' : 'campos'}`
+                            : 'Generar diccionario',
+                          readOnlyWrapper: true
+                        },
+                        {
+                          icon: (
+                            <span className="relative inline-flex">
+                              <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                              {isUpdateMode && (
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 inline-flex items-center justify-center text-[10px] font-bold leading-none text-white bg-blue-500 rounded-full">
+                                  {liteLegacyCount}
+                                </span>
+                              )}
+                            </span>
+                          ),
+                          onClick: () => setIsLegacyModalOpen(true),
+                          className: isUpdateMode
+                            ? "text-blue-600 hover:text-blue-700"
+                            : "text-gray-500 hover:text-blue-600",
+                          disabled: isLiteLoading,
+                          tooltip: isUpdateMode
+                            ? `Configurar campos a regenerar (${liteLegacyCount} guardados)…`
+                            : 'Configurar campos a regenerar…',
+                          readOnlyWrapper: true
+                        }
+                      ]}
                       rightIcons={[{
                         icon: <EyeIcon className="h-5 w-5" />,
                         onClick: handleViewLiteSheet,
@@ -874,6 +929,60 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
             <span className="text-sm font-medium text-gray-700">Generando diccionario...</span>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal de configuracion de campos puntuales para regenerar (se dispara con el Play) */}
+      {isLegacyModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9998] p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
+              <h3 className="text-base font-semibold text-gray-800">Campos a regenerar</h3>
+              <button
+                type="button"
+                onClick={() => setIsLegacyModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Cerrar"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <label htmlFor="lite-legacy-names" className="block text-sm font-medium text-gray-700 mb-1">
+                Nombres legacy a regenerar
+              </label>
+              <textarea
+                id="lite-legacy-names"
+                value={liteLegacyNamesText}
+                onChange={(e) => setLiteLegacyNamesText(e.target.value)}
+                placeholder={'LEGACY_CAMPO_1\nLEGACY_CAMPO_2'}
+                rows={6}
+                className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-transparent"
+                autoFocus
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                Uno por linea o separados por coma. Al guardar, el Play regenera solo estos campos. Si la lista esta vacia, el Play regenera todo el diccionario.
+              </p>
+            </div>
+            <div className="flex justify-between items-center gap-2 border-t border-gray-200 px-5 py-3 bg-gray-50 rounded-b-lg">
+              <button
+                type="button"
+                onClick={handleClearLegacyNames}
+                disabled={liteLegacyNamesText.length === 0}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Limpiar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveLegacyNames}
+                className="px-4 py-2 text-sm font-medium text-white bg-timia-accent rounded-md hover:opacity-90"
+              >
+                Guardar
+              </button>
+            </div>
           </div>
         </div>,
         document.body

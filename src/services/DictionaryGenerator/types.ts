@@ -50,17 +50,22 @@ export interface GenerateDictionaryL1TResponse {
   dictionary_l1t_master_detail_link: string;
 }
 
+export type LiteCoOperationMode = 'new' | 'update';
+
 export interface GenerateDictionaryLiteCoRequest {
   object_id: string;
   periodicity: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  operation_mode?: LiteCoOperationMode;
+  target_legacy_names?: string[];
 }
 
 export interface GenerateDictionaryLiteCoResponse {
   success: boolean;
   message: string;
   data?: {
-    mode: 'lite_co';
+    mode: 'lite_co' | 'lite_co_update';
     rows_updated: number;
     sheet_url: string;
+    processed_legacy_names?: string[];
   };
-} 
+}
