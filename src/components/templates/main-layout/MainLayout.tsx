@@ -26,28 +26,21 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  // Solo mostrar Admin para usuarios con rol ADMIN
-
-  // Crear lista de navItems base
+  // Items visibles para cualquier usuario autenticado
   const baseNavItems = [
     { icon: HomeIcon, label: 'Inicio', href: '/' },
     { icon: BeakerIcon, label: 'Proyectos', href: '/project' },
-    { icon: TableCellsIcon, label: 'Objetos', href: '/object', matchPrefixes: ['/object-detail'] }
+    { icon: TableCellsIcon, label: 'Objetos', href: '/object', matchPrefixes: ['/object-detail'] },
+    { icon: MagnifyingGlassIcon, label: 'RCN', href: '/rcn' }
   ];
 
-  // Agregar elementos específicos por país
-  let navItems = [...baseNavItems];
+  const navItems = [...baseNavItems];
 
   if (country === 'CO') {
-    navItems = [
-      ...baseNavItems, // Inicio, Proyectos, Objetos
-      { icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' }
-    ];
+    navItems.push({ icon: ArrowPathRoundedSquareIcon, label: 'Ingestas', href: '/ingestion' });
   }
 
-  // Agregar RCN + Admin + Documentación solo para usuarios con rol ADMIN
   if (isAdmin) {
-    navItems.push({ icon: MagnifyingGlassIcon, label: 'RCN', href: '/admin/rcn' });
     navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
     navItems.push({ icon: BookOpenIcon, label: 'Documentación', href: '/admin/docs' });
   }
