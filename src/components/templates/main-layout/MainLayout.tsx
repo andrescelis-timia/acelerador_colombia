@@ -45,10 +45,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     ];
   }
 
-  // Agregar Admin + RCN + Documentación solo para usuarios con rol ADMIN
+  // Agregar RCN + Admin + Documentación solo para usuarios con rol ADMIN
   if (isAdmin) {
-    navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
     navItems.push({ icon: MagnifyingGlassIcon, label: 'RCN', href: '/admin/rcn' });
+    navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
     navItems.push({ icon: BookOpenIcon, label: 'Documentación', href: '/admin/docs' });
   }
 
