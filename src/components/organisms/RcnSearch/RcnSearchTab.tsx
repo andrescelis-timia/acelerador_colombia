@@ -35,20 +35,48 @@ export const RcnSearchTab = () => {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<RcnEntry | null>(null);
 
+  const isPhysical = field === 'physical';
+
+  // Columnas pedidas explicitamente al gateway en busqueda fisica.
+  // El default del endpoint /campos solo trae 4 columnas y omite el `id`,
+  // lo que provoca keys duplicadas en la tabla. Pedimos lo que la tabla
+  // y el modal de detalle consumen.
+  const PHYSICAL_FIELDS = [
+    'id',
+    'physical_name_field',
+    'logical_name_sp',
+    'logical_name_eng',
+    'field_description_sp',
+    'field_description_eng',
+    'hierarchy',
+    'security_class',
+    'security_label',
+    'security_status',
+    'date_of_registration',
+    'date_of_last_modification',
+  ].join(',');
+
   const search = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!text.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await rcn.search({
-        text: text.trim(),
-        mode,
-        field,
-        hierarchy: hierarchy || undefined,
-        threshold,
-        limit,
-      });
+      const res = isPhysical
+        ? await rcn.campos({
+            fields: PHYSICAL_FIELDS,
+            physical_name: text.trim(),
+            hierarchy: hierarchy || undefined,
+            limit,
+          })
+        : await rcn.search({
+            text: text.trim(),
+            mode,
+            field,
+            hierarchy: hierarchy || undefined,
+            threshold,
+            limit,
+          });
       setResults(res.data);
       setCount(res.count);
     } catch (err) {
@@ -70,8 +98,14 @@ export const RcnSearchTab = () => {
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder="Buscar campos por nombre lógico o descripción…"
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50"
+              placeholder={
+                isPhysical
+                  ? 'Buscar por nombre físico (ILIKE, ej. g_entific%)…'
+                  : 'Buscar campos por nombre lógico o descripción…'
+              }
+              className={`w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 ${
+                isPhysical ? 'font-mono' : ''
+              }`}
             />
           </div>
           <button
@@ -85,25 +119,41 @@ export const RcnSearchTab = () => {
 
         <div className="flex flex-wrap items-end gap-3 text-xs">
           <div>
-            <label className="block text-gray-500 mb-1">Modo</label>
-            <div className="flex gap-1">
-              {MODES.map(m => (
-                <button
-                  type="button"
-                  key={m.value}
-                  onClick={() => setMode(m.value)}
-                  title={m.help}
-                  className={`px-2.5 py-1.5 text-xs rounded-md border transition-colors ${
-                    mode === m.value
-                      ? 'border-timia-accent bg-timia-accent/10 text-timia-accent font-medium'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
+            <label className="block text-gray-500 mb-1">Campo</label>
+            <select
+              value={field}
+              onChange={e => setField(e.target.value as SearchField)}
+              className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
+            >
+              <option value="both">Ambos (lógico + descripción)</option>
+              <option value="name">Solo nombre lógico</option>
+              <option value="description">Solo descripción</option>
+              <option value="physical">Nombre físico (ILIKE)</option>
+            </select>
           </div>
+
+          {!isPhysical && (
+            <div>
+              <label className="block text-gray-500 mb-1">Modo</label>
+              <div className="flex gap-1">
+                {MODES.map(m => (
+                  <button
+                    type="button"
+                    key={m.value}
+                    onClick={() => setMode(m.value)}
+                    title={m.help}
+                    className={`px-2.5 py-1.5 text-xs rounded-md border transition-colors ${
+                      mode === m.value
+                        ? 'border-timia-accent bg-timia-accent/10 text-timia-accent font-medium'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-gray-500 mb-1">Jerarquía</label>
@@ -119,31 +169,20 @@ export const RcnSearchTab = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-gray-500 mb-1">Campo</label>
-            <select
-              value={field}
-              onChange={e => setField(e.target.value as SearchField)}
-              className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
-            >
-              <option value="both">Ambos</option>
-              <option value="name">Solo nombre</option>
-              <option value="description">Solo descripción</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-500 mb-1">Threshold</label>
-            <input
-              type="number"
-              step="0.05"
-              min={0}
-              max={1}
-              value={threshold}
-              onChange={e => setThreshold(parseFloat(e.target.value) || 0)}
-              className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
-            />
-          </div>
+          {!isPhysical && (
+            <div>
+              <label className="block text-gray-500 mb-1">Threshold</label>
+              <input
+                type="number"
+                step="0.05"
+                min={0}
+                max={1}
+                value={threshold}
+                onChange={e => setThreshold(parseFloat(e.target.value) || 0)}
+                className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
+              />
+            </div>
+          )}
         </div>
       </form>
 
@@ -153,7 +192,8 @@ export const RcnSearchTab = () => {
 
       {count > 0 && (
         <p className="text-xs text-gray-500">
-          {count} resultado{count === 1 ? '' : 's'} · similarity ≥ {threshold}
+          {count} resultado{count === 1 ? '' : 's'}
+          {isPhysical ? ' · ILIKE sobre nombre físico' : ` · similarity ≥ ${threshold}`}
         </p>
       )}
 

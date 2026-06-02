@@ -1,5 +1,6 @@
 export type SearchMode = 'semantic' | 'hybrid' | 'strict' | 'exact';
-export type SearchField = 'name' | 'description' | 'both';
+// 'physical' usa ILIKE sobre physical_name_field via /rcn/campos (no embeddings).
+export type SearchField = 'name' | 'description' | 'both' | 'physical';
 
 export const HIERARCHY_VALUES = [
   'PRINCIPAL',
