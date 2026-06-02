@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MagnifyingGlassIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import { RcnSearchTab } from '@/components/organisms/RcnSearch/RcnSearchTab';
 import { RcnSqlTab } from '@/components/organisms/RcnSearch/RcnSqlTab';
+import { RcnInfoPopover } from '@/components/organisms/RcnSearch/RcnInfoPopover';
 
 type Tab = 'search' | 'sql';
 
@@ -12,9 +13,12 @@ export default function RcnPage() {
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg h-full flex flex-col overflow-hidden">
-      <header className="px-6 py-4 border-b border-gray-200">
-        <h1 className="text-lg font-semibold text-gray-900">RCN · Repositorio Central de Namings</h1>
-        <p className="text-xs text-gray-500 mt-0.5">357K campos de referencia para validar namings.</p>
+      <header className="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">RCN · Repositorio Central de Namings</h1>
+          <p className="text-xs text-gray-500 mt-0.5">357K campos de referencia para validar namings.</p>
+        </div>
+        <RcnInfoPopover />
       </header>
 
       <nav className="flex border-b border-gray-200 px-4">
