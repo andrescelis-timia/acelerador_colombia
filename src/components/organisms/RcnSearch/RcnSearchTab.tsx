@@ -37,6 +37,25 @@ export const RcnSearchTab = () => {
 
   const isPhysical = field === 'physical';
 
+  // Columnas pedidas explicitamente al gateway en busqueda fisica.
+  // El default del endpoint /campos solo trae 4 columnas y omite el `id`,
+  // lo que provoca keys duplicadas en la tabla. Pedimos lo que la tabla
+  // y el modal de detalle consumen.
+  const PHYSICAL_FIELDS = [
+    'id',
+    'physical_name_field',
+    'logical_name_sp',
+    'logical_name_eng',
+    'field_description_sp',
+    'field_description_eng',
+    'hierarchy',
+    'security_class',
+    'security_label',
+    'security_status',
+    'date_of_registration',
+    'date_of_last_modification',
+  ].join(',');
+
   const search = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!text.trim()) return;
@@ -45,6 +64,7 @@ export const RcnSearchTab = () => {
     try {
       const res = isPhysical
         ? await rcn.campos({
+            fields: PHYSICAL_FIELDS,
             physical_name: text.trim(),
             hierarchy: hierarchy || undefined,
             limit,

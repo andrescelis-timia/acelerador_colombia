@@ -60,11 +60,14 @@ export const RcnResultsTable = ({ results, onSelect }: Props) => {
           </tr>
         </thead>
         <tbody>
-          {results.map(r => {
+          {results.map((r, idx) => {
             const badge = HIERARCHY_BADGE[r.hierarchy] || 'bg-gray-100 text-gray-700';
+            // id puede faltar si el gateway no lo incluye en la respuesta;
+            // caemos al indice para mantener keys unicas.
+            const key = r.id !== undefined ? `${r.id}-${r.matched_field || ''}` : `idx-${idx}`;
             return (
               <tr
-                key={`${r.id}-${r.matched_field || ''}`}
+                key={key}
                 onClick={() => onSelect(r)}
                 className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer"
               >
