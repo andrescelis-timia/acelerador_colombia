@@ -1,43 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { checkAdmin } from '@/lib/auth/adminGuard';
 
 const DOCS_DIR = path.join(process.cwd(), 'src', 'data', 'docs');
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 const CONTENT_TYPES: Record<string, string> = {
   '.md': 'text/markdown; charset=utf-8',
   '.svg': 'image/svg+xml; charset=utf-8',
 };
 
-async function isAdmin(email: string, country: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_URL}/users/role/${encodeURIComponent(email)}`, {
-      headers: { 'X-User': email, 'X-Country': country },
-      cache: 'no-store',
-    });
-    if (!response.ok) return false;
-    const data = await response.json();
-    return data.role === 'ADMIN' || data.role === 'ADMIN-READONLY';
-  } catch {
-    return false;
-  }
-}
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const email = req.headers.get('X-User') || '';
-  const country = req.headers.get('X-Country') || 'CO';
-
-  if (!email) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
-  const allowed = await isAdmin(email, country);
-  if (!allowed) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  const guard = await checkAdmin(req);
+  if (!guard.isAdmin) {
+    const status = guard.reason === 'no-user' ? 401 : 403;
+    return NextResponse.json({ error: guard.reason || 'forbidden' }, { status });
   }
 
   const { path: segments } = await params;

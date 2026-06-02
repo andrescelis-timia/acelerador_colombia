@@ -2,7 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Sidebar } from '@/components/organisms/Sidebar';
 import { Header } from '@/components/organisms/Header';
-import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, ArrowPathRoundedSquareIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BeakerIcon, TableCellsIcon, UserGroupIcon, ArrowPathRoundedSquareIcon, BookOpenIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 import { ErrorModal } from '@/components/molecules/ErrorModal';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -45,8 +45,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     ];
   }
 
-  // Agregar Admin + Documentación solo para usuarios con rol ADMIN
+  // Agregar RCN + Admin + Documentación solo para usuarios con rol ADMIN
   if (isAdmin) {
+    navItems.push({ icon: MagnifyingGlassIcon, label: 'RCN', href: '/admin/rcn' });
     navItems.push({ icon: UserGroupIcon, label: 'Admin', href: '/admin' });
     navItems.push({ icon: BookOpenIcon, label: 'Documentación', href: '/admin/docs' });
   }
