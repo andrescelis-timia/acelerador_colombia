@@ -62,9 +62,9 @@ export const RcnResultsTable = ({ results, onSelect }: Props) => {
         <tbody>
           {results.map((r, idx) => {
             const badge = HIERARCHY_BADGE[r.hierarchy] || 'bg-gray-100 text-gray-700';
-            // id puede faltar si el gateway no lo incluye en la respuesta;
-            // caemos al indice para mantener keys unicas.
-            const key = r.id !== undefined ? `${r.id}-${r.matched_field || ''}` : `idx-${idx}`;
+            // El idx (posicion en la lista paginada) garantiza unicidad incluso
+            // si el backend repitiera la misma fila entre paginas.
+            const key = `${r.id ?? 'noid'}-${r.matched_field ?? ''}-${idx}`;
             return (
               <tr
                 key={key}

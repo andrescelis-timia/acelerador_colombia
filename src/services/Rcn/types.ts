@@ -25,6 +25,7 @@ export interface RcnSearchRequest {
   mode?: SearchMode;
   threshold?: number;
   limit?: number;
+  offset?: number;
   hierarchy?: Hierarchy;
 }
 
@@ -52,6 +53,8 @@ export interface RcnEntry {
 export interface RcnSearchResponse {
   data: RcnEntry[];
   count: number;
+  offset?: number;
+  limit?: number;
 }
 
 export interface RcnCamposParams {
@@ -62,6 +65,7 @@ export interface RcnCamposParams {
   hierarchy?: string;
   security_status?: string;
   limit?: number;
+  offset?: number;
 }
 
 export interface RcnQueryRequest {

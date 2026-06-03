@@ -32,6 +32,8 @@ export const RcnSearchTab = () => {
   const [results, setResults] = useState<RcnEntry[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<RcnEntry | null>(null);
 
@@ -56,10 +58,13 @@ export const RcnSearchTab = () => {
     'date_of_last_modification',
   ].join(',');
 
-  const search = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  // Llama al backend con el offset indicado. `append=true` agrega a `results`,
+  // `false` reemplaza (busqueda nueva). `hasMore` se infiere comparando data
+  // recibida con limit.
+  const runSearch = async (offset: number, append: boolean) => {
     if (!text.trim()) return;
-    setLoading(true);
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     setError(null);
     try {
       const res = isPhysical
@@ -68,6 +73,7 @@ export const RcnSearchTab = () => {
             physical_name: text.trim(),
             hierarchy: hierarchy || undefined,
             limit,
+            offset,
           })
         : await rcn.search({
             text: text.trim(),
@@ -76,16 +82,32 @@ export const RcnSearchTab = () => {
             hierarchy: hierarchy || undefined,
             threshold,
             limit,
+            offset,
           });
-      setResults(res.data);
-      setCount(res.count);
+
+      setResults(prev => (append ? [...prev, ...res.data] : res.data));
+      setCount(prev => (append ? prev + res.data.length : res.data.length));
+      setHasMore(res.data.length >= limit);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al buscar');
-      setResults([]);
-      setCount(0);
+      if (!append) {
+        setResults([]);
+        setCount(0);
+      }
+      setHasMore(false);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const search = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    await runSearch(0, false);
+  };
+
+  const loadMore = async () => {
+    await runSearch(results.length, true);
   };
 
   return (
@@ -193,10 +215,24 @@ export const RcnSearchTab = () => {
         <p className="text-xs text-gray-500">
           {count} resultado{count === 1 ? '' : 's'}
           {isPhysical ? ' · ILIKE sobre nombre físico' : ` · similarity ≥ ${threshold}`}
+          {hasMore && ' · hay más'}
         </p>
       )}
 
       <RcnResultsTable results={results} onSelect={setSelected} />
+
+      {results.length > 0 && hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-4 py-2 text-xs font-medium text-timia-accent border border-timia-accent/40 bg-white rounded-md hover:bg-timia-accent/5 disabled:opacity-50"
+          >
+            {loadingMore ? 'Cargando…' : `Cargar ${limit} más`}
+          </button>
+        </div>
+      )}
 
       <RcnDetailModal entry={selected} onClose={() => setSelected(null)} />
     </div>
