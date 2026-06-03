@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { useRcnService } from '@/services/Rcn';
 import {
   HIERARCHY_VALUES,
@@ -110,6 +110,14 @@ export const RcnSearchTab = () => {
     await runSearch(results.length, true);
   };
 
+  const clearAll = () => {
+    setText('');
+    setResults([]);
+    setCount(0);
+    setHasMore(false);
+    setError(null);
+  };
+
   return (
     <div className="space-y-4">
       <form onSubmit={search} className="space-y-3">
@@ -125,10 +133,21 @@ export const RcnSearchTab = () => {
                   ? 'Buscar por nombre físico (ILIKE, ej. g_entific%)…'
                   : 'Buscar campos por nombre lógico o descripción…'
               }
-              className={`w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 ${
+              className={`w-full pl-9 pr-9 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 ${
                 isPhysical ? 'font-mono' : ''
               }`}
             />
+            {text.length > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                title="Limpiar busqueda"
+                aria-label="Limpiar busqueda"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <XCircleIcon className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <button
             type="submit"
