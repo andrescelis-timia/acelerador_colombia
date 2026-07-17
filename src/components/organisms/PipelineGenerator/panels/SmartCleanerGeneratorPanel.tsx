@@ -113,9 +113,9 @@ export const SmartCleanerGeneratorPanel = ({
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
 
-      const smartcleanerFolder = zip.folder('smartcleaner');
-      const confsFolder = smartcleanerFolder!.folder('confs');
-      const jobsFolder = smartcleanerFolder!.folder('jobs');
+      const othersFolder = zip.folder('others');
+      const confsFolder = othersFolder!.folder('confs');
+      const jobsFolder = othersFolder!.folder('jobs');
 
       Object.entries(generationResults.configs).forEach(([key, file]) => {
         if (file) {
