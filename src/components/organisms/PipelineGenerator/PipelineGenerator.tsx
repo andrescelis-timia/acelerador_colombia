@@ -10,8 +10,8 @@ import { usePipelineGeneratorService, GeneratedArtifactsResponse } from '@/servi
 import { CubeIcon, ShieldCheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { SampleAnalysis } from '@/components/organisms/SampleAnalysis';
-import { getById as getObjectById } from '@/services/Object';
-import type { Periodicity } from '@/services/Object/types';
+import { getById as getObjectById, updateData as updateObject } from '@/services/Object';
+import type { Periodicity, ObjectUpdateWithId } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
 
 export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps) => {
@@ -23,16 +23,38 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
   const [savedArtifacts, setSavedArtifacts] = useState<GeneratedArtifactsResponse['artifacts'] | null>(null);
   const [loadingArtifacts, setLoadingArtifacts] = useState(false);
   const [periodicity, setPeriodicity] = useState<Periodicity | undefined>(undefined);
+  const [aliasOverride, setAliasOverride] = useState<string>('');
+  const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
 
   const pipelineService = usePipelineGeneratorService();
   const { user, country } = useAuth();
 
+  // Cargar objeto: periodicity + alias (prefill) + snapshot para PATCH posterior
   useEffect(() => {
     if (!objectId || !user?.email) return;
     getObjectById(objectId, user.email, country)
-      .then(obj => setPeriodicity(obj?.periodicity as Periodicity | undefined))
+      .then(obj => {
+        if (!obj) return;
+        setObjectData(obj);
+        setPeriodicity(obj?.periodicity as Periodicity | undefined);
+        const persistedAlias = (obj as unknown as { alias?: string }).alias || '';
+        if (persistedAlias) setAliasOverride(persistedAlias);
+      })
       .catch(() => {});
   }, [objectId, user?.email, country]);
+
+  // Persistir alias en Object.alias vía PATCH (fire-and-forget con optimistic update)
+  const handleAliasChange = (newAlias: string) => {
+    const cleaned = newAlias.trim();
+    setAliasOverride(cleaned);  // optimistic
+    if (!objectData || !user?.email || readOnly) return;
+    if (cleaned === ((objectData as unknown as { alias?: string }).alias || '')) return;  // no-op
+    const nextData = { ...objectData, alias: cleaned, update_user: user.email };
+    setObjectData(nextData);  // cache local para futuros PATCHes
+    updateObject(nextData, user.email, country).catch(err => {
+      console.error('No se pudo persistir el alias override en el objeto:', err);
+    });
+  };
 
   // Cargar artefactos guardados cuando hay objectId
   useEffect(() => {
@@ -124,6 +146,8 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
         componentType={componentType}
         onSchemaUpload={handleSchemaUpload}
         onComponentTypeChange={setComponentType}
+        aliasOverride={aliasOverride}
+        onAliasOverrideChange={handleAliasChange}
       />
 
       <SampleAnalysis objectId={objectId} initialData={savedArtifacts?.sample} />
@@ -172,6 +196,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     canGenerate={canGenerate() && !readOnly}
                     onGenerationComplete={() => handleGeneratorComplete('kirby')}
                     initialData={savedArtifacts?.kirby}
+                    aliasOverride={aliasOverride}
                   />
                 </div>
                 <div className={activeTab === 'hammurabi' ? '' : 'hidden'}>
@@ -184,6 +209,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     onGenerationComplete={() => handleGeneratorComplete('hammurabi')}
                     initialData={savedArtifacts?.hammurabi}
                     periodicity={periodicity}
+                    aliasOverride={aliasOverride}
                   />
                 </div>
                 <div className={activeTab === 'smartcleaner' ? '' : 'hidden'}>
@@ -196,6 +222,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     onGenerationComplete={() => handleGeneratorComplete('smartcleaner')}
                     initialData={savedArtifacts?.smartcleaner}
                     periodicity={periodicity}
+                    aliasOverride={aliasOverride}
                   />
                 </div>
               </>

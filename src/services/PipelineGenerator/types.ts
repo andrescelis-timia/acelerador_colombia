@@ -13,6 +13,8 @@ export interface GenerateKirbyRequest {
   component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
   periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
+  /** Override manual del alias. Si viene vacío el backend lo deriva del nombre físico. */
+  alias?: string;
 }
 
 export interface GenerateHammurabiRequest {
@@ -22,6 +24,8 @@ export interface GenerateHammurabiRequest {
   component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
   periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
+  /** Override manual del alias. Si viene vacío el backend lo deriva del nombre físico. */
+  alias?: string;
 }
 
 export interface GenerateSmartCleanerRequest {
@@ -31,6 +35,8 @@ export interface GenerateSmartCleanerRequest {
   component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
   include_l1t?: boolean;
   periodicity?: 'daily' | 'weekly' | 'monthly' | 'annual';
+  /** Override manual del alias. Si viene vacío el backend lo deriva del nombre físico. */
+  alias?: string;
 }
 
 export interface GenerateControlMRequest {

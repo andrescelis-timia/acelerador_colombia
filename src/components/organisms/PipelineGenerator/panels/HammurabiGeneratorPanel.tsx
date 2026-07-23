@@ -27,6 +27,7 @@ export const HammurabiGeneratorPanel = ({
   onGenerationComplete,
   initialData,
   periodicity,
+  aliasOverride,
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -88,6 +89,7 @@ export const HammurabiGeneratorPanel = ({
         component_type: componentType,
         include_l1t: true,
         periodicity,
+        alias: aliasOverride?.trim() || undefined,
       };
 
       const response = await pipelineGeneratorService.generateHammurabi(requestData);

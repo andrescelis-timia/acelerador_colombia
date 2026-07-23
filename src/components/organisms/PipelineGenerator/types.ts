@@ -19,6 +19,8 @@ export interface GeneratorPanelProps {
   onGenerationComplete?: () => void;
   initialData?: GeneratedArtifact | null;
   periodicity?: Periodicity;
+  /** Override manual del alias. Vacío = derivación automática del nombre físico. */
+  aliasOverride?: string;
 }
 
 export interface SchemaUploadSectionProps {
@@ -28,6 +30,9 @@ export interface SchemaUploadSectionProps {
   componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
   onSchemaUpload: (type: 'raw' | 'master', file: File | null) => void;
   onComponentTypeChange: (type: 'tabla' | 'tablon' | 'tabla_no_raw') => void;
+  /** Override manual del alias. Vacío = derivación automática. */
+  aliasOverride?: string;
+  onAliasOverrideChange?: (value: string) => void;
 }
 
 export interface SchemaFile {
