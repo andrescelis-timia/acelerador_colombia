@@ -15,14 +15,41 @@ import {
 import { SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 
+type ComponentTypeArg = 'tabla' | 'tablon' | 'tabla_no_raw';
+
+const ALIAS_MAX_LENGTH = 20;
+const ALIAS_VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+
 /**
- * Deriva el "posible alias" desde el nombre físico según convención
- * `t_uuaa_alias_descriptivo`. Devuelve el segmento en posición 2.
+ * Recorta el alias a máximo 20 chars quitando vocales de derecha a izquierda,
+ * una por una. Nunca remueve la primera letra (protege inicio si es vocal).
+ * Mismo algoritmo que `shorten_alias` en el backend (path_builder.py).
  */
-const deriveAliasFromName = (physicalName: string): string => {
+const shortenAlias = (alias: string): string => {
+  if (!alias || alias.length <= ALIAS_MAX_LENGTH) return alias;
+  const chars = alias.split('');
+  let i = chars.length - 1;
+  while (chars.length > ALIAS_MAX_LENGTH && i > 0) {
+    if (ALIAS_VOWELS.has(chars[i].toLowerCase())) {
+      chars.splice(i, 1);
+    }
+    i -= 1;
+  }
+  return chars.join('');
+};
+
+/**
+ * Deriva el alias por defecto desde el nombre físico según el component_type,
+ * imitando la lógica del backend (`resolve_alias` en path_builder.py):
+ *   - tabla:                    parts[2]                     (alias estructurado)
+ *   - tablon / tabla_no_raw:    parts[2:].join('')           (concatenación descriptivo)
+ */
+const deriveAliasFromName = (physicalName: string, componentType: ComponentTypeArg): string => {
   if (!physicalName) return '';
   const parts = physicalName.split('_');
-  return parts.length >= 3 ? parts[2] : '';
+  if (parts.length < 3) return '';
+  if (componentType === 'tabla') return parts[2];
+  return parts.slice(2).join('');
 };
 
 /* ============================================================
@@ -111,11 +138,13 @@ const decomposeAlias = (segment: string): AliasDecomposition | null => {
 
 /**
  * Warning: el segmento candidato a alias no cumple el patrón oficial.
- * El alias se define por el patrón, NO por la cantidad de segmentos del nombre.
- * Ej: `t_cbtq_msaldos_activos` warnea porque `msaldos` no cumple el patrón.
+ * Sólo aplica a `tabla`. Para `tablon` y `tabla_no_raw` el alias se arma
+ * por concatenación del descriptivo (patrón no aplica), así que nunca
+ * warneamos aunque el usuario puede override manualmente.
  */
-const hasAliasIssue = (physicalName: string): boolean => {
+const hasAliasIssue = (physicalName: string, componentType: ComponentTypeArg): boolean => {
   if (!physicalName) return false;
+  if (componentType !== 'tabla') return false;
   const parts = physicalName.split('_');
   if (parts.length < 3) return true;
   return decomposeAlias(parts[2]) === null;
@@ -155,12 +184,17 @@ export const SchemaUploadSection = ({
     return () => { cancelled = true; };
   }, [masterSchema]);
 
-  const derivedAlias = useMemo(() => deriveAliasFromName(masterPhysicalName), [masterPhysicalName]);
+  const derivedAliasRaw = useMemo(
+    () => deriveAliasFromName(masterPhysicalName, componentType),
+    [masterPhysicalName, componentType]
+  );
+  const derivedAlias = useMemo(() => shortenAlias(derivedAliasRaw), [derivedAliasRaw]);
+  const derivedWasShortened = derivedAliasRaw.length > ALIAS_MAX_LENGTH;
   const effectiveAlias = aliasOverride?.trim() || derivedAlias;
   const aliasBreakdown = useMemo(() => decomposeAlias(effectiveAlias), [effectiveAlias]);
   const showAliasWarning = useMemo(
-    () => Boolean(masterPhysicalName) && hasAliasIssue(masterPhysicalName) && !aliasOverride,
-    [masterPhysicalName, aliasOverride]
+    () => Boolean(masterPhysicalName) && hasAliasIssue(masterPhysicalName, componentType) && !aliasOverride,
+    [masterPhysicalName, componentType, aliasOverride]
   );
 
   const startEditingAlias = () => {
@@ -168,7 +202,7 @@ export const SchemaUploadSection = ({
     setIsEditingAlias(true);
   };
   const saveAliasDraft = () => {
-    onAliasOverrideChange?.(aliasDraft.trim());
+    onAliasOverrideChange?.(shortenAlias(aliasDraft.trim()));
     setIsEditingAlias(false);
   };
   const cancelEditingAlias = () => {
@@ -422,7 +456,7 @@ export const SchemaUploadSection = ({
             {masterSchema && onAliasOverrideChange && (
               <div className="mt-2">
                 {isEditingAlias ? (
-                  // ESTADO EDIT: input con guardar/cancelar
+                  // ESTADO EDIT: input con guardar/cancelar + preview de acortamiento
                   <div className="rounded-md border border-timia-accent/40 bg-timia-accent/5 p-2.5">
                     <label htmlFor="alias-input" className="block text-xs font-medium text-gray-700 mb-1.5">
                       Alias override
@@ -456,6 +490,17 @@ export const SchemaUploadSection = ({
                         Cancelar
                       </button>
                     </div>
+                    {aliasDraft.trim().length > ALIAS_MAX_LENGTH ? (
+                      <p className="mt-1.5 text-[11px] text-amber-700">
+                        {aliasDraft.trim().length} chars — se acortará a{' '}
+                        <code className="bg-amber-100 px-1 rounded font-mono">{shortenAlias(aliasDraft.trim())}</code>{' '}
+                        (máx {ALIAS_MAX_LENGTH}, quita vocales de derecha a izquierda).
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-[11px] text-gray-500">
+                        Máximo {ALIAS_MAX_LENGTH} chars. Si excede, se acortará quitando vocales de derecha a izquierda.
+                      </p>
+                    )}
                   </div>
                 ) : aliasOverride ? (
                   // ESTADO OVERRIDE ACTIVO: chip informativo con acciones + desglose si aplica
@@ -522,6 +567,14 @@ export const SchemaUploadSection = ({
                       <span>
                         Alias: <span className="font-mono text-gray-700">{derivedAlias || '—'}</span>
                       </span>
+                      {derivedWasShortened && (
+                        <span
+                          className="text-[10px] uppercase tracking-wide text-amber-600 font-medium"
+                          title={`Original de ${derivedAliasRaw.length} chars, acortado a ${ALIAS_MAX_LENGTH} quitando vocales.`}
+                        >
+                          acortado
+                        </span>
+                      )}
                       <span className="text-gray-300">·</span>
                       <button
                         type="button"
