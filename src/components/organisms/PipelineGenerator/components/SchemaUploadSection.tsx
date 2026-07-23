@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   ArrowUpTrayIcon,
   DocumentTextIcon,
@@ -8,10 +8,118 @@ import {
   InformationCircleIcon,
   ExclamationTriangleIcon,
   EyeIcon,
-  TrashIcon
+  TrashIcon,
+  PencilSquareIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
+
+/**
+ * Deriva el "posible alias" desde el nombre físico según convención
+ * `t_uuaa_alias_descriptivo`. Devuelve el segmento en posición 2.
+ */
+const deriveAliasFromName = (physicalName: string): string => {
+  if (!physicalName) return '';
+  const parts = physicalName.split('_');
+  return parts.length >= 3 ? parts[2] : '';
+};
+
+/* ============================================================
+ * Diccionario de códigos para validación semántica del alias.
+ * Patrón: <origen 1><marker 2 da|ta><aplicativo 2><descriptivo alfanum+>
+ * Ej: hdape001 -> h(Host) + da(datos) + pe(Personas) + 001(descriptivo)
+ * ============================================================ */
+
+const ORIGEN_LABELS: Record<string, string> = {
+  h: 'Host', l: 'LAR', s: 'SAS', p: 'PI', o: 'Omega', u: 'Usuario',
+  d: 'SSDD', a: 'AS400', q: 'HDFS-Parquet', c: 'Cobis', k: 'ADA Holding',
+  m: 'Murex', y: 'Aplus', x: 'Acselx', g: 'SAP Experience/Payroll', w: 'AWS',
+};
+
+const MARKER_LABELS: Record<string, string> = {
+  da: 'datos',
+  ta: 'taxonomía',
+};
+
+const APLICATIVO_LABELS: Record<string, string> = {
+  // Internos / ALTAMIRA
+  ae: 'Admin. Expedientes', ba: 'Cámara y compensación', bg: 'Cuentas ALTAMIRA',
+  bt: 'Banca telefónica', ca: 'Cargos y abonos', cn: 'BBVNET Canales',
+  cx: 'Cuentas por cobrar', ed: 'Envíos de dinero', ef: 'Efectivo',
+  ey: 'Bank Trade', fp: 'Fondos de pensiones', g2: 'NET-CASH',
+  gf: 'Scorating', gi: 'GIP', gp: 'Extranjero ALTAMIRA', gt: 'SWIFT',
+  ha: 'Contabilidad general', hr: 'RRHH', hx: 'Hermes',
+  ic: 'Distribución seguros', im: 'Tratamiento imágenes', io: 'Biometría',
+  jg: 'Cuentas por pagar', ji: 'Digitalización docs', kn: 'Arq. canales',
+  ls: 'Leasing', mc: 'Medios de pago', og: 'Domiciliación',
+  oz: 'SOA', pe: 'Personas ALTAMIRA', pm: 'TECOM Marketing',
+  qg: 'Comisiones', qh: 'Contabilización', qr: 'Quejas y reclamos',
+  rc: 'Recaudo nacional', rg: 'Riesgo global', ri: 'Impagados',
+  s4: 'Factoring/Confirming', sl: 'MIS clientes', sm: 'Informe diario',
+  sp: 'MIS productos', rv: 'Riesgos ALTAMIRA', tc: 'Tablas corporativas',
+  tp: 'Fondos de inversión', ug: 'Préstamos ALTAMIRA', v7: 'Impuestos',
+  w9: 'SAP Cloud Nómina', xc: 'Comercio exterior', xg: 'Rating empresarial',
+  xo: 'SIRO',
+  // Externos
+  mk: 'Marketing', kp: 'KPIs', dg: 'Diálogo', fi: 'Info financiera',
+  ct: 'Catálogos locales', af: 'Activos fijos', sr: 'BCBS239 SREP',
+  ad: 'Adobe', wp: 'Web Pymes', vl: 'BBVA Valores', sf: 'Salesforce',
+  st: 'Star', pp: 'SAP Payroll', br: 'Bricket', pc: 'Power Curve',
+  eg: 'Engine / Sandbox', ko: 'Konecta',
+};
+
+const ORIGEN_CODES = new Set(Object.keys(ORIGEN_LABELS));
+
+export interface AliasDecomposition {
+  origen: string;
+  marker: string;
+  aplicativo: string;
+  descriptivo: string;
+  origenLabel: string;
+  markerLabel: string;
+  aplicativoLabel: string;
+}
+
+/**
+ * Descompone un alias si cumple el patrón oficial. Devuelve null si no cumple.
+ * Se usa tanto para warnear (si el segmento candidato no cumple) como para
+ * mostrar el desglose semántico cuando el alias es reconocido.
+ */
+const decomposeAlias = (segment: string): AliasDecomposition | null => {
+  if (!segment || segment.length < 6) return null;
+  const s = segment.toLowerCase();
+  const origen = s[0];
+  const marker = s.slice(1, 3);
+  const aplicativo = s.slice(3, 5);
+  const descriptivo = s.slice(5);
+  if (
+    ORIGEN_CODES.has(origen) &&
+    marker in MARKER_LABELS &&
+    aplicativo in APLICATIVO_LABELS &&
+    /^[a-z0-9]+$/.test(descriptivo)
+  ) {
+    return {
+      origen, marker, aplicativo, descriptivo,
+      origenLabel: ORIGEN_LABELS[origen],
+      markerLabel: MARKER_LABELS[marker],
+      aplicativoLabel: APLICATIVO_LABELS[aplicativo],
+    };
+  }
+  return null;
+};
+
+/**
+ * Warning: el segmento candidato a alias no cumple el patrón oficial.
+ * El alias se define por el patrón, NO por la cantidad de segmentos del nombre.
+ * Ej: `t_cbtq_msaldos_activos` warnea porque `msaldos` no cumple el patrón.
+ */
+const hasAliasIssue = (physicalName: string): boolean => {
+  if (!physicalName) return false;
+  const parts = physicalName.split('_');
+  if (parts.length < 3) return true;
+  return decomposeAlias(parts[2]) === null;
+};
 
 
 
@@ -22,10 +130,56 @@ export const SchemaUploadSection = ({
   componentType,
   onSchemaUpload,
   onComponentTypeChange,
+  aliasOverride,
+  onAliasOverrideChange,
 }: SchemaUploadSectionProps) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
+  const [masterPhysicalName, setMasterPhysicalName] = useState<string>('');
+  const [isEditingAlias, setIsEditingAlias] = useState(false);
+  const [aliasDraft, setAliasDraft] = useState('');
   const pipelineGeneratorService = usePipelineGeneratorService();
+
+  // Leer physical_name del master schema para detectar issue de alias
+  useEffect(() => {
+    if (!masterSchema) { setMasterPhysicalName(''); return; }
+    let cancelled = false;
+    masterSchema.text().then(txt => {
+      try {
+        const parsed = JSON.parse(txt);
+        if (!cancelled) setMasterPhysicalName(parsed?.name || '');
+      } catch {
+        if (!cancelled) setMasterPhysicalName('');
+      }
+    });
+    return () => { cancelled = true; };
+  }, [masterSchema]);
+
+  const derivedAlias = useMemo(() => deriveAliasFromName(masterPhysicalName), [masterPhysicalName]);
+  const effectiveAlias = aliasOverride?.trim() || derivedAlias;
+  const aliasBreakdown = useMemo(() => decomposeAlias(effectiveAlias), [effectiveAlias]);
+  const showAliasWarning = useMemo(
+    () => Boolean(masterPhysicalName) && hasAliasIssue(masterPhysicalName) && !aliasOverride,
+    [masterPhysicalName, aliasOverride]
+  );
+
+  const startEditingAlias = () => {
+    setAliasDraft(aliasOverride || '');
+    setIsEditingAlias(true);
+  };
+  const saveAliasDraft = () => {
+    onAliasOverrideChange?.(aliasDraft.trim());
+    setIsEditingAlias(false);
+  };
+  const cancelEditingAlias = () => {
+    setIsEditingAlias(false);
+    setAliasDraft('');
+  };
+  const clearAlias = () => {
+    onAliasOverrideChange?.('');
+    setAliasDraft('');
+    setIsEditingAlias(false);
+  };
 
   const handlePreviewSchema = async (schema: File, type: 'raw' | 'master') => {
     try {
@@ -130,7 +284,7 @@ export const SchemaUploadSection = ({
         {/* Component Type Selection */}
         <div className="mb-4 pb-3 border-b border-gray-200">
           <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Componente</label>
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
             <label className="flex items-center">
               <input
                 type="radio"
@@ -260,6 +414,134 @@ export const SchemaUploadSection = ({
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Alias contextual: sólo cuando hay master schema y podemos operar.
+                Tres estados: warning (nombre sin alias), override activo, edit affordance sutil. */}
+            {masterSchema && onAliasOverrideChange && (
+              <div className="mt-2">
+                {isEditingAlias ? (
+                  // ESTADO EDIT: input con guardar/cancelar
+                  <div className="rounded-md border border-timia-accent/40 bg-timia-accent/5 p-2.5">
+                    <label htmlFor="alias-input" className="block text-xs font-medium text-gray-700 mb-1.5">
+                      Alias override
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="alias-input"
+                        type="text"
+                        autoFocus
+                        value={aliasDraft}
+                        onChange={(e) => setAliasDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveAliasDraft();
+                          if (e.key === 'Escape') cancelEditingAlias();
+                        }}
+                        placeholder="Ej. hdape001"
+                        className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={saveAliasDraft}
+                        className="px-2 py-1 text-xs font-medium bg-timia-accent text-white rounded hover:bg-timia-accent/90"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditingAlias}
+                        className="px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-800"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : aliasOverride ? (
+                  // ESTADO OVERRIDE ACTIVO: chip informativo con acciones + desglose si aplica
+                  <div className="rounded-md border border-timia-accent/30 bg-timia-accent/5 px-2.5 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <CheckCircleIcon className="h-4 w-4 text-timia-accent flex-shrink-0" />
+                      <span className="text-xs text-gray-700">
+                        Alias override: <span className="font-semibold text-timia-accent font-mono">{aliasOverride}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={startEditingAlias}
+                        className="ml-auto p-1 text-gray-400 hover:text-timia-accent rounded transition-colors"
+                        title="Editar alias"
+                      >
+                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearAlias}
+                        className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                        title="Quitar override (volver a alias automático)"
+                      >
+                        <XMarkIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {aliasBreakdown && (
+                      <p className="mt-1 pl-6 text-[11px] text-gray-500">
+                        <span className="font-mono text-timia-accent">{aliasBreakdown.origen}</span>{' '}
+                        {aliasBreakdown.origenLabel} · <span className="font-mono text-timia-accent">{aliasBreakdown.marker}</span>{' '}
+                        {aliasBreakdown.markerLabel} · <span className="font-mono text-timia-accent">{aliasBreakdown.aplicativo}</span>{' '}
+                        {aliasBreakdown.aplicativoLabel} · <span className="font-mono text-timia-accent">{aliasBreakdown.descriptivo}</span>{' '}
+                        descriptivo
+                      </p>
+                    )}
+                  </div>
+                ) : showAliasWarning ? (
+                  // ESTADO WARNING: nombre físico probablemente sin alias
+                  <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2">
+                    <ExclamationTriangleIcon className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-amber-900">
+                        <span className="font-medium">Alias no detectado</span> en <code className="bg-amber-100 px-1 rounded">{masterPhysicalName}</code>. Especifica manualmente:
+                      </p>
+                      <button
+                        type="button"
+                        onClick={startEditingAlias}
+                        className="mt-1.5 text-xs font-medium text-timia-accent hover:underline"
+                      >
+                        + Especificar alias
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // ESTADO SUBTLE: derived alias con desglose si cumple patrón; edit affordance
+                  <div className="px-1">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      {aliasBreakdown && (
+                        <CheckCircleIcon
+                          className="h-3.5 w-3.5 text-emerald-500"
+                          aria-label="Alias reconocido"
+                        />
+                      )}
+                      <span>
+                        Alias: <span className="font-mono text-gray-700">{derivedAlias || '—'}</span>
+                      </span>
+                      <span className="text-gray-300">·</span>
+                      <button
+                        type="button"
+                        onClick={startEditingAlias}
+                        className="text-timia-accent hover:underline"
+                      >
+                        Cambiar
+                      </button>
+                    </div>
+                    {aliasBreakdown && (
+                      <p className="mt-0.5 pl-5 text-[11px] text-gray-400">
+                        <span className="font-mono text-gray-600">{aliasBreakdown.origen}</span>{' '}
+                        {aliasBreakdown.origenLabel} · <span className="font-mono text-gray-600">{aliasBreakdown.marker}</span>{' '}
+                        {aliasBreakdown.markerLabel} · <span className="font-mono text-gray-600">{aliasBreakdown.aplicativo}</span>{' '}
+                        {aliasBreakdown.aplicativoLabel} · <span className="font-mono text-gray-600">{aliasBreakdown.descriptivo}</span>{' '}
+                        descriptivo
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

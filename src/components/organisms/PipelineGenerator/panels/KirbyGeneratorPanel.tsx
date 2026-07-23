@@ -25,7 +25,8 @@ export const KirbyGeneratorPanel = ({
   componentType,
   canGenerate,
   onGenerationComplete,
-  initialData
+  initialData,
+  aliasOverride,
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -85,7 +86,8 @@ export const KirbyGeneratorPanel = ({
         raw_schema_data: rawSchemaData,
         master_schema_data: masterSchemaData,
         component_type: componentType,
-        include_l1t: true
+        include_l1t: true,
+        alias: aliasOverride?.trim() || undefined,
       };
 
       const response = await pipelineGeneratorService.generateKirby(requestData);
