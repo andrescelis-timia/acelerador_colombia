@@ -145,7 +145,7 @@ export const SlideForm = <T extends Record<string, unknown>>({
                                 onChange={(name, value) => handleChange(name, value)}
                               />
                               {validationErrors[field.name] && (
-                                <p className="text-sm text-red-600">
+                                <p className="text-sm text-danger">
                                   {validationErrors[field.name]}
                                 </p>
                               )}

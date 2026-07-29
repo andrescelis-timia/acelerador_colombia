@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { RcnEntry } from '@/services/Rcn/types';
 
@@ -17,34 +17,24 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 );
 
 export const RcnDetailModal = ({ entry, onClose }: Props) => {
-  useEffect(() => {
-    if (!entry) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [entry, onClose]);
-
-  if (!entry) return null;
-
+  // Dialog de headlessui aporta focus trap, cierre con Escape, restauracion
+  // del foco al disparador, aria-modal y bloqueo de scroll del body.
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-6"
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
-      >
+    <Dialog open={entry !== null} onClose={onClose} className="relative z-[9999]">
+      <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
+
+      <div className="fixed inset-0 flex items-center justify-center p-6">
+        <Dialog.Panel className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+          {entry && (
+            <>
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Campo RCN · ID {entry.id}</p>
-            <h2 className="text-lg font-semibold text-gray-900 font-mono mt-0.5">{entry.physical_name_field}</h2>
+            <Dialog.Title className="text-lg font-semibold text-gray-900 font-mono mt-0.5">
+              {entry.physical_name_field}
+            </Dialog.Title>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100">
+          <button onClick={onClose} aria-label="Cerrar detalle" className="p-1 rounded-md hover:bg-gray-100">
             <XMarkIcon className="h-5 w-5 text-gray-500" />
           </button>
         </div>
@@ -73,7 +63,10 @@ export const RcnDetailModal = ({ entry, onClose }: Props) => {
             <Row label="Keyword precision" value={entry.keyword_precision.toFixed(2)} />
           )}
         </dl>
+            </>
+          )}
+        </Dialog.Panel>
       </div>
-    </div>
+    </Dialog>
   );
 };

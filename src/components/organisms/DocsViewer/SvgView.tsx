@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Dialog } from '@headlessui/react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { ArrowDownTrayIcon, ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -49,19 +50,7 @@ export const SvgView = ({ file, title }: SvgViewProps) => {
     return () => URL.revokeObjectURL(url);
   }, [svgContent]);
 
-  // ESC cierra el modal + locks body scroll
-  useEffect(() => {
-    if (!zoomed) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setZoomed(false);
-    };
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [zoomed]);
+  // El cierre con Escape y el bloqueo de scroll los aporta <Dialog>.
 
   const download = () => {
     if (!svgContent) return;
@@ -73,7 +62,7 @@ export const SvgView = ({ file, title }: SvgViewProps) => {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+      <div className="p-6 bg-danger-subtle border border-danger-border rounded-lg text-sm text-danger">
         {error}
       </div>
     );
@@ -112,11 +101,10 @@ export const SvgView = ({ file, title }: SvgViewProps) => {
         </div>
       </div>
 
-      {zoomed && (
-        <div
-          onClick={() => setZoomed(false)}
-          className="fixed inset-0 z-[9999] bg-black/85 flex items-center justify-center p-6 cursor-zoom-out"
-        >
+      <Dialog open={zoomed} onClose={() => setZoomed(false)} className="relative z-[9999]">
+        <div className="fixed inset-0 bg-black/85" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-6">
+          <Dialog.Title className="sr-only">{title}</Dialog.Title>
           <button
             onClick={() => setZoomed(false)}
             className="absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-full"
@@ -124,15 +112,16 @@ export const SvgView = ({ file, title }: SvgViewProps) => {
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            onClick={e => e.stopPropagation()}
-            src={blobUrl}
-            alt={title}
-            className="max-w-[90vw] max-h-[90vh] object-contain bg-white rounded-lg p-4 cursor-default"
-          />
+          <Dialog.Panel>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={blobUrl}
+              alt={title}
+              className="max-w-[90vw] max-h-[90vh] object-contain bg-white rounded-lg p-4"
+            />
+          </Dialog.Panel>
         </div>
-      )}
+      </Dialog>
     </>
   );
 };

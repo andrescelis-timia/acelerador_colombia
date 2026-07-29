@@ -191,6 +191,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
                   <select
                     value={f.column}
                     onChange={e => updateFilter(f.id, { column: e.target.value })}
+                    aria-label="Columna del filtro"
                     className="px-2 py-1 border border-gray-300 rounded text-xs font-mono w-44 h-7"
                   >
                     {RCN_COLUMNS.map(c => (
@@ -200,6 +201,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
                   <select
                     value={f.operator}
                     onChange={e => updateFilter(f.id, { operator: e.target.value as Operator })}
+                    aria-label={`Operador para ${f.column}`}
                     className="px-2 py-1 border border-gray-300 rounded text-xs w-28 h-7"
                   >
                     {OPERATORS.map(o => (
@@ -211,6 +213,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
                       <select
                         value={f.value}
                         onChange={e => updateFilter(f.id, { value: e.target.value })}
+                        aria-label={`Valor para ${f.column}`}
                         className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs h-7"
                       >
                         <option value="">—</option>
@@ -221,6 +224,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
                         type={meta?.numeric ? 'number' : 'text'}
                         value={f.value}
                         onChange={e => updateFilter(f.id, { value: e.target.value })}
+                        aria-label={`Valor para ${f.column}`}
                         placeholder={f.operator === 'ILIKE' ? 'cliente (auto %)' : 'valor'}
                         className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs h-7 font-mono"
                       />
@@ -230,7 +234,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
                   <button
                     onClick={() => removeFilter(f.id)}
                     type="button"
-                    className="p-1 text-gray-400 hover:text-red-500"
+                    className="p-1 text-gray-400 hover:text-danger-icon"
                     title="Quitar filtro"
                   >
                     <TrashIcon className="h-3.5 w-3.5" />
@@ -251,6 +255,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
           max={1000}
           value={limit}
           onChange={e => setLimit(parseInt(e.target.value) || 0)}
+          aria-label="Límite de resultados"
           className="px-2 py-1 border border-gray-300 rounded text-xs w-20 h-7"
         />
       </section>
@@ -266,7 +271,7 @@ export const RcnQueryBuilder = ({ onRun, onCopyToEditor, loading }: Props) => {
               className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-gray-600 hover:bg-gray-100 rounded-md"
               title="Copiar al portapapeles"
             >
-              {copied ? <CheckIcon className="h-3.5 w-3.5 text-green-600" /> : <ClipboardIcon className="h-3.5 w-3.5" />}
+              {copied ? <CheckIcon className="h-3.5 w-3.5 text-success" /> : <ClipboardIcon className="h-3.5 w-3.5" />}
               {copied ? 'Copiado' : 'Copiar'}
             </button>
             <button

@@ -123,7 +123,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             htmlFor="password-login-email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email <span className="text-red-500">*</span>
+            Email <span className="text-danger-icon">*</span>
           </label>
           <input
             id="password-login-email"
@@ -142,7 +142,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             aria-invalid={!!errors.email}
           />
           {errors.email && (
-            <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="email-error" className="mt-1 text-sm text-danger" role="alert">
               {errors.email}
             </p>
           )}
@@ -154,7 +154,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             htmlFor="password-login-password"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Contraseña <span className="text-red-500">*</span>
+            Contraseña <span className="text-danger-icon">*</span>
           </label>
           <input
             id="password-login-password"
@@ -174,7 +174,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
             aria-invalid={!!errors.password}
           />
           {errors.password ? (
-            <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="password-error" className="mt-1 text-sm text-danger" role="alert">
               {errors.password}
             </p>
           ) : (
@@ -186,7 +186,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
 
         {/* General Error Message */}
         {errors.general && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3" role="alert">
+          <div className="bg-danger-subtle border border-danger-border rounded-md p-3" role="alert">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -194,7 +194,7 @@ export const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">
+                <p className="text-sm text-danger">
                   {errors.general}
                 </p>
               </div>

@@ -8,9 +8,9 @@ interface Props {
 }
 
 const HIERARCHY_BADGE: Record<string, string> = {
-  PRINCIPAL: 'bg-blue-100 text-blue-700',
+  PRINCIPAL: 'bg-info-muted text-blue-700',
   'GLOBAL MODEL': 'bg-purple-100 text-purple-700',
-  LEGACY: 'bg-amber-100 text-amber-700',
+  LEGACY: 'bg-warning-muted text-warning',
   SPECIFIC: 'bg-emerald-100 text-emerald-700',
   SECONDARY: 'bg-slate-100 text-slate-700',
   'GLOBAL MODEL SECONDARY': 'bg-pink-100 text-pink-700',

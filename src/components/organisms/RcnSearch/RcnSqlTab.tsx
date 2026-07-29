@@ -83,6 +83,7 @@ export const RcnSqlTab = () => {
         <div>
           <textarea
             value={sql}
+            aria-label="Consulta SQL"
             onChange={e => setSql(e.target.value)}
             spellCheck={false}
             rows={8}
@@ -117,7 +118,7 @@ export const RcnSqlTab = () => {
       )}
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">
+        <div className="p-3 bg-danger-subtle border border-danger-border rounded-md text-xs text-danger">
           {error}
         </div>
       )}

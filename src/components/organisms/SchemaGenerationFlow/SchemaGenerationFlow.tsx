@@ -265,7 +265,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
 
             {status.generatedSchemas && !status.isGenerating && (
               <div className="flex items-center text-sm text-gray-600">
-                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-1" />
+                <CheckCircleIcon className="h-4 w-4 text-success-icon mr-1" />
                 {Object.values(status.generatedSchemas.schemas).filter(Boolean).length} schemas
               </div>
             )}
@@ -287,6 +287,7 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
         {sourceMode === 'external' && (
           <div className="mb-3">
             <input
+              aria-label="URL del schema externo"
               type="url"
               value={externalUrl}
               onChange={(e) => setExternalUrl(e.target.value)}
@@ -345,7 +346,10 @@ export function SchemaGenerationFlow({ objectId }: SchemaGenerationFlowProps) {
 
 
       {status.isGenerating && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+          role="status"
+          aria-live="polite"
+        >
           <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
             <svg className="animate-spin h-8 w-8 text-timia-accent" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

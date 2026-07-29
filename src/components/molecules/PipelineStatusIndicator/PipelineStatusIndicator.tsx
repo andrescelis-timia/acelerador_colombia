@@ -34,15 +34,15 @@ const STATUS_STYLES: Record<PipelineStageStatus, { bg: string; border: string; i
     line: 'bg-yellow-400'
   },
   completed: {
-    bg: 'bg-green-50',
+    bg: 'bg-success-subtle',
     border: 'border-green-500',
-    icon: 'text-green-600',
+    icon: 'text-success',
     line: 'bg-green-500'
   },
   error: {
-    bg: 'bg-red-50',
+    bg: 'bg-danger-subtle',
     border: 'border-red-500',
-    icon: 'text-red-500',
+    icon: 'text-danger-icon',
     line: 'bg-red-500'
   }
 };

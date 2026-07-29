@@ -829,10 +829,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   const getJobTypeColor = (type: 'T' | 'C' | 'D' | 'W') => {
     switch (type) {
-      case 'T': return 'bg-blue-100 text-gray-800';
-      case 'W': return 'bg-amber-100 text-amber-700';
-      case 'C': return 'bg-green-100 text-green-700';
-      case 'D': return 'bg-red-100 text-red-700';
+      case 'T': return 'bg-info-muted text-gray-800';
+      case 'W': return 'bg-warning-muted text-warning';
+      case 'C': return 'bg-success-muted text-success';
+      case 'D': return 'bg-danger-muted text-danger';
     }
   };
 
@@ -854,7 +854,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
             <h3 className="text-base font-medium text-gray-900">Control-M</h3>
           </div>
           {isAdditiveMode && (
-            <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+            <span className="text-xs px-2 py-0.5 bg-warning-muted text-warning rounded-full">
               Modo Aditivo
             </span>
           )}
@@ -898,8 +898,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               <div className="space-y-3">
                 {triggerType === 'datax' ? (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Transferencia *</label>
+                    <label htmlFor="cm-transferencia" className="block text-xs text-gray-500 mb-1">Transferencia *</label>
                     <input
+                      id="cm-transferencia"
                       type="text"
                       placeholder="yyyy_dataxmovimientos_1"
                       value={transferName}
@@ -909,14 +910,15 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Ruta staging {stagingPath && <span className="text-green-600">✓</span>}</label>
+                    <label htmlFor="cm-ruta-staging" className="block text-xs text-gray-500 mb-1">Ruta staging {stagingPath && <span className="text-success">✓</span>}</label>
                     <input
+                      id="cm-ruta-staging"
                       type="text"
                       placeholder="Se autocompleta al cargar jobs de Pipeline Generator"
                       value={stagingPath}
                       onChange={(e) => setStagingPath(e.target.value)}
                       className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 ${
-                        stagingPath ? 'border-green-300 bg-green-50' : 'border-gray-300'
+                        stagingPath ? 'border-green-300 bg-success-subtle' : 'border-gray-300'
                       }`}
                     />
                   </div>
@@ -924,8 +926,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 <div className="space-y-2">
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">
-                    <label className="block text-xs text-gray-500 mb-1">Periodicidad</label>
+                    <label htmlFor="cm-periodicidad" className="block text-xs text-gray-500 mb-1">Periodicidad</label>
                     <select
+                      id="cm-periodicidad"
                       value={dataxConfig.periodicity}
                       onChange={(e) => {
                         setPeriodicityTouched(true);
@@ -941,8 +944,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   </div>
                   {(dataxConfig.periodicity === 'diario' || dataxConfig.periodicity === 'mensual') && (
                     <div className="w-28">
-                      <label className="block text-xs text-gray-500 mb-1">Tipo</label>
+                      <label htmlFor="cm-tipo" className="block text-xs text-gray-500 mb-1">Tipo</label>
                       <select
+                      id="cm-tipo"
                         value={dataxConfig.periodicityType}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, periodicityType: e.target.value as 'calendario' | 'habil' }))}
                         className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -954,15 +958,16 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   )}
                   {dataxConfig.periodicity === 'mensual' && dataxConfig.periodicityType === 'calendario' && (
                     <div className="w-28">
-                      <label className="block text-xs text-gray-500 mb-1">Día(s)</label>
+                      <label htmlFor="cm-dia-s" className="block text-xs text-gray-500 mb-1">Día(s)</label>
                       <input
+                      id="cm-dia-s"
                         type="text"
                         value={dataxConfig.monthDay}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, monthDay: e.target.value }))}
                         placeholder="1 o 1,15,30"
                         title="Uno o varios días (1-31) separados por coma"
                         className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center ${
-                          isValidDaysCsv(dataxConfig.monthDay) ? 'border-gray-300' : 'border-red-300 bg-red-50'
+                          isValidDaysCsv(dataxConfig.monthDay) ? 'border-gray-300' : 'border-red-300 bg-danger-subtle'
                         }`}
                       />
                     </div>
@@ -970,8 +975,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   {dataxConfig.periodicity === 'mensual' && dataxConfig.periodicityType === 'habil' && (
                     <>
                       <div className="w-20">
-                        <label className="block text-xs text-gray-500 mb-1">Dirección</label>
+                        <label htmlFor="cm-direccion" className="block text-xs text-gray-500 mb-1">Dirección</label>
                         <select
+                      id="cm-direccion"
                           value={dataxConfig.businessDayDirection}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayDirection: e.target.value as 'D' | 'L' }))}
                           className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -981,15 +987,16 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         </select>
                       </div>
                       <div className="w-28">
-                        <label className="block text-xs text-gray-500 mb-1">Día(s) hábil</label>
+                        <label htmlFor="cm-dia-s-habil" className="block text-xs text-gray-500 mb-1">Día(s) hábil</label>
                         <input
+                      id="cm-dia-s-habil"
                           type="text"
                           value={dataxConfig.businessDayNumber}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, businessDayNumber: e.target.value }))}
                           placeholder="1 o 1,2,3"
                           title="Uno o varios números (1-31) separados por coma. Se prefijan con D/L."
                           className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 text-center ${
-                            isValidDaysCsv(dataxConfig.businessDayNumber) ? 'border-gray-300' : 'border-red-300 bg-red-50'
+                            isValidDaysCsv(dataxConfig.businessDayNumber) ? 'border-gray-300' : 'border-red-300 bg-danger-subtle'
                           }`}
                         />
                       </div>
@@ -997,8 +1004,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   )}
                   {dataxConfig.periodicity === 'semanal' && (
                     <div className="w-20">
-                      <label className="block text-xs text-gray-500 mb-1">Día</label>
+                      <label htmlFor="cm-dia" className="block text-xs text-gray-500 mb-1">Día</label>
                       <select
+                      id="cm-dia"
                         value={dataxConfig.weekDay}
                         onChange={(e) => setDataxConfig(prev => ({ ...prev, weekDay: parseInt(e.target.value) }))}
                         className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -1016,8 +1024,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   {dataxConfig.periodicity === 'anual' && (
                     <>
                       <div className="w-20">
-                        <label className="block text-xs text-gray-500 mb-1">Mes</label>
+                        <label htmlFor="cm-mes" className="block text-xs text-gray-500 mb-1">Mes</label>
                         <select
+                      id="cm-mes"
                           value={dataxConfig.annualMonth}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, annualMonth: parseInt(e.target.value) }))}
                           className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -1037,8 +1046,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         </select>
                       </div>
                       <div className="w-16">
-                        <label className="block text-xs text-gray-500 mb-1">Día</label>
+                        <label htmlFor="cm-dia-2" className="block text-xs text-gray-500 mb-1">Día</label>
                         <input
+                      id="cm-dia-2"
                           type="number"
                           min="1"
                           max="31"
@@ -1072,6 +1082,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       <>
                         <span className="text-gray-300">|</span>
                         <input
+                          aria-label="Hora de inicio"
                           type="time"
                           value={dataxConfig.startTime}
                           onChange={(e) => setDataxConfig(prev => ({ ...prev, startTime: e.target.value }))}
@@ -1097,6 +1108,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         <span className="text-gray-300">|</span>
                         <div className="flex items-center gap-1">
                           <input
+                            aria-label="Intervalo en horas"
                             type="number"
                             min="1"
                             max="24"
@@ -1154,6 +1166,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                   {ingestaJobs.map((job, index) => (
                     <div key={index} className="flex items-center gap-1.5 text-xs bg-gray-50 rounded px-2 py-1">
                       <input
+                        aria-label={`Nombre del job ${index + 1}`}
                         type="text"
                         placeholder="yyyy-co-dfs-rmv-smcmuricm-01"
                         value={job.name}
@@ -1161,6 +1174,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         className="flex-1 min-w-0 px-1.5 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white font-mono text-xs"
                       />
                       <select
+                        aria-label={`Generador del job ${index + 1}`}
                         value={job.generator}
                         onChange={(e) => updateJob(index, 'generator', e.target.value)}
                         className="w-28 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
@@ -1170,6 +1184,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                         <option value="smartcleaner">SmartCleaner</option>
                       </select>
                       <select
+                        aria-label={`Fase del job ${index + 1}`}
                         value={job.phase}
                         onChange={(e) => updateJob(index, 'phase', e.target.value)}
                         className="w-20 px-1 py-0.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 bg-white text-xs"
@@ -1181,7 +1196,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                       </select>
                       <button
                         onClick={() => removeJob(index)}
-                        className="p-0.5 text-gray-400 hover:text-red-500"
+                        className="p-0.5 text-gray-400 hover:text-danger-icon"
                       >
                         <XMarkIcon className="h-3.5 w-3.5" />
                       </button>
@@ -1202,7 +1217,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               <span className="text-xs text-gray-400">(opcional)</span>
               {isAnalyzingXml && <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-gray-400" />}
               {nextSequences && !isAnalyzingXml && (
-                <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                <span className="text-xs text-warning bg-warning-subtle px-2 py-0.5 rounded">
                   Seq: T={nextSequences.T}, C={nextSequences.C}, D={nextSequences.D}, W={nextSequences.W}
                 </span>
               )}
@@ -1213,7 +1228,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 <span className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-gray-800 rounded text-xs">
                   <DocumentPlusIcon className="h-4 w-4" />
                   T04: {existingT04FileName.length > 25 ? existingT04FileName.substring(0, 25) + '...' : existingT04FileName}
-                  <button onClick={() => removeExistingXml('t04')} className="hover:text-red-500">
+                  <button onClick={() => removeExistingXml('t04')} className="hover:text-danger-icon">
                     <XMarkIcon className="h-3.5 w-3.5" />
                   </button>
                 </span>
@@ -1230,15 +1245,15 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               )}
               {/* T02 */}
               {existingT02FileName ? (
-                <span className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded text-xs">
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-success-subtle text-success rounded text-xs">
                   <DocumentPlusIcon className="h-4 w-4" />
                   T02: {existingT02FileName.length > 25 ? existingT02FileName.substring(0, 25) + '...' : existingT02FileName}
-                  <button onClick={() => removeExistingXml('t02')} className="hover:text-red-500">
+                  <button onClick={() => removeExistingXml('t02')} className="hover:text-danger-icon">
                     <XMarkIcon className="h-3.5 w-3.5" />
                   </button>
                 </span>
               ) : (
-                <label className="flex items-center gap-2 px-4 py-1.5 text-gray-500 border border-dashed border-gray-300 rounded cursor-pointer hover:border-green-400 hover:bg-green-50 text-xs min-w-[140px] justify-center">
+                <label className="flex items-center gap-2 px-4 py-1.5 text-gray-500 border border-dashed border-gray-300 rounded cursor-pointer hover:border-green-400 hover:bg-success-subtle text-xs min-w-[140px] justify-center">
                   <input type="file" accept=".xml" className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleXmlFileUpload(file, 't02');
@@ -1252,7 +1267,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
           </div>
 
           {uuaaMismatchWarning && (
-            <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+            <div className="flex items-start gap-2 p-2.5 bg-warning-subtle border border-warning-border rounded text-xs text-warning">
               <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0 mt-0.5" />
               <span>{uuaaMismatchWarning}</span>
             </div>
@@ -1286,7 +1301,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               )}
 
               {generatedJobs.length > 0 && !isGenerating && (
-                <div className="flex items-center text-sm text-green-600">
+                <div className="flex items-center text-sm text-success">
                   <CheckCircleIcon className="h-4 w-4 mr-1" />
                   {generatedJobs.length} jobs generados
                 </div>
@@ -1327,7 +1342,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
             {/* Error */}
             {error && (
-              <div className="mt-3 flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+              <div className="mt-3 flex items-center gap-2 p-2 bg-danger-subtle border border-danger-border rounded text-xs text-danger">
                 <ExclamationTriangleIcon className="h-4 w-4" />
                 {error}
               </div>
@@ -1346,7 +1361,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                           onClick={() => handleDownloadMalla(malla)}
                           disabled={downloadingFile === malla}
                           className={`text-xs px-2 py-1 rounded hover:opacity-80 flex items-center gap-1 disabled:opacity-50 ${
-                            malla.includes('-T04') ? 'bg-blue-100 text-timia-accent' : 'bg-green-100 text-green-600'
+                            malla.includes('-T04') ? 'bg-info-muted text-timia-accent' : 'bg-success-muted text-success'
                           }`}
                           title={malla}
                         >

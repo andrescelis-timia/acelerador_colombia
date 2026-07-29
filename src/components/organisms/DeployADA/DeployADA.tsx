@@ -153,12 +153,12 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
               </span>
             )}
             {saveStatus === 'saved' && (
-              <span className="flex items-center gap-1 text-xs text-green-600">
+              <span className="flex items-center gap-1 text-xs text-success">
                 <CheckCircleIcon className="h-3.5 w-3.5" /> Guardado
               </span>
             )}
             {deployedCount > 0 && (
-              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+              <span className="text-xs px-2 py-0.5 bg-success-muted text-success rounded-full">
                 {deployedCount}/3 desplegado{deployedCount > 1 ? 's' : ''}
               </span>
             )}
@@ -171,8 +171,9 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
             <span className="text-xs text-gray-500 font-medium">Configuracion General</span>
             <div className="grid grid-cols-2 gap-6 mt-2">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Link DATUM</label>
+                <label htmlFor="ada-link-datum" className="block text-xs text-gray-500 mb-1">Link DATUM</label>
                 <input
+                      id="ada-link-datum"
                   type="text"
                   placeholder="https://datum.example.com/objeto/..."
                   value={config.datum_link || ''}
@@ -181,9 +182,10 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Emails Owner</label>
+                <label htmlFor="ada-emails-owner" className="block text-xs text-gray-500 mb-1">Emails Owner</label>
                 <div className="flex gap-2">
                   <input
+                    id="ada-emails-owner"
                     type="email"
                     placeholder="owner@bbva.com"
                     value={emailInput}
@@ -200,7 +202,7 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                     {config.owner_emails.map(email => (
                       <span key={email} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs">
                         {email}
-                        <button onClick={() => removeEmail(email)} className="hover:text-red-600">&times;</button>
+                        <button onClick={() => removeEmail(email)} className="hover:text-danger">&times;</button>
                       </span>
                     ))}
                   </div>
@@ -225,13 +227,13 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                 const isDeploying = deploying[gen.id];
 
                 return (
-                  <div key={gen.id} className={`border rounded-lg ${st?.status === 'success' ? 'border-green-300 bg-green-50/30' : 'border-gray-200'}`}>
+                  <div key={gen.id} className={`border rounded-lg ${st?.status === 'success' ? 'border-green-300 bg-success-subtle/30' : 'border-gray-200'}`}>
                     {/* Card header */}
                     <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
                       <span className={`w-2 h-2 rounded-full ${gen.accent}`} />
                       <span className="text-xs font-medium text-gray-800">{gen.label}</span>
                       {hasArtifact
-                        ? <CheckCircleIcon className="h-3.5 w-3.5 text-green-500 ml-auto" />
+                        ? <CheckCircleIcon className="h-3.5 w-3.5 text-success-icon ml-auto" />
                         : <span className="ml-auto text-[10px] text-gray-400">Sin generar</span>
                       }
                     </div>
@@ -239,8 +241,9 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                     {/* Card body */}
                     <div className="p-3 space-y-2">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Repositorio</label>
+                        <label htmlFor={`ada-repo-${gen.id}`} className="block text-xs text-gray-500 mb-1">Repositorio</label>
                         <input
+                          id={`ada-repo-${gen.id}`}
                           type="text"
                           placeholder="https://bitbucket.org/ws/repo"
                           value={config.repositories[gen.id] || ''}
@@ -249,8 +252,9 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">HU Jira</label>
+                        <label htmlFor="ada-hu-jira" className="block text-xs text-gray-500 mb-1">HU Jira</label>
                         <input
+                      id="ada-hu-jira"
                           type="text"
                           placeholder="HU-12345"
                           value={config.jira_hus[gen.id] || ''}
@@ -261,18 +265,18 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
 
                       {/* Status */}
                       {st?.status === 'success' && st.pr_url && (
-                        <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1.5">
-                          <CheckCircleIcon className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5 text-xs text-success bg-success-subtle border border-success-border rounded px-2 py-1.5">
+                          <CheckCircleIcon className="h-3.5 w-3.5 text-success-icon flex-shrink-0" />
                           <span className="flex-1 truncate">PR creada</span>
                           <button
                             onClick={() => navigator.clipboard.writeText(st.pr_url!)}
-                            className="p-0.5 hover:bg-green-100 rounded transition-colors"
+                            className="p-0.5 hover:bg-success-muted rounded transition-colors"
                             title="Copiar link"
                           >
                             <ClipboardDocumentIcon className="h-3.5 w-3.5" />
                           </button>
                           <a href={st.pr_url} target="_blank" rel="noopener noreferrer"
-                            className="p-0.5 hover:bg-green-100 rounded transition-colors"
+                            className="p-0.5 hover:bg-success-muted rounded transition-colors"
                             title="Abrir PR"
                           >
                             <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
@@ -280,8 +284,8 @@ export const DeployADA = ({ objectId }: DeployADAProps) => {
                         </div>
                       )}
                       {st?.status === 'error' && st.error_message && (
-                        <div className="flex items-start gap-1.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1.5">
-                          <ExclamationCircleIcon className="h-3.5 w-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex items-start gap-1.5 text-xs text-danger bg-danger-subtle border border-danger-border rounded px-2 py-1.5">
+                          <ExclamationCircleIcon className="h-3.5 w-3.5 text-danger-icon flex-shrink-0 mt-0.5" />
                           <span>{st.error_message}</span>
                         </div>
                       )}

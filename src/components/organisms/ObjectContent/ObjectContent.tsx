@@ -227,6 +227,7 @@ export const ObjectContent = ({ data, onSearch, onEdit, currentPage, setCurrentP
           </div>
           <input
             type="text"
+            aria-label="Buscar"
             placeholder="Ingrese el criterio de búsqueda"
             className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-1 focus:ring-timia-accent/30 focus:border-timia-accent transition-smooth"
             value={props.searchTerm}

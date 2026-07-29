@@ -13,6 +13,9 @@ export const Button = ({
     <button
       className={cn(
         'rounded-lg font-semibold shadow-sm transition-smooth inline-flex items-center justify-center',
+        // Foco visible para navegacion por teclado (antes el atomo no
+        // declaraba ninguno y lo delegaba a cada consumidor).
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-timia-accent/60',
         // Size classes
         (size === 'small' || size === 'sm') && 'px-3 py-1.5 text-xs',
         size === 'medium' && 'px-4 py-2.5 text-sm',
@@ -21,7 +24,7 @@ export const Button = ({
         variant === 'primary' && 'bg-timia-accent text-white hover:bg-timia-accent-hover hover:shadow-glow-accent active:scale-[0.98]',
         variant === 'secondary' && 'bg-white/80 text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300',
         variant === 'danger' && 'bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]',
-        variant === 'outline' && 'border border-gray-300 bg-white text-gray-700 hover:border-timia-accent/30 hover:text-timia-accent hover:bg-red-50/30',
+        variant === 'outline' && 'border border-gray-300 bg-white text-gray-700 hover:border-timia-accent/30 hover:text-timia-accent hover:bg-danger-subtle/30',
         fullWidth && 'w-full',
         props.disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
         className

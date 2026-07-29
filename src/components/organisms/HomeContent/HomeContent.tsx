@@ -26,7 +26,7 @@ const PHASE_COLORS: Record<string, { bar: string; bg: string; text: string }> = 
   gobierno:     { bar: 'from-rose-500 to-rose-600',      bg: 'bg-rose-50',    text: 'text-rose-600' },
   kirby:        { bar: 'from-indigo-500 to-indigo-600',   bg: 'bg-indigo-50',  text: 'text-indigo-600' },
   hammurabi:    { bar: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-600' },
-  smartcleaner: { bar: 'from-amber-500 to-amber-600',    bg: 'bg-amber-50',   text: 'text-amber-600' },
+  smartcleaner: { bar: 'from-amber-500 to-amber-600',    bg: 'bg-warning-subtle',   text: 'text-warning' },
   controlm:     { bar: 'from-violet-500 to-violet-600',  bg: 'bg-violet-50',  text: 'text-violet-600' },
 };
 
@@ -42,7 +42,7 @@ const ACTION_ICONS: Record<string, { icon: typeof BookOpenIcon; color: string }>
   'gobierno': { icon: BookOpenIcon, color: 'text-rose-500 bg-rose-50' },
   'kirby': { icon: CubeTransparentIcon, color: 'text-indigo-500 bg-indigo-50' },
   'hammurabi': { icon: ShieldCheckIcon, color: 'text-emerald-500 bg-emerald-50' },
-  'smartcleaner': { icon: TrashIcon, color: 'text-amber-500 bg-amber-50' },
+  'smartcleaner': { icon: TrashIcon, color: 'text-warning-icon bg-warning-subtle' },
   'controlm': { icon: Cog6ToothIcon, color: 'text-violet-500 bg-violet-50' },
 };
 
@@ -149,7 +149,7 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
             const total = stats.objects.total || 1;
             const statusItems = [
               { label: 'Completados', value: stats.objects.by_status.completed, bar: 'bg-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-              { label: 'En curso', value: stats.objects.by_status.in_progress, bar: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700' },
+              { label: 'En curso', value: stats.objects.by_status.in_progress, bar: 'bg-amber-500', bg: 'bg-warning-subtle', text: 'text-warning' },
               { label: 'Pendientes', value: stats.objects.by_status.pending, bar: 'bg-gray-400', bg: 'bg-gray-50', text: 'text-gray-600' },
             ];
             return (

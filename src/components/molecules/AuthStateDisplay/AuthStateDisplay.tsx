@@ -21,7 +21,7 @@ export const AuthStateDisplay = ({ state }: AuthStateDisplayProps) => {
         return {
           spinner: false,
           text: 'Usuario no autenticado',
-          color: 'text-red-600'
+          color: 'text-danger'
         };
     }
   };

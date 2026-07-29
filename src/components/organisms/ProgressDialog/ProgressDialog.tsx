@@ -74,12 +74,12 @@ export const ProgressDialog = ({ title, steps, onComplete }: ProgressDialogProps
             animate={{ scale: 1, opacity: 1 }}
             className="text-center py-4"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success-muted mb-4">
+              <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-lg font-medium text-green-600">Exitoso</p>
+            <p className="text-lg font-medium text-success">Exitoso</p>
           </motion.div>
         )}
       </AnimatePresence>

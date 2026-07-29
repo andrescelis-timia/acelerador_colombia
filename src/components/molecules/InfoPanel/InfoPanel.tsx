@@ -12,20 +12,20 @@ export const InfoPanel = ({
     switch (variant) {
       case 'info':
         return {
-          container: 'bg-white border border-blue-200 rounded-lg',
-          header: 'px-4 py-3 border-b border-blue-200 bg-gray-50',
+          container: 'bg-white border border-info-border rounded-lg',
+          header: 'px-4 py-3 border-b border-info-border bg-gray-50',
           title: 'text-lg font-medium text-blue-900'
         };
       case 'warning':
         return {
-          container: 'bg-white border border-amber-200 rounded-lg',
-          header: 'px-4 py-3 border-b border-amber-200 bg-amber-50',
+          container: 'bg-white border border-warning-border rounded-lg',
+          header: 'px-4 py-3 border-b border-warning-border bg-warning-subtle',
           title: 'text-lg font-medium text-amber-900'
         };
       case 'success':
         return {
-          container: 'bg-white border border-green-200 rounded-lg',
-          header: 'px-4 py-3 border-b border-green-200 bg-green-50',
+          container: 'bg-white border border-success-border rounded-lg',
+          header: 'px-4 py-3 border-b border-success-border bg-success-subtle',
           title: 'text-lg font-medium text-green-900'
         };
       default: // neutral
