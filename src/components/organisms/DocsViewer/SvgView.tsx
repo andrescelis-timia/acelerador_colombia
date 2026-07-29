@@ -112,12 +112,19 @@ export const SvgView = ({ file, title }: SvgViewProps) => {
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
-          <Dialog.Panel>
+          {/*
+            El Panel lleva dimensiones definidas (90vw x 90vh) a proposito:
+            la mayoria de los diagramas son SVG con solo `viewBox`, sin
+            width/height, asi que no tienen tamano intrinseco. Sin un
+            contenedor de dimension conocida el <img> colapsa. Con esto,
+            `max-w/h-full` + `object-contain` resuelven y mantienen ratio.
+          */}
+          <Dialog.Panel className="w-[90vw] h-[90vh] flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={blobUrl}
               alt={title}
-              className="max-w-[90vw] max-h-[90vh] object-contain bg-white rounded-lg p-4"
+              className="max-w-full max-h-full object-contain bg-white rounded-lg p-4"
             />
           </Dialog.Panel>
         </div>
