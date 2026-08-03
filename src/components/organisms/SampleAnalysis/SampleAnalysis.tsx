@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
 import { ArrowUpTrayIcon, ExclamationTriangleIcon, CheckCircleIcon, XMarkIcon, BeakerIcon, EyeIcon, TrashIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/context/AuthContext';
 import type { SampleAnalysisProps, SampleAnalysisResult, SampleField } from './types';
@@ -9,9 +10,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1
 
 const TYPE_COLORS: Record<string, string> = {
   string: 'bg-gray-100 text-gray-700',
-  integer: 'bg-blue-100 text-gray-800',
+  integer: 'bg-info-muted text-gray-800',
   decimal: 'bg-purple-100 text-purple-700',
-  date: 'bg-green-100 text-green-700',
+  date: 'bg-success-muted text-success',
   timestamp: 'bg-teal-100 text-teal-700',
   boolean: 'bg-orange-100 text-orange-700',
 };
@@ -158,7 +159,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
             <span className="text-sm font-medium text-gray-700">Analisis de Muestra</span>
             {result?.metadata && (
               <div className="flex items-center gap-2 mt-0.5">
-                <CheckCircleIcon className="h-3.5 w-3.5 text-green-500" />
+                <CheckCircleIcon className="h-3.5 w-3.5 text-success-icon" />
                 <span className="text-xs text-gray-500">
                   {result.metadata.total_columns} campos
                   {totalTransformations > 0 ? `, ${totalTransformations} transformaciones recomendadas` : ', sin transformaciones recomendadas'}
@@ -184,14 +185,14 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               )}
               <button
                 onClick={handleDeleteSample}
-                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-1.5 text-gray-400 hover:text-danger hover:bg-danger-subtle rounded-lg transition-colors"
                 title="Eliminar analisis"
               >
                 <TrashIcon className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setModalOpen(true)}
-                className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-blue-100 rounded-lg transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-info-muted rounded-lg transition-colors"
               >
                 Ver Resultados
               </button>
@@ -200,7 +201,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
           {!result && (
             <button
               onClick={() => setModalOpen(true)}
-              className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-timia-accent bg-gray-50 hover:bg-info-muted rounded-lg transition-colors"
             >
               Analizar
             </button>
@@ -208,13 +209,13 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
         </div>
       </div>
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
-          <div className="fixed inset-0 bg-black/50" onClick={handleCloseModal} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col text-xs">
+      <Dialog open={modalOpen} onClose={handleCloseModal} className="relative z-50">
+        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-start justify-center pt-10 px-4">
+          <Dialog.Panel className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col text-xs">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Analisis de Muestra</h2>
-              <button onClick={handleCloseModal} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+              <Dialog.Title className="text-sm font-semibold text-gray-900">Analisis de Muestra</Dialog.Title>
+              <button onClick={handleCloseModal} aria-label="Cerrar" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                 <XMarkIcon className="h-5 w-5 text-gray-500" />
               </button>
             </div>
@@ -225,21 +226,21 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-lg p-3 text-center transition-colors ${
-                  file || result ? 'border-green-300 bg-green-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                  file || result ? 'border-green-300 bg-success-subtle' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
                 }`}
               >
                 {file ? (
                   <div className="flex items-center justify-center gap-3">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                    <CheckCircleIcon className="h-4 w-4 text-success-icon" />
                     <div>
                       <p className="font-medium text-gray-900">{file.name}</p>
                       <p className="text-[10px] text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                     </div>
-                    <button onClick={handleDeleteSample} className="text-red-500 hover:text-red-700 ml-4">Quitar</button>
+                    <button onClick={handleDeleteSample} className="text-danger-icon hover:text-danger ml-4">Quitar</button>
                   </div>
                 ) : result?.metadata ? (
                   <div className="flex items-center justify-center gap-3">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                    <CheckCircleIcon className="h-4 w-4 text-success-icon" />
                     <p className="font-medium text-gray-900">{result.metadata.file_name}</p>
                     <label className="text-timia-accent hover:text-blue-800 cursor-pointer ml-2">
                       Cambiar archivo
@@ -268,9 +269,9 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               )}
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 flex items-center gap-2">
-                  <ExclamationTriangleIcon className="h-4 w-4 text-red-500 flex-shrink-0" />
-                  <p className="text-red-700">{error}</p>
+                <div className="bg-danger-subtle border border-danger-border rounded-lg p-2.5 flex items-center gap-2">
+                  <ExclamationTriangleIcon className="h-4 w-4 text-danger-icon flex-shrink-0" />
+                  <p className="text-danger">{error}</p>
                 </div>
               )}
 
@@ -294,14 +295,14 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                   </div>
 
                   {result.validation_warning && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start gap-2">
-                      <ExclamationTriangleIcon className="h-3.5 w-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="bg-warning-subtle border border-warning-border rounded-lg p-2 flex items-start gap-2">
+                      <ExclamationTriangleIcon className="h-3.5 w-3.5 text-warning flex-shrink-0 mt-0.5" />
                       <span className="text-amber-800">{result.validation_warning}</span>
                     </div>
                   )}
                   {result.validation_ok && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-2 flex items-center gap-2">
-                      <CheckCircleIcon className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                    <div className="bg-success-subtle border border-success-border rounded-lg p-2 flex items-center gap-2">
+                      <CheckCircleIcon className="h-3.5 w-3.5 text-success flex-shrink-0" />
                       <span className="text-green-800">{result.validation_ok}</span>
                     </div>
                   )}
@@ -325,8 +326,8 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                             <span className="font-medium text-gray-700">
                               Transformaciones Recomendadas
                               {allTransformations.length > 0
-                                ? <span className="ml-1.5 text-amber-600">({acceptedCount}/{allTransformations.length} aceptadas)</span>
-                                : <span className="ml-1.5 text-green-600">(sin recomendaciones)</span>
+                                ? <span className="ml-1.5 text-warning">({acceptedCount}/{allTransformations.length} aceptadas)</span>
+                                : <span className="ml-1.5 text-success">(sin recomendaciones)</span>
                               }
                             </span>
                           </div>
@@ -352,9 +353,9 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                             {allTransformations.map((t) => {
                               const isAccepted = acceptedTransformations.has(t.key);
                               return (
-                                <label key={t.key} className={`flex items-center gap-2 rounded px-2 py-1 cursor-pointer transition-colors ${isAccepted ? 'bg-amber-50/60' : 'opacity-40'}`}>
-                                  <input type="checkbox" checked={isAccepted} onChange={() => toggleTransformation(t.key)} className="h-3 w-3 text-amber-600 rounded border-gray-300 flex-shrink-0" />
-                                  <span className="font-mono font-semibold text-amber-700 bg-amber-100 px-1 py-0.5 rounded">{t.field}</span>
+                                <label key={t.key} className={`flex items-center gap-2 rounded px-2 py-1 cursor-pointer transition-colors ${isAccepted ? 'bg-warning-subtle/60' : 'opacity-40'}`}>
+                                  <input type="checkbox" checked={isAccepted} onChange={() => toggleTransformation(t.key)} className="h-3 w-3 text-warning rounded border-gray-300 flex-shrink-0" />
+                                  <span className="font-mono font-semibold text-warning bg-warning-muted px-1 py-0.5 rounded">{t.field}</span>
                                   <span className={`${isAccepted ? 'text-gray-600' : 'text-gray-400 line-through'}`}>{t.description}</span>
                                 </label>
                               );
@@ -407,20 +408,22 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 </div>
               )}
             </div>
-          </div>
+          </Dialog.Panel>
         </div>
-      )}
+      </Dialog>
 
-      {previewOpen && previewContent && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setPreviewOpen(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+      <Dialog open={previewOpen && previewContent !== null} onClose={() => setPreviewOpen(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-start justify-center pt-10 px-4">
+          <Dialog.Panel className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <Dialog.Title className="text-lg font-semibold text-gray-900">
                 Contenido de la Muestra
-                <span className="text-sm font-normal text-gray-400 ml-2">(primeras {result?.metadata?.has_header ? previewContent.length - 1 : previewContent.length} filas)</span>
-              </h2>
-              <button onClick={() => setPreviewOpen(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                {previewContent && (
+                  <span className="text-sm font-normal text-gray-400 ml-2">(primeras {result?.metadata?.has_header ? previewContent.length - 1 : previewContent.length} filas)</span>
+                )}
+              </Dialog.Title>
+              <button onClick={() => setPreviewOpen(false)} aria-label="Cerrar" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                 <XMarkIcon className="h-5 w-5 text-gray-500" />
               </button>
             </div>
@@ -428,7 +431,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               <table className="min-w-full text-xs font-mono">
                 <thead>
                   <tr>
-                    {previewContent[0]?.map((_, ci) => (
+                    {previewContent?.[0]?.map((_, ci) => (
                       <th key={ci} className="px-2 py-1.5 text-left font-semibold text-gray-700 bg-gray-100 border-b border-gray-200 whitespace-nowrap">
                         {result?.metadata?.has_header && previewContent[0] ? previewContent[0][ci]?.trim() : `col_${ci}`}
                       </th>
@@ -436,7 +439,7 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                   </tr>
                 </thead>
                 <tbody>
-                  {previewContent.slice(result?.metadata?.has_header ? 1 : 0).map((row, ri) => (
+                  {previewContent?.slice(result?.metadata?.has_header ? 1 : 0).map((row, ri) => (
                     <tr key={ri} className="hover:bg-gray-50 border-b border-gray-100">
                       {row.map((cell, ci) => (
                         <td key={ci} className="px-2 py-1.5 text-gray-600 whitespace-nowrap">{cell.trim()}</td>
@@ -446,9 +449,9 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 </tbody>
               </table>
             </div>
-          </div>
+          </Dialog.Panel>
         </div>
-      )}
+      </Dialog>
     </>
   );
 };

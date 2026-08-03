@@ -259,7 +259,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-email"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email <span className="text-red-500">*</span>
+              Email <span className="text-danger-icon">*</span>
             </label>
             <input
               id="create-user-email"
@@ -278,7 +278,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               aria-invalid={!!errors.email}
             />
             {errors.email && (
-              <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="email-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.email}
               </p>
             )}
@@ -290,7 +290,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-auth-method"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Método de Autenticación <span className="text-red-500">*</span>
+              Método de Autenticación <span className="text-danger-icon">*</span>
             </label>
             <select
               id="create-user-auth-method"
@@ -316,7 +316,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               <option value="google">Google</option>
             </select>
             {errors.authMethod && (
-              <p id="auth-method-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="auth-method-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.authMethod}
               </p>
             )}
@@ -328,7 +328,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-country"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              País <span className="text-red-500">*</span>
+              País <span className="text-danger-icon">*</span>
             </label>
             <select
               id="create-user-country"
@@ -347,7 +347,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               <option value="PE">Perú</option>
             </select>
             {errors.country && (
-              <p id="country-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="country-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.country}
               </p>
             )}
@@ -359,7 +359,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-role"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Rol <span className="text-red-500">*</span>
+              Rol <span className="text-danger-icon">*</span>
             </label>
             <select
               id="create-user-role"
@@ -380,7 +380,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               <option value="ADMIN">Administrador</option>
             </select>
             {errors.role && (
-              <p id="role-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="role-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.role}
               </p>
             )}
@@ -393,7 +393,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Contraseña <span className="text-red-500">*</span>
+              Contraseña <span className="text-danger-icon">*</span>
             </label>
             <div className="relative">
               <input
@@ -446,10 +446,10 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                         }`}
                     />
                   </div>
-                  <span className={`text-xs font-medium ${passwordStrength.score <= 1 ? 'text-red-600' :
+                  <span className={`text-xs font-medium ${passwordStrength.score <= 1 ? 'text-danger' :
                     passwordStrength.score === 2 ? 'text-yellow-600' :
                       passwordStrength.score === 3 ? 'text-timia-accent' :
-                        'text-green-600'
+                        'text-success'
                     }`}>
                     {passwordStrength.score <= 1 ? 'Débil' :
                       passwordStrength.score === 2 ? 'Regular' :
@@ -471,7 +471,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
             )}
 
             {errors.password && (
-              <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="password-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.password}
               </p>
             )}
@@ -485,7 +485,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               htmlFor="create-user-confirm-password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Confirmar Contraseña <span className="text-red-500">*</span>
+              Confirmar Contraseña <span className="text-danger-icon">*</span>
             </label>
             <div className="relative">
               <input
@@ -524,7 +524,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
               </button>
             </div>
             {errors.confirmPassword && (
-              <p id="confirm-password-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="confirm-password-error" className="mt-1 text-sm text-danger" role="alert">
                 {errors.confirmPassword}
               </p>
             )}
@@ -533,7 +533,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
 
           {/* General Error Message */}
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3" role="alert">
+            <div className="bg-danger-subtle border border-danger-border rounded-md p-3" role="alert">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -541,7 +541,7 @@ export const CreateUserWithPasswordForm: React.FC<CreateUserWithPasswordFormProp
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">
+                  <p className="text-sm text-danger">
                     {errors.general}
                   </p>
                 </div>

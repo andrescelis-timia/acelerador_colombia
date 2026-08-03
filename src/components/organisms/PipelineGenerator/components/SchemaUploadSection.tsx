@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
+import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
 
 type ComponentTypeArg = 'tabla' | 'tablon' | 'tabla_no_raw';
 
@@ -399,7 +400,7 @@ export const SchemaUploadSection = ({
                       <button onClick={() => handlePreviewSchema(rawSchema, 'raw')} className="p-1 text-gray-400 hover:text-timia-accent rounded transition-colors" title="Ver schema">
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button onClick={() => handleRemoveFile('raw')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">
+                      <button onClick={() => handleRemoveFile('raw')} className="p-1 text-gray-400 hover:text-danger rounded transition-colors" title="Eliminar schema">
                         <TrashIcon className="h-4 w-4" />
                       </button>
                     </div>
@@ -443,7 +444,7 @@ export const SchemaUploadSection = ({
                     <button onClick={() => handlePreviewSchema(masterSchema, 'master')} className="p-1 text-gray-400 hover:text-timia-accent rounded transition-colors" title="Ver schema">
                       <EyeIcon className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleRemoveFile('master')} className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors" title="Eliminar schema">
+                    <button onClick={() => handleRemoveFile('master')} className="p-1 text-gray-400 hover:text-danger rounded transition-colors" title="Eliminar schema">
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   </div>
@@ -491,9 +492,9 @@ export const SchemaUploadSection = ({
                       </button>
                     </div>
                     {aliasDraft.trim().length > ALIAS_MAX_LENGTH ? (
-                      <p className="mt-1.5 text-[11px] text-amber-700">
+                      <p className="mt-1.5 text-[11px] text-warning">
                         {aliasDraft.trim().length} chars — se acortará a{' '}
-                        <code className="bg-amber-100 px-1 rounded font-mono">{shortenAlias(aliasDraft.trim())}</code>{' '}
+                        <code className="bg-warning-muted px-1 rounded font-mono">{shortenAlias(aliasDraft.trim())}</code>{' '}
                         (máx {ALIAS_MAX_LENGTH}, quita vocales de derecha a izquierda).
                       </p>
                     ) : (
@@ -521,7 +522,7 @@ export const SchemaUploadSection = ({
                       <button
                         type="button"
                         onClick={clearAlias}
-                        className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                        className="p-1 text-gray-400 hover:text-danger rounded transition-colors"
                         title="Quitar override (volver a alias automático)"
                       >
                         <XMarkIcon className="h-3.5 w-3.5" />
@@ -539,11 +540,11 @@ export const SchemaUploadSection = ({
                   </div>
                 ) : showAliasWarning ? (
                   // ESTADO WARNING: nombre físico probablemente sin alias
-                  <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2">
-                    <ExclamationTriangleIcon className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 rounded-md border border-warning-border bg-warning-subtle px-2.5 py-2">
+                    <ExclamationTriangleIcon className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-amber-900">
-                        <span className="font-medium">Alias no detectado</span> en <code className="bg-amber-100 px-1 rounded">{masterPhysicalName}</code>. Especifica manualmente:
+                        <span className="font-medium">Alias no detectado</span> en <code className="bg-warning-muted px-1 rounded">{masterPhysicalName}</code>. Especifica manualmente:
                       </p>
                       <button
                         type="button"
@@ -569,7 +570,7 @@ export const SchemaUploadSection = ({
                       </span>
                       {derivedWasShortened && (
                         <span
-                          className="text-[10px] uppercase tracking-wide text-amber-600 font-medium"
+                          className="text-[10px] uppercase tracking-wide text-warning font-medium"
                           title={`Original de ${derivedAliasRaw.length} chars, acortado a ${ALIAS_MAX_LENGTH} quitando vocales.`}
                         >
                           acortado
@@ -607,10 +608,10 @@ export const SchemaUploadSection = ({
           <h3 className="text-base font-semibold text-gray-900 mb-3">Validaciones</h3>
           <div className="space-y-2">
             {validationErrors.map((error, index) => (
-              <div key={index} className={`flex items-start space-x-2 p-2 rounded-lg ${error.severity === 'error' ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'
+              <div key={index} className={`flex items-start space-x-2 p-2 rounded-lg ${error.severity === 'error' ? 'bg-danger-subtle border border-danger-border' : 'bg-yellow-50 border border-yellow-200'
                 }`}>
                 {error.severity === 'error' ? (
-                  <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <ExclamationTriangleIcon className="h-4 w-4 text-danger-icon mt-0.5 flex-shrink-0" />
                 ) : (
                   <InformationCircleIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                 )}
@@ -625,22 +626,10 @@ export const SchemaUploadSection = ({
       )}
     </div>
 
-      {schemaPreview && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setSchemaPreview(null)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">{schemaPreview.title}</h2>
-              <button onClick={() => setSchemaPreview(null)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
-              </button>
-            </div>
-            <div className="overflow-auto p-4">
-              <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap">{schemaPreview.content}</pre>
-            </div>
-          </div>
-        </div>
-      )}
+      <FilePreviewModal
+        file={schemaPreview ? { name: schemaPreview.title, content: schemaPreview.content } : null}
+        onClose={() => setSchemaPreview(null)}
+      />
     </>
   );
 };

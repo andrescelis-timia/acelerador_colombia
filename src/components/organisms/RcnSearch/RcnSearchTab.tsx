@@ -128,6 +128,7 @@ export const RcnSearchTab = () => {
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
+              aria-label={isPhysical ? 'Buscar por nombre físico' : 'Buscar campos RCN'}
               placeholder={
                 isPhysical
                   ? 'Buscar por nombre físico (ILIKE, ej. g_entific%)…'
@@ -160,8 +161,9 @@ export const RcnSearchTab = () => {
 
         <div className="flex flex-wrap items-end gap-3 text-xs">
           <div>
-            <label className="block text-gray-500 mb-1">Campo</label>
+            <label htmlFor="rcn-search-field" className="block text-gray-500 mb-1">Campo</label>
             <select
+              id="rcn-search-field"
               value={field}
               onChange={e => setField(e.target.value as SearchField)}
               className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -196,8 +198,9 @@ export const RcnSearchTab = () => {
           )}
 
           <div>
-            <label className="block text-gray-500 mb-1">Jerarquía</label>
+            <label htmlFor="rcn-search-hierarchy" className="block text-gray-500 mb-1">Jerarquía</label>
             <select
+              id="rcn-search-hierarchy"
               value={hierarchy}
               onChange={e => setHierarchy(e.target.value as Hierarchy | '')}
               className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
@@ -211,8 +214,9 @@ export const RcnSearchTab = () => {
 
           {!isPhysical && (
             <div>
-              <label className="block text-gray-500 mb-1">Threshold</label>
+              <label htmlFor="rcn-search-threshold" className="block text-gray-500 mb-1">Threshold</label>
               <input
+                id="rcn-search-threshold"
                 type="number"
                 step="0.05"
                 min={0}
@@ -227,7 +231,7 @@ export const RcnSearchTab = () => {
       </form>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">{error}</div>
+        <div className="p-3 bg-danger-subtle border border-danger-border rounded-md text-xs text-danger">{error}</div>
       )}
 
       {count > 0 && (

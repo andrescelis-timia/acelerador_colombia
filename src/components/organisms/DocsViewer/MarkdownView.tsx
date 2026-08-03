@@ -98,7 +98,7 @@ export const MarkdownView = ({ file }: MarkdownViewProps) => {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+      <div className="p-6 bg-danger-subtle border border-danger-border rounded-lg text-sm text-danger">
         {error}
       </div>
     );

@@ -42,7 +42,7 @@ export const BoxFlowCard = ({
                   className={cn(
                     "h-4 w-4 ml-2 flex-shrink-0 transition-colors",
                     selectedFile 
-                      ? "text-green-500" 
+                      ? "text-success-icon" 
                       : "text-gray-500 group-hover:text-timia-accent"
                   )}
                 />

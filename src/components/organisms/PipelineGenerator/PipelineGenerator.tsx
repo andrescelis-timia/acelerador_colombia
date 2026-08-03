@@ -132,7 +132,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
 
   const tabs = [
     { id: 'kirby', name: 'Kirby', icon: CubeIcon, accent: 'text-blue-500' },
-    { id: 'hammurabi', name: 'Hammurabi', icon: ShieldCheckIcon, accent: 'text-amber-500' },
+    { id: 'hammurabi', name: 'Hammurabi', icon: ShieldCheckIcon, accent: 'text-warning-icon' },
     { id: 'smartcleaner', name: 'SmartCleaner', icon: TrashIcon, accent: 'text-purple-500' },
   ];
 
@@ -171,7 +171,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                 >
                   <tab.icon className={`h-5 w-5 ${tab.accent}`} />
                   {tab.name}
-                  {isCompleted && <CheckCircleIcon className="h-5 w-5 text-green-500" />}
+                  {isCompleted && <CheckCircleIcon className="h-5 w-5 text-success-icon" />}
                 </button>
               );
             })}

@@ -165,11 +165,11 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   // Validar país después de todos los hooks
   if (!country || (country !== 'CO' && country !== 'PE')) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <p className="text-sm text-red-700">
+      <div className="bg-danger-subtle border border-danger-border rounded-md p-4">
+        <p className="text-sm text-danger">
           País no soportado: &quot;{country || '(vacío)'}&quot;
         </p>
-        <p className="text-xs text-red-600 mt-1">
+        <p className="text-xs text-danger mt-1">
           Solo se soportan los países CO (Colombia) y PE (Perú).
         </p>
       </div>
@@ -538,7 +538,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                   setShowSampleProgress(false);
                 }
               },
-              className: "text-green-500 hover:text-green-600",
+              className: "text-success-icon hover:text-success",
               disabled: !canExecuteSample,
               tooltip: getPreDictionaryTooltip(),
               readOnlyWrapper: true
@@ -558,7 +558,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: handleDictionaryGeneration,
-              className: "text-green-500 hover:text-green-600",
+              className: "text-success-icon hover:text-success",
               disabled: !dictionaryJsonHeader && !dictionaryFile,
               tooltip: !dictionaryJsonHeader && !dictionaryFile ?
                 'Se requiere un diccionario o archivo JSON' :
@@ -597,7 +597,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             leftIcons={[{
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: handleGenerateL1T,
-              className: "text-green-500 hover:text-green-600",
+              className: "text-success-icon hover:text-success",
               disabled: isL1TDisabled || !canExecuteL1T,
               tooltip: isL1TDisabled ? 'L1T no habilitado para este objeto' :
                 !canExecuteL1T ? 'Se requieren los links del diccionario master' :
@@ -739,7 +739,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* Card principal - Formato BoxFlowCard */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
                   <h3 className="text-sm font-semibold text-gray-800">Generar Diccionario</h3>
                 </div>
               </div>
@@ -751,7 +751,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
                         {
                           icon: <PlayIcon className="h-5 w-5" />,
                           onClick: handleGenerateLiteCo,
-                          className: "text-green-500 hover:text-green-600",
+                          className: "text-success-icon hover:text-success",
                           disabled: isLiteLoading,
                           tooltip: isUpdateMode
                             ? `Regenerar ${liteLegacyCount} ${liteLegacyCount === 1 ? 'campo' : 'campos'}`
@@ -823,7 +823,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard Muestra */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
                   <h3 className="text-sm font-semibold text-gray-800">Procesar Pre-diccionario</h3>
                 </div>
               </div>
@@ -841,7 +841,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard Diccionario */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
                   <h3 className="text-sm font-semibold text-gray-800">Generar Diccionarios</h3>
                 </div>
               </div>
@@ -859,7 +859,7 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
             {/* BoxFlowCard L1T */}
             <div className="relative z-10">
               <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
                   <h3 className="text-sm font-semibold text-gray-800">Generar L1T</h3>
                 </div>
               </div>

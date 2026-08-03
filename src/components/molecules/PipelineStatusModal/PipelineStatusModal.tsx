@@ -44,14 +44,14 @@ const STATUS_CONFIG: Record<PipelineStageStatus, {
   },
   completed: {
     label: 'Completado',
-    bgColor: 'bg-green-100',
-    textColor: 'text-green-700',
+    bgColor: 'bg-success-muted',
+    textColor: 'text-success',
     icon: CheckCircleIcon
   },
   error: {
     label: 'Error',
-    bgColor: 'bg-red-100',
-    textColor: 'text-red-700',
+    bgColor: 'bg-danger-muted',
+    textColor: 'text-danger',
     icon: ExclamationCircleIcon
   }
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { Dialog } from '@headlessui/react';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
 import { ResponseUserDto } from '@/services/User/types';
@@ -245,7 +246,7 @@ export default function AdminPage() {
       );
     } else {
       return (
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700">
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-subtle text-success">
           Google
         </span>
       );
@@ -337,6 +338,7 @@ export default function AdminPage() {
                 <span className="text-sm font-medium text-gray-700">{users.length} usuarios</span>
                 <div className="flex items-center gap-2">
                   <input
+                    aria-label="Buscar usuario por email"
                     type="text"
                     placeholder="Buscar por email..."
                     value={userSearch}
@@ -397,6 +399,7 @@ export default function AdminPage() {
                           <td className="px-3 py-2 whitespace-nowrap">
                             {editingUserId === u.id_user ? (
                               <select
+                                aria-label={`Rol de ${u.email}`}
                                 value={u.role}
                                 onChange={async (e) => {
                                   const newRole = e.target.value;
@@ -428,7 +431,7 @@ export default function AdminPage() {
                               </select>
                             ) : (
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                u.role === 'ADMIN' ? 'bg-red-50 text-red-700' :
+                                u.role === 'ADMIN' ? 'bg-danger-subtle text-danger' :
                                 u.role === 'APP_OWNER' ? 'bg-indigo-50 text-indigo-700' :
                                 u.role === 'SERVICE_OWNER' ? 'bg-purple-50 text-purple-700' :
                                 'bg-gray-50 text-gray-800'
@@ -466,7 +469,7 @@ export default function AdminPage() {
                                   }
                                 } catch { setErrorMessage('Error al eliminar usuario'); }
                               }}
-                              className="text-red-600 hover:text-red-800 text-xs font-medium"
+                              className="text-danger hover:text-red-800 text-xs font-medium"
                             >
                               <TrashIcon className="h-4 w-4" />
                             </button>
@@ -490,8 +493,9 @@ export default function AdminPage() {
         {activeTab === 'assignments' && (
           <div>
             <div className="mb-3 flex items-center gap-3">
-              <label className="text-xs font-medium text-gray-500">Pais:</label>
+              <label htmlFor="adm-pais" className="text-xs font-medium text-gray-500">Pais:</label>
               <select
+                      id="adm-pais"
                 value={assignCountry}
                 onChange={(e) => setAssignCountry(e.target.value)}
                 className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-timia-accent"
@@ -565,6 +569,7 @@ export default function AdminPage() {
                     <div className="flex gap-2 mb-3">
                       <div className="flex-1 relative">
                         <input
+                          aria-label="Buscar usuario por email"
                           type="text"
                           placeholder="Buscar email..." autoComplete="off"
                           value={addMemberEmail}
@@ -599,6 +604,7 @@ export default function AdminPage() {
                         )}
                       </div>
                       <select
+                        aria-label="Rol del nuevo miembro"
                         value={addMemberRole}
                         onChange={(e) => setAddMemberRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                         className="px-2 py-1.5 border border-gray-300 rounded text-xs"
@@ -636,6 +642,7 @@ export default function AdminPage() {
                               <td className="px-3 py-2 text-xs text-gray-900">{member.user_email}</td>
                               <td className="px-3 py-2">
                                 <select
+                                  aria-label={`Rol de ${member.user_email}`}
                                   value={member.project_role}
                                   onChange={(e) => handleChangeRole(member.id_user, e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                                   className="text-xs border border-gray-300 rounded px-2 py-1"
@@ -648,7 +655,7 @@ export default function AdminPage() {
                               <td className="px-3 py-2 text-right">
                                 <button
                                   onClick={() => handleRemoveMember(member.id_user)}
-                                  className="text-red-600 hover:text-red-800 text-xs font-medium"
+                                  className="text-danger hover:text-red-800 text-xs font-medium"
                                 >
                                   Quitar
                                 </button>
@@ -719,6 +726,7 @@ export default function AdminPage() {
                     <div className="flex gap-2 mb-3">
                       <div className="flex-1 relative">
                         <input
+                          aria-label="Buscar proyecto"
                           type="text"
                           placeholder="Buscar proyecto..."
                           value={assignProjectSearch}
@@ -755,6 +763,7 @@ export default function AdminPage() {
                         )}
                       </div>
                       <select
+                        aria-label="Rol en el proyecto"
                         value={assignProjectRole}
                         onChange={(e) => setAssignProjectRole(e.target.value as 'OWNER' | 'OWNER_READONLY' | 'DATA_ENGINEER')}
                         className="px-2 py-1.5 border border-gray-300 rounded text-xs"
@@ -789,7 +798,7 @@ export default function AdminPage() {
                             <td className="px-3 py-2 text-xs text-gray-900">{p.project_name || p.id_project}</td>
                             <td className="px-3 py-2">
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                p.project_role === 'OWNER' ? 'bg-amber-100 text-amber-700' : p.project_role === 'OWNER_READONLY' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-gray-800'
+                                p.project_role === 'OWNER' ? 'bg-warning-muted text-warning' : p.project_role === 'OWNER_READONLY' ? 'bg-gray-100 text-gray-600' : 'bg-info-muted text-gray-800'
                               }`}>
                                 {p.project_role}
                               </span>
@@ -816,13 +825,17 @@ export default function AdminPage() {
           </div>
         )}
 
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowCreateModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+      <Dialog
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-start justify-center pt-10 px-4">
+          <Dialog.Panel className="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-900">Crear Nuevo Usuario</h3>
-              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-gray-100 rounded transition-colors">
+              <Dialog.Title className="text-xs font-semibold text-gray-900">Crear Nuevo Usuario</Dialog.Title>
+              <button onClick={() => setShowCreateModal(false)} aria-label="Cerrar" className="p-1 hover:bg-gray-100 rounded transition-colors">
                 <svg className="h-3.5 w-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -832,9 +845,9 @@ export default function AdminPage() {
                 onError={handleError}
               />
             </div>
-          </div>
+          </Dialog.Panel>
         </div>
-      )}
+      </Dialog>
     </>
   );
 }

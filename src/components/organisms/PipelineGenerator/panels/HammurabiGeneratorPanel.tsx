@@ -16,6 +16,8 @@ import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { GeneratorPanelProps } from '../types';
 import { usePipelineGeneratorService, GenerateHammurabiResponse } from '@/services/PipelineGenerator';
 import { useFileOperations } from '@/hooks/useFileOperations';
+import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
+import { useGenerationProgress } from '@/hooks/useGenerationProgress';
 
 
 export const HammurabiGeneratorPanel = ({
@@ -30,8 +32,6 @@ export const HammurabiGeneratorPanel = ({
   aliasOverride,
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState<string>('');
   const [generationResults, setGenerationResults] = useState<GenerateHammurabiResponse['data'] | null>(null);
   const [isFromSavedData, setIsFromSavedData] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +39,8 @@ export const HammurabiGeneratorPanel = ({
   const [showWarningTooltip, setShowWarningTooltip] = useState(false);
   const pipelineGeneratorService = usePipelineGeneratorService();
   const { selectedFileContent, viewFileContent, downloadFile, closeFileContent } = useFileOperations();
+  const { progress, currentStep, start: startProgress, finish: finishProgress, abort: abortProgress } =
+    useGenerationProgress(pipelineGeneratorService.generateProgressSteps('hammurabi'));
 
   useEffect(() => {
     if (initialData?.artifacts_data) {
@@ -51,19 +53,10 @@ export const HammurabiGeneratorPanel = ({
     if (!canGenerate) return;
 
     setIsGenerating(true);
-    setProgress(0);
     setError(null);
     setIsFromSavedData(false);
 
     try {
-      const steps = pipelineGeneratorService.generateProgressSteps('hammurabi');
-
-      for (let i = 0; i < steps.length; i++) {
-        setCurrentStep(steps[i]);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setProgress(((i + 1) / steps.length) * 100);
-      }
-
       let rawSchemaData = undefined;
       if (rawSchema) {
         try {
@@ -92,9 +85,12 @@ export const HammurabiGeneratorPanel = ({
         alias: aliasOverride?.trim() || undefined,
       };
 
+      // El indicador corre en paralelo al request, no antes.
+      startProgress();
       const response = await pipelineGeneratorService.generateHammurabi(requestData);
 
       if (response.success) {
+        finishProgress();
         setGenerationResults(response.data);
         onGenerationComplete?.();
       } else {
@@ -102,6 +98,7 @@ export const HammurabiGeneratorPanel = ({
       }
 
     } catch (err) {
+      abortProgress();
       setError(err instanceof Error ? err.message : 'Error en la generación');
     } finally {
       setIsGenerating(false);
@@ -191,7 +188,7 @@ export const HammurabiGeneratorPanel = ({
 
           {generationResults && !isGenerating && (
             <div className="flex items-center text-sm text-gray-600">
-              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-1" />
+              <CheckCircleIcon className="h-4 w-4 text-success-icon mr-1" />
               {totalFiles} archivos
               {isFromSavedData && (initialData?.update_date || initialData?.creation_date) && (
                 <span className="ml-2 text-xs text-gray-400">
@@ -248,18 +245,18 @@ export const HammurabiGeneratorPanel = ({
             <button
               onMouseEnter={() => setShowWarningTooltip(true)}
               onMouseLeave={() => setShowWarningTooltip(false)}
-              className="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors"
+              className="p-1.5 text-gray-400 hover:text-warning-icon hover:bg-warning-subtle rounded transition-colors"
               title="Validaciones críticas"
             >
               <ExclamationTriangleIcon className="h-5 w-5" />
             </button>
             {showWarningTooltip && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-amber-200 rounded-lg shadow-lg p-3 z-50">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-warning-border rounded-lg shadow-lg p-3 z-50">
                 <h4 className="font-medium text-amber-900 text-sm mb-2">Validaciones Críticas</h4>
                 <ul className="space-y-1 text-xs text-amber-800">
                   <li>• Validar propiedades CSV (header, delimitador, encoding)</li>
                   <li>• Regla 4.2: Validar campos clave reales</li>
-                  <li>• Reemplazar <code className="bg-amber-100 px-1 rounded">&lt;PROJECT&gt;</code> y <code className="bg-amber-100 px-1 rounded">&lt;REPO_NAME&gt;</code> en jobs</li>
+                  <li>• Reemplazar <code className="bg-warning-muted px-1 rounded">&lt;PROJECT&gt;</code> y <code className="bg-warning-muted px-1 rounded">&lt;REPO_NAME&gt;</code> en jobs</li>
                 </ul>
               </div>
             )}
@@ -277,9 +274,9 @@ export const HammurabiGeneratorPanel = ({
 
       {/* Error Display */}
       {error && (
-        <div className="mb-6 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-6 flex items-center gap-2 p-3 bg-danger-subtle border border-danger-border rounded-lg">
+          <ExclamationTriangleIcon className="h-5 w-5 text-danger-icon flex-shrink-0" />
+          <p className="text-sm text-danger">{error}</p>
         </div>
       )}
 
@@ -325,7 +322,7 @@ export const HammurabiGeneratorPanel = ({
                         </button>
                         <button
                           onClick={() => downloadFile(file)}
-                          className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
+                          className="p-1 text-gray-400 hover:text-success hover:bg-success-subtle rounded"
                           title="Descargar"
                         >
                           <DocumentArrowDownIcon className="h-4 w-4" />
@@ -360,7 +357,7 @@ export const HammurabiGeneratorPanel = ({
                         </button>
                         <button
                           onClick={() => downloadFile(file)}
-                          className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
+                          className="p-1 text-gray-400 hover:text-success hover:bg-success-subtle rounded"
                           title="Descargar"
                         >
                           <DocumentArrowDownIcon className="h-4 w-4" />
@@ -375,28 +372,7 @@ export const HammurabiGeneratorPanel = ({
         </div>
       )}
 
-      {/* File Content Viewer Modal */}
-      {selectedFileContent && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={closeFileContent}
-        >
-          <div
-            className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] flex flex-col border-2 border-gray-300 ring-1 ring-black/5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-xl">
-              <span className="font-medium text-gray-900 truncate">{selectedFileContent.name}</span>
-              <Button size="sm" variant="outline" onClick={closeFileContent}>
-                Cerrar
-              </Button>
-            </div>
-            <pre className="flex-1 overflow-auto p-4 bg-white text-sm font-mono whitespace-pre-wrap">
-              {selectedFileContent.content}
-            </pre>
-          </div>
-        </div>
-      )}
+      <FilePreviewModal file={selectedFileContent} onClose={closeFileContent} />
     </div>
   );
 };
