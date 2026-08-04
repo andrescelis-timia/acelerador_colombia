@@ -80,6 +80,9 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
   'anual': '8'
 };
 
+// Debe coincidir con ControlMXMLGeneratorService.DEFAULT_MAILBOX del backend.
+const DEFAULT_MAILBOX = 'buzon.proyecto.group@bbva.com';
+
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Trigger type: datax o filewatcher
   const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
@@ -88,8 +91,16 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
+  // Buzon destino de las notificaciones DOMAIL de los jobs. Vacio => el
+  // backend usa DEFAULT_MAILBOX. Admite varios separados por ';'.
+  const [mailbox, setMailbox] = useState('');
+  const mailboxCount = mailbox.split(';').map(m => m.trim()).filter(Boolean).length;
   const [uuaa, setUuaa] = useState('');
-  const [xmlOriginalUuaa, setXmlOriginalUuaa] = useState<string | null>(null); // UUAA from existing XML (3 or 4 chars)
+  // UUAA del folder de cada malla existente (3 chars en mallas legacy, 4 en la
+  // convencion vigente). Se guardan por separado: si solo se sube una T02
+  // legacy, el T04 nuevo NO debe heredar su UUAA de 3 chars.
+  const [xmlT04Uuaa, setXmlT04Uuaa] = useState<string | null>(null);
+  const [xmlT02Uuaa, setXmlT02Uuaa] = useState<string | null>(null);
   const [ingestaJobs, setIngestaJobs] = useState<IngestaJob[]>([]);
   const [hasL1T, setHasL1T] = useState(false);
 
@@ -412,8 +423,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const folderInfo = response.folder_info;
       const xmlUuaa = (folderInfo.t04?.normalizedUuaa || folderInfo.t02?.normalizedUuaa || '').toLowerCase();
       // Store original UUAA from XML (3 or 4 chars) for job name generation
-      const originalXmlUuaa = (folderInfo.t04?.uuaa || folderInfo.t02?.uuaa || '').toUpperCase();
-      setXmlOriginalUuaa(originalXmlUuaa || null);
+      setXmlT04Uuaa((folderInfo.t04?.uuaa || '').toUpperCase() || null);
+      setXmlT02Uuaa((folderInfo.t02?.uuaa || '').toUpperCase() || null);
 
       if (!uuaa) {
         // Auto-fill if empty
@@ -473,7 +484,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       );
     } else {
       setNextSequences(null);
-      setXmlOriginalUuaa(null);
+      setXmlT04Uuaa(null);
+      setXmlT02Uuaa(null);
       setUuaaMismatchWarning(null);
     }
   };
@@ -504,8 +516,12 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Generar secuencia de jobs Control-M
   const generateControlMSequence = (): ControlMJob[] => {
     const jobs: ControlMJob[] = [];
-    // In additive mode xmlOriginalUuaa is set; in new mode normalize to 4 chars
-    const jobUuaa = xmlOriginalUuaa || normalizeUuaa(uuaa).toUpperCase();
+    // El JOBNAME es 'C' + UUAA. Cada malla usa la UUAA de su propio folder:
+    // los jobs Datax (T) viven en el T04 y los de ingesta/borrado/filewatcher
+    // (C/D/W) en el T02. Si esa malla es nueva, se usa la UUAA full.
+    const fullUuaa = normalizeUuaa(uuaa).toUpperCase();
+    const t04Uuaa = xmlT04Uuaa || fullUuaa;
+    const t02Uuaa = xmlT02Uuaa || fullUuaa;
     const temporalidadCode = TEMPORALIDAD_CODES[dataxConfig.periodicity];
 
     // Use next available sequences from analysis (additive mode) or start from 1
@@ -518,7 +534,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     if (triggerType === 'filewatcher') {
       const wSequence = nextSequences?.W ?? 1;
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'W', 'D', temporalidadCode, wSequence),
+        jobName: generateControlMJobName(t02Uuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
         description: `Job de validacion de la existencia del archivo de ${alias}`,
         phase: 'filewatcher',
@@ -527,7 +543,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       });
     } else {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'T', 'D', temporalidadCode, tSequence++),
+        jobName: generateControlMJobName(t04Uuaa, 'T', 'D', temporalidadCode, tSequence++),
         type: 'T',
         description: `Transferencia Datax ${transferName}`,
         phase: 'datax',
@@ -540,7 +556,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiStaging = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'staging');
     if (hammurabiStaging) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: `Calidad de datos en fase Staging - ${alias}`,
         phase: 'staging',
@@ -553,7 +569,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyRaw = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'raw');
     if (kirbyRaw) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: `Ingesta de datos en fase Raw - ${alias}`,
         phase: 'raw',
@@ -566,7 +582,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiRaw = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'raw');
     if (hammurabiRaw) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: `Calidad de datos en fase Raw - ${alias}`,
         phase: 'raw',
@@ -579,7 +595,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const kirbyMaster = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master');
     if (kirbyMaster) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: `Ingesta de datos en fase Master - ${alias}`,
         phase: 'master',
@@ -592,7 +608,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const hammurabiMaster = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master');
     if (hammurabiMaster) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
         type: 'C',
         description: `Calidad de datos en fase Master - ${alias}`,
         phase: 'master',
@@ -606,7 +622,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const kirbyL1T = ingestaJobs.find(j => j.generator === 'kirby' && j.phase === 'master-l1t');
       if (kirbyL1T) {
         jobs.push({
-          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: `Ingesta de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
@@ -618,7 +634,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const hammurabiL1T = ingestaJobs.find(j => j.generator === 'hammurabi' && j.phase === 'master-l1t');
       if (hammurabiL1T) {
         jobs.push({
-          jobName: generateControlMJobName(jobUuaa, 'C', 'D', temporalidadCode, cSequence++),
+          jobName: generateControlMJobName(t02Uuaa, 'C', 'D', temporalidadCode, cSequence++),
           type: 'C',
           description: `Calidad de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
@@ -630,7 +646,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
     // 9. Borrado Staging
     jobs.push({
-      jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
+      jobName: generateControlMJobName(t02Uuaa, 'D', 'D', temporalidadCode, dSequence++),
       type: 'D',
       description: `Borrado de input en fase Staging - ${alias}`,
       phase: 'staging',
@@ -642,7 +658,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerRaw = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'raw');
     if (smartcleanerRaw) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: `Borrado de datos en fase Raw - ${alias}`,
         phase: 'raw',
@@ -655,7 +671,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const smartcleanerMaster = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master');
     if (smartcleanerMaster) {
       jobs.push({
-        jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
+        jobName: generateControlMJobName(t02Uuaa, 'D', 'D', temporalidadCode, dSequence++),
         type: 'D',
         description: `Borrado de datos en fase Master - ${alias}`,
         phase: 'master',
@@ -669,7 +685,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       const smartcleanerL1T = ingestaJobs.find(j => j.generator === 'smartcleaner' && j.phase === 'master-l1t');
       if (smartcleanerL1T) {
         jobs.push({
-          jobName: generateControlMJobName(jobUuaa, 'D', 'D', temporalidadCode, dSequence++),
+          jobName: generateControlMJobName(t02Uuaa, 'D', 'D', temporalidadCode, dSequence++),
           type: 'D',
           description: `Borrado de datos en fase Master L1T - ${alias}`,
           phase: 'master-l1t',
@@ -748,6 +764,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
         existingT02Xml: existingT02Xml || undefined,
         partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
+        mailbox: mailbox.trim() || undefined,
       });
 
       if (!response.success) {
@@ -923,6 +940,28 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     />
                   </div>
                 )}
+
+                {/* Buzon destino de las notificaciones DOMAIL. Aplica a todos
+                    los jobs de la malla, sin importar el tipo de iniciador. */}
+                <div>
+                  <label htmlFor="cm-mailbox" className="block text-xs text-gray-500 mb-1">
+                    Buzón de notificaciones
+                  </label>
+                  <input
+                    id="cm-mailbox"
+                    type="text"
+                    placeholder={DEFAULT_MAILBOX}
+                    value={mailbox}
+                    onChange={(e) => setMailbox(e.target.value)}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    {mailbox
+                      ? `${mailboxCount} ${mailboxCount === 1 ? 'destinatario' : 'destinatarios'} · separa varios con ;`
+                      : `Vacío usa el genérico. Varios separados por ;`}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">
