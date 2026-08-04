@@ -80,6 +80,9 @@ const TEMPORALIDAD_CODES: Record<string, string> = {
   'anual': '8'
 };
 
+// Debe coincidir con ControlMXMLGeneratorService.DEFAULT_MAILBOX del backend.
+const DEFAULT_MAILBOX = 'buzon.proyecto.group@bbva.com';
+
 export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // Trigger type: datax o filewatcher
   const [triggerType, setTriggerType] = useState<'datax' | 'filewatcher'>('datax');
@@ -88,6 +91,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   // Estados para inputs
   const [transferName, setTransferName] = useState('');
+  // Buzon destino de las notificaciones DOMAIL de los jobs. Vacio => el
+  // backend usa DEFAULT_MAILBOX. Admite varios separados por ';'.
+  const [mailbox, setMailbox] = useState('');
+  const mailboxCount = mailbox.split(';').map(m => m.trim()).filter(Boolean).length;
   const [uuaa, setUuaa] = useState('');
   const [xmlOriginalUuaa, setXmlOriginalUuaa] = useState<string | null>(null); // UUAA from existing XML (3 or 4 chars)
   const [ingestaJobs, setIngestaJobs] = useState<IngestaJob[]>([]);
@@ -748,6 +755,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
         existingT02Xml: existingT02Xml || undefined,
         partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
+        mailbox: mailbox.trim() || undefined,
       });
 
       if (!response.success) {
@@ -921,6 +929,30 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     />
                   </div>
                 )}
+
+                {/* Buzon destino de las notificaciones DOMAIL. Aplica a todos
+                    los jobs de la malla, sin importar el tipo de iniciador. */}
+                <div>
+                  <label htmlFor="cm-mailbox" className="block text-xs text-gray-500 mb-1">
+                    Buzón de notificaciones
+                  </label>
+                  <input
+                    id="cm-mailbox"
+                    type="text"
+                    placeholder={DEFAULT_MAILBOX}
+                    value={mailbox}
+                    onChange={(e) => setMailbox(e.target.value)}
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 ${
+                      mailbox ? 'border-timia-accent/40 bg-timia-accent/5' : 'border-gray-300'
+                    }`}
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    {mailbox
+                      ? `${mailboxCount} ${mailboxCount === 1 ? 'destinatario' : 'destinatarios'} · separa varios con ;`
+                      : `Vacío usa el genérico. Varios separados por ;`}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                 <div className="flex gap-2 items-end flex-wrap">
                   <div className="w-24">

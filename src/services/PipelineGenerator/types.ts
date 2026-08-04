@@ -58,6 +58,11 @@ export interface GenerateControlMRequest {
    * nombres de las particiones reales de la tabla.
    */
   partitions?: string[];
+  /**
+   * Buzon(es) destino de las notificaciones DOMAIL, separados por ';'.
+   * Vacio => el backend usa el generico buzon.proyecto.group@bbva.com.
+   */
+  mailbox?: string;
 }
 
 export interface AnalyzeSequencesRequest {
