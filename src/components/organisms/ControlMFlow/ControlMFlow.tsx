@@ -942,9 +942,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                     placeholder={DEFAULT_MAILBOX}
                     value={mailbox}
                     onChange={(e) => setMailbox(e.target.value)}
-                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8 ${
-                      mailbox ? 'border-green-300 bg-green-50' : 'border-gray-300'
-                    }`}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-8"
                   />
                   <p className="mt-1 text-[11px] text-gray-400">
                     {mailbox
