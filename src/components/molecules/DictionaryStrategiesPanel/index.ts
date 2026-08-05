@@ -1,0 +1,1 @@
+export { DictionaryStrategiesPanel } from './DictionaryStrategiesPanel';

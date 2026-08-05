@@ -41,6 +41,37 @@ export interface GenerateDictionaryBaseResponse {
   };
 }
 
+/**
+ * Estado de una operacion larga ejecutada en background.
+ *
+ * La generacion de diccionarios tarda minutos y CloudFront corta la conexion
+ * al origen a los 60s, asi que el POST ya no espera el resultado: responde
+ * 202 con un job_id y el resultado se consulta por polling.
+ */
+export type GenerationJobStatus = 'running' | 'completed' | 'failed';
+
+export interface GenerationJobAccepted {
+  job_id: string;
+  status: GenerationJobStatus;
+  message: string;
+}
+
+export interface GenerationJob {
+  job_id: string;
+  id_object: string;
+  job_type: string;
+  status: GenerationJobStatus;
+  /**
+   * Solo viene con status='completed'. Sin tipar: el payload depende del
+   * `job_type`, asi que cada flujo lo castea a lo suyo.
+   */
+  result?: unknown;
+  /** Solo viene con status='failed' */
+  error?: string | null;
+  creation_date?: string | null;
+  update_date?: string | null;
+}
+
 export interface GenerateDictionaryL1TRequest {
   id_object: string;
 }
