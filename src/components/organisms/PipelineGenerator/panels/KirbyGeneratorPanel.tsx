@@ -15,6 +15,7 @@ import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { GeneratorPanelProps } from '../types';
 import { usePipelineGeneratorService, GenerateKirbyResponse } from '@/services/PipelineGenerator';
+import { addCiConfigToZip, ciConfigAsFile } from '../ciConfig';
 import { useFileOperations } from '@/hooks/useFileOperations';
 import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
 import { useGenerationProgress } from '@/hooks/useGenerationProgress';
@@ -110,6 +111,8 @@ export const KirbyGeneratorPanel = ({
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
 
+      addCiConfigToZip(zip);
+
       const kirbyFolder = zip.folder('kirby');
       const confsFolder = kirbyFolder!.folder('confs');
       const jobsFolder = kirbyFolder!.folder('jobs');
@@ -150,6 +153,9 @@ export const KirbyGeneratorPanel = ({
       ...Object.values(generationResults.configs),
       ...Object.values(generationResults.jobs)
     ].filter(Boolean);
+
+    downloadFile(ciConfigAsFile());
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     for (const file of allFiles) {
       if (file) {
