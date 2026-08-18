@@ -15,6 +15,7 @@ import { Button } from '@/components/atoms/Button';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { GeneratorPanelProps } from '../types';
 import { usePipelineGeneratorService, GenerateHammurabiResponse } from '@/services/PipelineGenerator';
+import { addCiConfigToZip, ciConfigAsFile } from '../ciConfig';
 import { useFileOperations } from '@/hooks/useFileOperations';
 import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
 import { useGenerationProgress } from '@/hooks/useGenerationProgress';
@@ -112,6 +113,8 @@ export const HammurabiGeneratorPanel = ({
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
 
+      addCiConfigToZip(zip);
+
       const hammurabiFolder = zip.folder('hammurabi');
       const confsFolder = hammurabiFolder!.folder('confs');
       const jobsFolder = hammurabiFolder!.folder('jobs');
@@ -152,6 +155,9 @@ export const HammurabiGeneratorPanel = ({
       ...Object.values(generationResults.configs),
       ...Object.values(generationResults.jobs)
     ].filter(Boolean);
+
+    downloadFile(ciConfigAsFile());
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     for (const file of allFiles) {
       if (file) {
