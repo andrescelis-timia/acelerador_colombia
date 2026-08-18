@@ -14,8 +14,11 @@ import { getDictionaryJsonDetailsByHeaderId } from '@/services/DictionaryJsonDet
 import { CreateDictionaryJsonDetail, DictionaryJsonDetailResponse } from '@/services/DictionaryJsonDetail/types';
 import { getPreDictionaryInputByObjectId } from '@/services/PreDictionaryInput';
 import { PreDictionaryInputResponse, CreatePreDictionaryInput } from '@/services/PreDictionaryInput/types';
-import { PlayIcon, ArrowDownTrayIcon, EyeIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T, generateDictionaryLiteCo } from '@/services/DictionaryGenerator';
+import { PlayIcon, ArrowDownTrayIcon, EyeIcon, AdjustmentsHorizontalIcon, XMarkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { generateDictionaryJson, generateDictionaryBase, generateDictionaryL1T, generateDictionaryLiteCo, pollGenerationJob, getLatestGenerationJob } from '@/services/DictionaryGenerator';
+import type { GenerateDictionaryLiteCoResponse as LiteCoResult } from '@/services/DictionaryGenerator/types';
+import { GenerationBanner } from '@/components/molecules/GenerationBanner';
+import { DictionaryStrategiesPanel } from '@/components/molecules/DictionaryStrategiesPanel';
 import { useAuth } from '@/lib/context/AuthContext';
 import { getIngestaOutputByObjectId } from '@/services/IngestaOutput';
 import { IngestaOutputResponse } from '@/services/IngestaOutput/types';
@@ -36,6 +39,60 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   const [ingestaOutput, setIngestaOutput] = useState<IngestaOutputResponse | null>(null);
   const [showSampleProgress, setShowSampleProgress] = useState(false);
   const [showDictionaryProgress, setShowDictionaryProgress] = useState(false);
+  // Job de la generacion en curso y segundos transcurridos, para que el
+  // usuario vea que sigue viva durante los minutos que tarda.
+
+  // Si el usuario recarga durante una generacion, se vuelve a enganchar al job
+  // en curso. Sin esto el proceso seguiria vivo en el servidor pero la pantalla
+  // no mostraria nada: era justo lo que pasaba antes.
+  useEffect(() => {
+    if (!objectId || !user?.email) return;
+    let cancelado = false;
+    const email = user.email;
+
+    const retomar = async (
+      jobType: 'dictionary_base' | 'dictionary_lite_co',
+      onStart: () => void,
+      onDone: (result: unknown) => void | Promise<void>,
+      onEnd: () => void,
+    ) => {
+      try {
+        const job = await getLatestGenerationJob(objectId, jobType, email, country);
+        if (cancelado || !job || job.status !== 'running') return;
+
+        onStart();
+        const final = await pollGenerationJob(job.job_id, email, country);
+        if (cancelado) return;
+
+        if (final.status === 'failed') {
+          setErrorMessage(final.error || 'La generacion del diccionario fallo');
+        } else {
+          await onDone(final.result);
+        }
+      } catch {
+        // Sin job previo o fallo al consultar: no hay nada que retomar.
+      } finally {
+        if (!cancelado) onEnd();
+      }
+    };
+
+    retomar(
+      'dictionary_base',
+      () => setShowDictionaryProgress(true),
+      () => fetchDictionaryOutput(),
+      () => setShowDictionaryProgress(false),
+    );
+
+    retomar(
+      'dictionary_lite_co',
+      () => setIsLiteLoading(true),
+      (result) => applyLiteResult(result as LiteCoResult | null | undefined),
+      () => setIsLiteLoading(false),
+    );
+
+    return () => { cancelado = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objectId, user?.email, country]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedLinks, setSelectedLinks] = useState<Array<{ label: string; url: string }>>([]);
   const [popupLinksTitle, setPopupLinksTitle] = useState<string>('');
@@ -347,7 +404,6 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     }
 
     setShowDictionaryProgress(true);
-    const totalDuration = config.stepsConfig.dictionary.reduce((acc, step) => acc + step.duration, 0);
 
     try {
       let headerToUse: CreateDictionaryJsonHeader | null = null;
@@ -440,14 +496,21 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
         return;
       }
 
-      const processPromise = generateDictionaryBase({
+      // El POST ya no espera a que termine: devuelve un job_id de inmediato y
+      // el resultado se sigue por polling. Antes, en tablas grandes (~5 min)
+      // CloudFront cortaba a los 60s y la respuesta se perdia aunque el
+      // diccionario quedara guardado.
+      const accepted = await generateDictionaryBase({
         header: headerToUse,
         details: detailsToUse
       }, user.email, country);
 
-      const timerPromise = new Promise(resolve => setTimeout(resolve, totalDuration));
+      const job = await pollGenerationJob(accepted.job_id, user.email, country);
 
-      await Promise.all([processPromise, timerPromise]);
+      if (job.status === 'failed') {
+        // Ahora llega el error real del backend, no un "Failed to fetch".
+        throw new Error(job.error || 'La generacion del diccionario fallo');
+      }
 
       await fetchDictionaryOutput();
 
@@ -559,8 +622,10 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
               icon: <PlayIcon className="h-5 w-5" />,
               onClick: handleDictionaryGeneration,
               className: "text-success-icon hover:text-success",
-              disabled: !dictionaryJsonHeader && !dictionaryFile,
-              tooltip: !dictionaryJsonHeader && !dictionaryFile ?
+              disabled: showDictionaryProgress || (!dictionaryJsonHeader && !dictionaryFile),
+              tooltip: showDictionaryProgress
+                ? 'Generando… puedes cerrar la pestaña'
+                : !dictionaryJsonHeader && !dictionaryFile ?
                 'Se requiere un diccionario o archivo JSON' :
                 config.processLabels.dictionary,
               readOnlyWrapper: true
@@ -655,29 +720,40 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     setIsLiteLoading(true);
 
     try {
-      const response = await generateDictionaryLiteCo({
+      // Responde de inmediato con un job_id; el resultado se sigue por polling.
+      const accepted = await generateDictionaryLiteCo({
         object_id: objectId,
         periodicity: getAiPeriodicity(),
         operation_mode: isUpdateMode ? 'update' : 'new',
         ...(isUpdateMode ? { target_legacy_names: liteLegacyNames } : {})
       }, user.email, country);
 
-      if (response.data?.sheet_url) {
-        setLiteSheetUrl(response.data.sheet_url);
+      const job = await pollGenerationJob(accepted.job_id, user.email, country);
+
+      if (job.status === 'failed') {
+        throw new Error(job.error || 'La generacion del diccionario fallo');
       }
 
-      if (isUpdateMode) {
-        const rows = response.data?.rows_updated ?? liteLegacyCount;
-        setSuccessMessage(`Diccionario actualizado (${rows} ${rows === 1 ? 'fila' : 'filas'})`);
-      } else {
-        setSuccessMessage('Diccionario generado correctamente');
-      }
-      setTimeout(() => setSuccessMessage(null), 3000);
+      applyLiteResult(job.result as LiteCoResult | null | undefined);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al generar diccionario');
     } finally {
       setIsLiteLoading(false);
     }
+  };
+
+  /** Aplica el payload de un job Lite CO ya terminado (recien hecho o retomado). */
+  const applyLiteResult = (result: LiteCoResult | null | undefined) => {
+    if (result?.data?.sheet_url) {
+      setLiteSheetUrl(result.data.sheet_url);
+    }
+    if (isUpdateMode) {
+      const rows = result?.data?.rows_updated ?? liteLegacyCount;
+      setSuccessMessage(`Diccionario actualizado (${rows} ${rows === 1 ? 'fila' : 'filas'})`);
+    } else {
+      setSuccessMessage('Diccionario generado correctamente');
+    }
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   // Guarda los legacy del modal y cierra. No dispara generacion: eso lo hace el Play.
@@ -696,183 +772,221 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
     }
   };
 
+  // Cualquiera de los dos flujos en curso muestra la misma banda: al usuario le
+  // da igual cual endpoint corre por debajo.
+  const generacionEnCurso = showDictionaryProgress || isLiteLoading;
+
+  // Modo lite: una sola tarjeta con cabecera propia. El modo completo es un
+  // diagrama de varios pasos y respira mas, por eso conserva su padding de 8.
+  const esModoLite = country === 'CO' && dictionaryMode === 'lite_co';
+  const paddingSeccion = esModoLite ? 'px-5' : 'px-8';
+
   return (
     <>
-      {successMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
-          {successMessage}
-        </div>
-      )}
-
-      {/* Selector de modo - Solo visible para Colombia - AL INICIO */}
-      {country === 'CO' && (
-        <div className="px-8 pt-2">
-          <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setDictionaryMode('lite_co')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                dictionaryMode === 'lite_co'
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Formato Nebula
-            </button>
-            <button
-              onClick={() => setDictionaryMode('full')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                dictionaryMode === 'full'
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Formato DATUM
-            </button>
+      {/* Tarjeta contenedora. Igual que Pipeline Generator, Control-M y
+          Despliegues ADA: esta seccion era la unica sin fondo propio y se
+          veia hundida contra el gris de la pagina. El padding lo siguen
+          poniendo las secciones de dentro, por eso el envoltorio no lleva. */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        {/* Cabecera al estilo de Control-M y Despliegues ADA. Solo en modo lite:
+            el modo completo es un diagrama de varios pasos y cada tarjeta lleva
+            ya su propia etiqueta, asi que un titulo unico arriba sobraria. */}
+        {esModoLite && (
+          <div className="flex items-center gap-2 border-b border-gray-200 px-5 py-3">
+            <BookOpenIcon className="h-5 w-5 text-gray-500" />
+            <h3 className="text-base font-medium text-gray-900">Generar Diccionario</h3>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Modo Lite: UI simplificada - Mismo formato que DATUM */}
-      {country === 'CO' && dictionaryMode === 'lite_co' ? (
-        <div className="relative p-8">
-          <div className="flex items-center">
-            {/* Card principal - Formato BoxFlowCard */}
-            <div className="relative z-10">
-              <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-gray-800">Generar Diccionario</h3>
-                </div>
-              </div>
-              <div className="w-[200px] h-[150px] flex-shrink-0 rounded-lg border-2 border-gray-200">
-                <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
-                  <div className="border-b border-gray-200 p-2 bg-white h-[40px] flex items-center">
-                    <BoxFlowControls
-                      leftIcons={[
-                        {
-                          icon: <PlayIcon className="h-5 w-5" />,
-                          onClick: handleGenerateLiteCo,
-                          className: "text-success-icon hover:text-success",
-                          disabled: isLiteLoading,
-                          tooltip: isUpdateMode
-                            ? `Regenerar ${liteLegacyCount} ${liteLegacyCount === 1 ? 'campo' : 'campos'}`
-                            : 'Generar diccionario',
-                          readOnlyWrapper: true
-                        },
-                        {
-                          icon: (
-                            <span className="relative inline-flex">
-                              <AdjustmentsHorizontalIcon className="h-5 w-5" />
-                              {isUpdateMode && (
-                                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 inline-flex items-center justify-center text-[10px] font-bold leading-none text-white bg-blue-500 rounded-full">
-                                  {liteLegacyCount}
-                                </span>
-                              )}
-                            </span>
-                          ),
-                          onClick: () => setIsLegacyModalOpen(true),
-                          className: isUpdateMode
-                            ? "text-blue-600 hover:text-blue-700"
-                            : "text-gray-500 hover:text-blue-600",
-                          disabled: isLiteLoading,
-                          tooltip: isUpdateMode
-                            ? `Configurar campos a regenerar (${liteLegacyCount} guardados)…`
-                            : 'Configurar campos a regenerar…',
-                          readOnlyWrapper: true
-                        }
-                      ]}
-                      rightIcons={[{
-                        icon: <EyeIcon className="h-5 w-5" />,
-                        onClick: handleViewLiteSheet,
-                        className: "text-gray-500 hover:text-timia-accent",
-                        disabled: !liteSheetUrl,
-                        tooltip: !liteSheetUrl ? 'Genera el diccionario primero' : 'Ver en Google Sheets'
-                      }]}
-                    />
+        {generacionEnCurso && (
+          <div className={`${paddingSeccion} pt-4`}>
+            <GenerationBanner />
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in-out">
+            {successMessage}
+          </div>
+        )}
+
+        {/* Selector de modo - Solo visible para Colombia - AL INICIO
+            Oculto temporalmente a peticion del equipo. El modo sigue vivo en
+            `dictionaryMode`, asi que basta con volver a poner la condicion para
+            recuperarlo. */}
+        {false && country === 'CO' && (
+          <div className="px-8 pt-2">
+            <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setDictionaryMode('lite_co')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  dictionaryMode === 'lite_co'
+                    ? 'bg-white text-gray-800 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Formato Nebula
+              </button>
+              <button
+                onClick={() => setDictionaryMode('full')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  dictionaryMode === 'full'
+                    ? 'bg-white text-gray-800 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Formato DATUM
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modo Lite: UI simplificada - Mismo formato que DATUM */}
+        {esModoLite ? (
+          <div className="relative p-5">
+            <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-start">
+              {/* Card principal - Formato BoxFlowCard */}
+              {/* Sin etiqueta encima: el titulo esta ahora en la cabecera de la
+                  tarjeta. Aqui solo queda una unica caja, asi que nombrarla
+                  seria repetir lo que ya dice la cabecera. */}
+              <div className="relative z-10 flex-shrink-0">
+                <div className="w-[200px] h-[150px] flex-shrink-0 rounded-lg border-2 border-gray-200">
+                  <div className="h-full rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
+                    <div className="border-b border-gray-200 p-2 bg-white h-[40px] flex items-center">
+                      <BoxFlowControls
+                        leftIcons={[
+                          {
+                            // Sin spinner aqui: la banda superior ya indica que
+                            // hay una generacion en curso. El boton solo se
+                            // deshabilita, para no encolar dos veces lo mismo.
+                            icon: <PlayIcon className="h-5 w-5" />,
+                            onClick: handleGenerateLiteCo,
+                            className: "text-success-icon hover:text-success",
+                            disabled: isLiteLoading,
+                            tooltip: isLiteLoading
+                              ? 'Generando… puedes cerrar la pestaña'
+                              : isUpdateMode
+                                ? `Regenerar ${liteLegacyCount} ${liteLegacyCount === 1 ? 'campo' : 'campos'}`
+                                : 'Generar diccionario',
+                            readOnlyWrapper: true
+                          },
+                          {
+                            icon: (
+                              <span className="relative inline-flex">
+                                <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                                {isUpdateMode && (
+                                  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 inline-flex items-center justify-center text-[10px] font-bold leading-none text-white bg-blue-500 rounded-full">
+                                    {liteLegacyCount}
+                                  </span>
+                                )}
+                              </span>
+                            ),
+                            onClick: () => setIsLegacyModalOpen(true),
+                            className: isUpdateMode
+                              ? "text-blue-600 hover:text-blue-700"
+                              : "text-gray-500 hover:text-blue-600",
+                            disabled: isLiteLoading,
+                            tooltip: isUpdateMode
+                              ? `Configurar campos a regenerar (${liteLegacyCount} guardados)…`
+                              : 'Configurar campos a regenerar…',
+                            readOnlyWrapper: true
+                          }
+                        ]}
+                        rightIcons={[{
+                          icon: <EyeIcon className="h-5 w-5" />,
+                          onClick: handleViewLiteSheet,
+                          className: "text-gray-500 hover:text-timia-accent",
+                          disabled: !liteSheetUrl,
+                          tooltip: !liteSheetUrl ? 'Genera el diccionario primero' : 'Ver en Google Sheets'
+                        }]}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+              <DictionaryStrategiesPanel />
             </div>
           </div>
-        </div>
-      ) : (
-        /* Modo Completo: UI original con L1T */
-        <div className="relative p-8">
-          <div className="flex items-center gap-12">
-            {/* Líneas de conexión */}
-            <div
-              className="absolute h-[2px] bg-[#94B5F0]"
-              style={{
-                top: 'calc(50% + 12px)',
-                transform: 'translateY(-50%)',
-                left: '232px',
-                width: '48px',
-                zIndex: 0
-              }}
-            />
-            <div
-              className="absolute h-[2px] bg-[#94B5F0]"
-              style={{
-                top: 'calc(50% + 12px)',
-                transform: 'translateY(-50%)',
-                left: '480px',
-                width: '48px',
-                zIndex: 0
-              }}
-            />
-
-            {/* BoxFlowCard Muestra */}
-            <div className="relative z-10">
-              <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-gray-800">Procesar Pre-diccionario</h3>
-                </div>
-              </div>
-              <BoxFlowCard
-                title="Muestra"
-                isStatic={false}
-                schema="txt, csv"
-                selectedFile={sampleFile}
-                onFileClick={handleSampleFileSelect}
-                className="border-2 border-gray-200"
-                controls={getControls('sample')}
+        ) : (
+          /* Modo Completo: UI original con L1T */
+          <div className="relative p-8">
+            <div className="flex items-center gap-12">
+              {/* Líneas de conexión */}
+              <div
+                className="absolute h-[2px] bg-[#94B5F0]"
+                style={{
+                  top: 'calc(50% + 12px)',
+                  transform: 'translateY(-50%)',
+                  left: '232px',
+                  width: '48px',
+                  zIndex: 0
+                }}
               />
-            </div>
-
-            {/* BoxFlowCard Diccionario */}
-            <div className="relative z-10">
-              <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-gray-800">Generar Diccionarios</h3>
-                </div>
-              </div>
-              <BoxFlowCard
-                title="Pre-diccionario"
-                isStatic={false}
-                schema="json"
-                selectedFile={dictionaryFile}
-                onFileClick={handleDictionaryFileSelect}
-                className="border-2 border-gray-200"
-                controls={getControls('dictionary')}
+              <div
+                className="absolute h-[2px] bg-[#94B5F0]"
+                style={{
+                  top: 'calc(50% + 12px)',
+                  transform: 'translateY(-50%)',
+                  left: '480px',
+                  width: '48px',
+                  zIndex: 0
+                }}
               />
-            </div>
 
-            {/* BoxFlowCard L1T */}
-            <div className="relative z-10">
-              <div className="text-center mb-3">
-                <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
-                  <h3 className="text-sm font-semibold text-gray-800">Generar L1T</h3>
+              {/* BoxFlowCard Muestra */}
+              <div className="relative z-10">
+                <div className="text-center mb-3">
+                  <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
+                    <h3 className="text-sm font-semibold text-gray-800">Procesar Pre-diccionario</h3>
+                  </div>
                 </div>
+                <BoxFlowCard
+                  title="Muestra"
+                  isStatic={false}
+                  schema="txt, csv"
+                  selectedFile={sampleFile}
+                  onFileClick={handleSampleFileSelect}
+                  className="border-2 border-gray-200"
+                  controls={getControls('sample')}
+                />
               </div>
-              <BoxFlowCard
-                title="Diccionario L1T"
-                isStatic={true}
-                className="border-2 border-gray-200"
-                controls={getControls('l1t')}
-              />
+
+              {/* BoxFlowCard Diccionario */}
+              <div className="relative z-10">
+                <div className="text-center mb-3">
+                  <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
+                    <h3 className="text-sm font-semibold text-gray-800">Generar Diccionarios</h3>
+                  </div>
+                </div>
+                <BoxFlowCard
+                  title="Pre-diccionario"
+                  isStatic={false}
+                  schema="json"
+                  selectedFile={dictionaryFile}
+                  onFileClick={handleDictionaryFileSelect}
+                  className="border-2 border-gray-200"
+                  controls={getControls('dictionary')}
+                />
+              </div>
+
+              {/* BoxFlowCard L1T */}
+              <div className="relative z-10">
+                <div className="text-center mb-3">
+                  <div className="inline-block bg-gray-50 border border-info-border rounded-lg px-3 py-1.5">
+                    <h3 className="text-sm font-semibold text-gray-800">Generar L1T</h3>
+                  </div>
+                </div>
+                <BoxFlowCard
+                  title="Diccionario L1T"
+                  isStatic={true}
+                  className="border-2 border-gray-200"
+                  controls={getControls('l1t')}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {config.usePreDictionary && (
         <PreDictionaryInputForm
@@ -903,35 +1017,12 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
         />
       )}
 
-      {showDictionaryProgress && (
-        <ProgressDialog
-          title={config.processLabels.dictionary}
-          steps={config.stepsConfig.dictionary}
-          onComplete={() => { }}
-        />
-      )}
-
       {showL1TProgress && (
         <ProgressDialog
           title={config.processLabels.l1t}
           steps={config.stepsConfig.l1t}
           onComplete={() => { }}
         />
-      )}
-
-      {/* Modal simple de carga para modo lite. Portal a body para escapar
-          del contexto de apilamiento creado por el motion.div padre. */}
-      {isLiteLoading && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
-            <svg className="animate-spin h-8 w-8 text-timia-accent" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            <span className="text-sm font-medium text-gray-700">Generando diccionario...</span>
-          </div>
-        </div>,
-        document.body
       )}
 
       {/* Modal de configuracion de campos puntuales para regenerar (se dispara con el Play) */}

@@ -1,0 +1,1 @@
+export { GenerationBanner } from './GenerationBanner';
