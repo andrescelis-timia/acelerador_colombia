@@ -247,7 +247,6 @@ export const SmartCleanerGeneratorPanel = ({
               <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-warning-border rounded-lg shadow-lg p-3 z-50">
                 <h4 className="font-medium text-amber-900 text-sm mb-2">Notas</h4>
                 <ul className="space-y-1 text-xs text-amber-800">
-                  <li>• Reemplazar <code className="bg-warning-muted px-1 rounded">&lt;PROJECT&gt;</code> y <code className="bg-warning-muted px-1 rounded">&lt;REPO_NAME&gt;</code> en jobs</li>
                   <li>• Retención calculada automáticamente según frecuencia detectada</li>
                 </ul>
               </div>

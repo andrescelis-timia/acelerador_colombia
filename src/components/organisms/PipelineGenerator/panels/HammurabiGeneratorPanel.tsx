@@ -256,7 +256,6 @@ export const HammurabiGeneratorPanel = ({
                 <ul className="space-y-1 text-xs text-amber-800">
                   <li>• Validar propiedades CSV (header, delimitador, encoding)</li>
                   <li>• Regla 4.2: Validar campos clave reales</li>
-                  <li>• Reemplazar <code className="bg-warning-muted px-1 rounded">&lt;PROJECT&gt;</code> y <code className="bg-warning-muted px-1 rounded">&lt;REPO_NAME&gt;</code> en jobs</li>
                 </ul>
               </div>
             )}
