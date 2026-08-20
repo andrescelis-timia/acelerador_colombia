@@ -30,6 +30,7 @@ export const KirbyGeneratorPanel = ({
   onGenerationComplete,
   initialData,
   aliasOverride,
+  validationMode,
 }: GeneratorPanelProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResults, setGenerationResults] = useState<GenerateKirbyResponse['data'] | null>(null);
@@ -82,6 +83,7 @@ export const KirbyGeneratorPanel = ({
         component_type: componentType,
         include_l1t: true,
         alias: aliasOverride?.trim() || undefined,
+        validation_mode: validationMode,
       };
 
       // El indicador corre en paralelo al request, no antes.

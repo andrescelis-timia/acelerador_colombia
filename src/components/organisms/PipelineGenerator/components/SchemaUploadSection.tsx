@@ -12,7 +12,7 @@ import {
   PencilSquareIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { SchemaUploadSectionProps, ValidationError } from '../types';
+import { ValidationMode, SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
 
@@ -26,6 +26,20 @@ const ALIAS_VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
  * una por una. Nunca remueve la primera letra (protege inicio si es vocal).
  * Mismo algoritmo que `shorten_alias` en el backend (path_builder.py).
  */
+const COMPONENT_TYPES = [
+  { value: 'tabla', label: 'Tabla (Raw + Master)' },
+  { value: 'tablon', label: 'Tablón (Solo Master)' },
+  { value: 'tabla_no_raw', label: 'Tabla (Staging - Master)' },
+] as const;
+
+// El nombre corto va en el radio y el detalle debajo, solo del seleccionado:
+// metido dentro de un <option> habria que abrir la lista para leerlo.
+const VALIDATION_MODES = [
+  { value: 'STRICT_VALIDATION', note: '(por defecto)', hint: 'El job falla si algún registro no cumple.' },
+  { value: 'DISCARD_INVALID', note: '', hint: 'Los inválidos no se escriben; el resto sí.' },
+  { value: 'TOLERANT', note: '', hint: 'Se escriben todos, cumplan o no.' },
+] as const;
+
 const shortenAlias = (alias: string): string => {
   if (!alias || alias.length <= ALIAS_MAX_LENGTH) return alias;
   const chars = alias.split('');
@@ -162,6 +176,8 @@ export const SchemaUploadSection = ({
   onComponentTypeChange,
   aliasOverride,
   onAliasOverrideChange,
+  validationMode,
+  onValidationModeChange,
 }: SchemaUploadSectionProps) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
@@ -316,49 +332,52 @@ export const SchemaUploadSection = ({
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <h3 className="text-base font-semibold text-gray-900 mb-3">Configuración y Subida de Schemas</h3>
 
-        {/* Component Type Selection */}
-        <div className="mb-4 pb-3 border-b border-gray-200">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Componente</label>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tabla"
-                checked={componentType === 'tabla'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tabla (Raw + Master)
+        {/* Las dos decisiones que afectan a toda la generacion, en una sola
+            fila: antes iban apiladas y competian entre si, y la ayuda del modo
+            de validacion acababa pegada al primer schema. */}
+        <div className="mb-3 rounded-lg bg-gray-50/70 px-4 py-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+          <div>
+            <span className="block text-sm font-semibold text-gray-800 mb-1.5">Tipo de Componente</span>
+            <div className="space-y-1">
+              {COMPONENT_TYPES.map(({ value, label }) => (
+                <label key={value} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="componentType"
+                    value={value}
+                    checked={componentType === value}
+                    onChange={(e) => onComponentTypeChange(e.target.value as ComponentTypeArg)}
+                    className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="block mb-1.5">
+              <span className="text-sm font-semibold text-gray-800">Validación implícita</span>
+              <span className="ml-2 text-xs text-gray-500">
+                {VALIDATION_MODES.find((m) => m.value === (validationMode ?? 'STRICT_VALIDATION'))?.hint}
               </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tablon"
-                checked={componentType === 'tablon'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tablón (Solo Master)
-              </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tabla_no_raw"
-                checked={componentType === 'tabla_no_raw'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tabla (Staging - Master)
-              </span>
-            </label>
+            </span>
+            <div className="space-y-1">
+              {VALIDATION_MODES.map(({ value, note }) => (
+                <label key={value} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="validationMode"
+                    value={value}
+                    checked={(validationMode ?? 'STRICT_VALIDATION') === value}
+                    onChange={(e) => onValidationModeChange?.(e.target.value as ValidationMode)}
+                    className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{value}</span>
+                  {note && <span className="ml-1.5 text-xs text-gray-500">{note}</span>}
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 

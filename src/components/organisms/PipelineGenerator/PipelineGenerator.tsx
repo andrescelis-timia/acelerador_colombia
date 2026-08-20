@@ -5,7 +5,7 @@ import { KirbyGeneratorPanel } from './panels/KirbyGeneratorPanel';
 import { HammurabiGeneratorPanel } from './panels/HammurabiGeneratorPanel';
 import { SmartCleanerGeneratorPanel } from './panels/SmartCleanerGeneratorPanel';
 import { SchemaUploadSection } from './components/SchemaUploadSection';
-import { PipelineGeneratorProps } from './types';
+import { PipelineGeneratorProps, ValidationMode } from './types';
 import { usePipelineGeneratorService, GeneratedArtifactsResponse } from '@/services/PipelineGenerator';
 import { CubeIcon, ShieldCheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
@@ -24,6 +24,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
   const [loadingArtifacts, setLoadingArtifacts] = useState(false);
   const [periodicity, setPeriodicity] = useState<Periodicity | undefined>(undefined);
   const [aliasOverride, setAliasOverride] = useState<string>('');
+  const [validationMode, setValidationMode] = useState<ValidationMode>('STRICT_VALIDATION');
   const [objectData, setObjectData] = useState<ObjectUpdateWithId | null>(null);
 
   const pipelineService = usePipelineGeneratorService();
@@ -148,6 +149,8 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
         onComponentTypeChange={setComponentType}
         aliasOverride={aliasOverride}
         onAliasOverrideChange={handleAliasChange}
+        validationMode={validationMode}
+        onValidationModeChange={setValidationMode}
       />
 
       <SampleAnalysis objectId={objectId} initialData={savedArtifacts?.sample} />
@@ -197,6 +200,7 @@ export const PipelineGenerator = ({ objectId, readOnly }: PipelineGeneratorProps
                     onGenerationComplete={() => handleGeneratorComplete('kirby')}
                     initialData={savedArtifacts?.kirby}
                     aliasOverride={aliasOverride}
+                    validationMode={validationMode}
                   />
                 </div>
                 <div className={activeTab === 'hammurabi' ? '' : 'hidden'}>
