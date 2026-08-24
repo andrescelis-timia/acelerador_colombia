@@ -182,20 +182,27 @@ export const SchemaUploadSection = ({
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
   const [masterPhysicalName, setMasterPhysicalName] = useState<string>('');
+  const [masterSecurityLevel, setMasterSecurityLevel] = useState<string>('');
   const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [aliasDraft, setAliasDraft] = useState('');
   const pipelineGeneratorService = usePipelineGeneratorService();
 
   // Leer physical_name del master schema para detectar issue de alias
   useEffect(() => {
-    if (!masterSchema) { setMasterPhysicalName(''); return; }
+    if (!masterSchema) { setMasterPhysicalName(''); setMasterSecurityLevel(''); return; }
     let cancelled = false;
     masterSchema.text().then(txt => {
       try {
         const parsed = JSON.parse(txt);
-        if (!cancelled) setMasterPhysicalName(parsed?.name || '');
+        if (!cancelled) {
+          setMasterPhysicalName(parsed?.name || '');
+          setMasterSecurityLevel(parsed?.securityLevel || '');
+        }
       } catch {
-        if (!cancelled) setMasterPhysicalName('');
+        if (!cancelled) {
+          setMasterPhysicalName('');
+          setMasterSecurityLevel('');
+        }
       }
     });
     return () => { cancelled = true; };
@@ -474,14 +481,12 @@ export const SchemaUploadSection = ({
             {/* Alias contextual: sólo cuando hay master schema y podemos operar.
                 Tres estados: warning (nombre sin alias), override activo, edit affordance sutil. */}
             {masterSchema && onAliasOverrideChange && (
-              <div className="mt-2">
+              <div className="mt-2 rounded-md bg-gray-50 px-3 py-2">
                 {isEditingAlias ? (
-                  // ESTADO EDIT: input con guardar/cancelar + preview de acortamiento
-                  <div className="rounded-md border border-timia-accent/40 bg-timia-accent/5 p-2.5">
-                    <label htmlFor="alias-input" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Alias override
-                    </label>
-                    <div className="flex items-center gap-2">
+                  // ESTADO EDIT: sin caja propia, ya la pone el bloque de metadatos
+                  <div className="text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor="alias-input" className="text-gray-500">Alias:</label>
                       <input
                         id="alias-input"
                         type="text"
@@ -493,32 +498,32 @@ export const SchemaUploadSection = ({
                           if (e.key === 'Escape') cancelEditingAlias();
                         }}
                         placeholder="Ej. hdape001"
-                        className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-transparent"
+                        className="w-40 rounded border border-gray-300 bg-white px-1.5 py-0.5 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-timia-accent focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={saveAliasDraft}
-                        className="px-2 py-1 text-xs font-medium bg-timia-accent text-white rounded hover:bg-timia-accent/90"
+                        className="font-medium text-timia-accent hover:underline"
                       >
                         Guardar
                       </button>
+                      <span className="text-gray-300">·</span>
                       <button
                         type="button"
                         onClick={cancelEditingAlias}
-                        className="px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-800"
+                        className="text-gray-500 hover:text-gray-800"
                       >
                         Cancelar
                       </button>
                     </div>
                     {aliasDraft.trim().length > ALIAS_MAX_LENGTH ? (
-                      <p className="mt-1.5 text-[11px] text-warning">
+                      <p className="mt-0.5 text-warning">
                         {aliasDraft.trim().length} chars — se acortará a{' '}
-                        <code className="bg-warning-muted px-1 rounded font-mono">{shortenAlias(aliasDraft.trim())}</code>{' '}
-                        (máx {ALIAS_MAX_LENGTH}, quita vocales de derecha a izquierda).
+                        <span className="font-mono">{shortenAlias(aliasDraft.trim())}</span>
                       </p>
                     ) : (
-                      <p className="mt-1.5 text-[11px] text-gray-500">
-                        Máximo {ALIAS_MAX_LENGTH} chars. Si excede, se acortará quitando vocales de derecha a izquierda.
+                      <p className="mt-0.5 text-gray-400">
+                        Máximo {ALIAS_MAX_LENGTH} chars; si excede se quitan vocales de derecha a izquierda.
                       </p>
                     )}
                   </div>
@@ -612,6 +617,20 @@ export const SchemaUploadSection = ({
                         {aliasBreakdown.aplicativoLabel} · <span className="font-mono text-gray-600">{aliasBreakdown.descriptivo}</span>{' '}
                         descriptivo
                       </p>
+                    )}
+                  </div>
+                )}
+                {masterSecurityLevel && (
+                  <div className="mt-1.5 flex items-center gap-2 border-t border-gray-200 pt-1.5 text-[11px]">
+                    <span className="text-gray-500">Nivel de Seguridad:</span>
+                    <span className="font-mono text-gray-700">{masterSecurityLevel}</span>
+                    {masterSecurityLevel === 'L2' && (
+                      <span
+                        className="text-[10px] uppercase tracking-wide font-medium text-info"
+                        title="El schema master es L2, así que Kirby y SmartCleaner generan además la fase L1T."
+                      >
+                        genera L1T
+                      </span>
                     )}
                   </div>
                 )}

@@ -173,7 +173,6 @@ export interface GenerateHammurabiResponse {
     metadata: {
       componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
       generatedPhases: string[];
-      includeL1T: boolean;
       extractedInfo: {
         alias: string;
         namespace: string;

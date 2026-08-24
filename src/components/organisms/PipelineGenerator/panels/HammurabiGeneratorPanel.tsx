@@ -194,7 +194,9 @@ export const HammurabiGeneratorPanel = ({
 
           {generationResults && !isGenerating && (
             <div className="flex items-center text-sm text-gray-600">
-              <CheckCircleIcon className="h-4 w-4 text-success-icon mr-1" />
+              {totalFiles > 0
+                ? <CheckCircleIcon className="h-4 w-4 text-success-icon mr-1" />
+                : <InformationCircleIcon className="h-4 w-4 text-gray-400 mr-1" />}
               {totalFiles} archivos
               {isFromSavedData && (initialData?.update_date || initialData?.creation_date) && (
                 <span className="ml-2 text-xs text-gray-400">
@@ -286,7 +288,19 @@ export const HammurabiGeneratorPanel = ({
       )}
 
       {/* Results Section */}
-      {generationResults && (
+      {generationResults && totalFiles === 0 && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+          <p className="text-sm font-medium text-gray-800">0 archivos generados</p>
+          <p className="mt-1 text-sm text-gray-600">
+            Hammurabi no aplica a este tipo de componente. Con validaciones implícitas
+            solo se genera la fase <span className="font-medium text-gray-700">raw</span>,
+            que este componente no tiene. La calidad la valida la plataforma durante la
+            ingesta, según el modo elegido en la configuración.
+          </p>
+        </div>
+      )}
+
+      {generationResults && totalFiles > 0 && (
         <div className="border border-gray-200 rounded-lg overflow-hidden">
           {/* Results Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
