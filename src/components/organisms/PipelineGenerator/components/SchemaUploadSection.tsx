@@ -153,6 +153,39 @@ const hasAliasIssue = (physicalName: string, componentType: ComponentTypeArg): b
 
 
 
+/**
+ * Avisos de validacion de un esquema, bajo su propio cuadro.
+ *
+ * Antes iban en un panel al final de la seccion y en una unica lista, asi que
+ * validar el master borraba los del raw y no se sabia a cual se referia cada
+ * mensaje. Aqui cada esquema muestra los suyos.
+ */
+const AvisosEsquema = ({ avisos }: { avisos: ValidationError[] }) => {
+  if (!avisos.length) return null;
+  return (
+    <div className="mt-2 space-y-1">
+      {avisos.map((aviso, i) => (
+        <div
+          key={i}
+          className={`flex items-start gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] ${
+            aviso.severity === 'error'
+              ? 'bg-danger-subtle text-red-800'
+              : 'bg-yellow-50 text-yellow-800'
+          }`}
+        >
+          {aviso.severity === 'error' ? (
+            <ExclamationTriangleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-danger-icon" />
+          ) : (
+            <InformationCircleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
+          )}
+          <span>{aviso.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+
 export const SchemaUploadSection = ({
   objectId,
   rawSchema,
@@ -163,7 +196,10 @@ export const SchemaUploadSection = ({
   aliasOverride,
   onAliasOverrideChange,
 }: SchemaUploadSectionProps) => {
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<'raw' | 'master', ValidationError[]>>({ raw: [], master: [] });
+
+  const setErroresDe = (type: 'raw' | 'master', errores: ValidationError[]) =>
+    setValidationErrors(prev => ({ ...prev, [type]: errores }));
   const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
   const [masterPhysicalName, setMasterPhysicalName] = useState<string>('');
   const [isEditingAlias, setIsEditingAlias] = useState(false);
@@ -256,11 +292,11 @@ export const SchemaUploadSection = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Limpiar errores previos
-    setValidationErrors([]);
+    // Solo los de este esquema: los del otro siguen siendo validos.
+    setErroresDe(type, []);
 
     if (!file.name.endsWith('.schema')) {
-      setValidationErrors([{ message: 'Por favor selecciona un archivo .schema válido', severity: 'error' }]);
+      setErroresDe(type, [{ message: 'Por favor selecciona un archivo .schema válido', severity: 'error' }]);
       return;
     }
 
@@ -282,7 +318,7 @@ export const SchemaUploadSection = ({
         }))
       ];
 
-      setValidationErrors(errors);
+      setErroresDe(type, errors);
 
       // Persistir esquemas si la validacion no tuvo errores
       if (!validation.errors.length) {
@@ -292,7 +328,7 @@ export const SchemaUploadSection = ({
       }
     } catch (error) {
       // Error de validación (no crítico)
-      setValidationErrors([{
+      setErroresDe(type, [{
         message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`,
         severity: 'warning'
       }]);
@@ -305,7 +341,7 @@ export const SchemaUploadSection = ({
 
   const handleRemoveFile = (type: 'raw' | 'master') => {
     onSchemaUpload(type, null);
-    setValidationErrors([]);
+    setErroresDe(type, []);
   };
 
 
@@ -407,6 +443,7 @@ export const SchemaUploadSection = ({
                   </div>
                 </div>
               )}
+              <AvisosEsquema avisos={validationErrors.raw} />
             </div>
           )}
           <div>
@@ -451,6 +488,8 @@ export const SchemaUploadSection = ({
                 </div>
               </div>
             )}
+
+            <AvisosEsquema avisos={validationErrors.master} />
 
             {/* Alias contextual: sólo cuando hay master schema y podemos operar.
                 Tres estados: warning (nombre sin alias), override activo, edit affordance sutil. */}
@@ -602,28 +641,6 @@ export const SchemaUploadSection = ({
         </div>
       </div>
 
-      {/* Validation Errors */}
-      {validationErrors.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h3 className="text-base font-semibold text-gray-900 mb-3">Validaciones</h3>
-          <div className="space-y-2">
-            {validationErrors.map((error, index) => (
-              <div key={index} className={`flex items-start space-x-2 p-2 rounded-lg ${error.severity === 'error' ? 'bg-danger-subtle border border-danger-border' : 'bg-yellow-50 border border-yellow-200'
-                }`}>
-                {error.severity === 'error' ? (
-                  <ExclamationTriangleIcon className="h-4 w-4 text-danger-icon mt-0.5 flex-shrink-0" />
-                ) : (
-                  <InformationCircleIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                )}
-                <div className={`text-sm font-medium ${error.severity === 'error' ? 'text-red-800' : 'text-yellow-800'
-                  }`}>
-                  {error.message}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
 
       <FilePreviewModal
