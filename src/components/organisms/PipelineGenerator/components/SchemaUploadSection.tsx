@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   ArrowUpTrayIcon,
   DocumentTextIcon,
@@ -197,6 +197,7 @@ export const SchemaUploadSection = ({
   onAliasOverrideChange,
 }: SchemaUploadSectionProps) => {
   const [validationErrors, setValidationErrors] = useState<Record<'raw' | 'master', ValidationError[]>>({ raw: [], master: [] });
+  const validados = useRef<Record<'raw' | 'master', File | null>>({ raw: null, master: null });
 
   const setErroresDe = (type: 'raw' | 'master', errores: ValidationError[]) =>
     setValidationErrors(prev => ({ ...prev, [type]: errores }));
@@ -288,6 +289,49 @@ export const SchemaUploadSection = ({
     }
   };
 
+  /**
+   * Valida un esquema y deja sus mensajes en pantalla.
+   *
+   * Se anota el fichero validado para que el efecto de restauracion no lo
+   * repita: al subir, el `File` llega tambien por props y disparariamos la
+   * misma llamada dos veces.
+   */
+  const validarEsquema = useCallback(async (type: 'raw' | 'master', file: File) => {
+    validados.current[type] = file;
+    try {
+      const validation = await pipelineGeneratorService.validateSchema(file, type);
+      setErroresDe(type, [
+        ...validation.errors.map(error => ({ message: error, severity: 'error' as const })),
+        ...validation.warnings.map(warning => ({ message: warning, severity: 'warning' as const })),
+      ]);
+      return validation;
+    } catch (error) {
+      setErroresDe(type, [{
+        message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`,
+        severity: 'warning',
+      }]);
+      return null;
+    }
+  }, [pipelineGeneratorService]);
+
+  // Al recargar la pagina los esquemas se reconstruyen desde el artefacto
+  // persistido, pero los mensajes no: viven en estado y se perdian. Se
+  // revalida lo que llegue por props y no se haya validado en esta sesion.
+  useEffect(() => {
+    ([['raw', rawSchema], ['master', masterSchema]] as const).forEach(([type, file]) => {
+      // Cubre tambien el caso de dos nulos: sin esta salida, limpiar el estado
+      // en cada pasada crearia un objeto nuevo y realimentaria el efecto.
+      if (validados.current[type] === file) return;
+      validados.current[type] = file;
+      if (file) validarEsquema(type, file);
+      else setErroresDe(type, []);
+    });
+    // `validarEsquema` queda fuera de las dependencias a proposito: cuelga del
+    // servicio, y `usePipelineGeneratorService` devuelve un objeto nuevo en
+    // cada render. Incluirlo relanzaria el efecto continuamente.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawSchema, masterSchema]);
+
   const handleFileUpload = async (type: 'raw' | 'master', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -304,35 +348,11 @@ export const SchemaUploadSection = ({
     onSchemaUpload(type, file);
 
     // Luego validamos de manera opcional (no bloqueante)
-    try {
-      const validation = await pipelineGeneratorService.validateSchema(file, type);
+    const validation = await validarEsquema(type, file);
 
-      const errors: ValidationError[] = [
-        ...validation.errors.map(error => ({
-          message: error,
-          severity: 'error' as const
-        })),
-        ...validation.warnings.map(warning => ({
-          message: warning,
-          severity: 'warning' as const
-        }))
-      ];
-
-      setErroresDe(type, errors);
-
-      // Persistir esquemas si la validacion no tuvo errores
-      if (!validation.errors.length) {
-        const newRaw = type === 'raw' ? file : rawSchema;
-        const newMaster = type === 'master' ? file : masterSchema;
-        persistSchemas(newRaw, newMaster);
-      }
-    } catch (error) {
-      // Error de validación (no crítico)
-      setErroresDe(type, [{
-        message: `Archivo cargado. Validación opcional falló: ${error instanceof Error ? error.message : 'Error de conexión'}`,
-        severity: 'warning'
-      }]);
-      // Aún así persistir — la validación es opcional
+    // Se persiste salvo que la validacion encontrara errores. Si la llamada
+    // fallo (`null`) se persiste igual: la validacion es opcional.
+    if (!validation || !validation.errors.length) {
       const newRaw = type === 'raw' ? file : rawSchema;
       const newMaster = type === 'master' ? file : masterSchema;
       persistSchemas(newRaw, newMaster);
