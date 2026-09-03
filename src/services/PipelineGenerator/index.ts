@@ -203,6 +203,7 @@ class PipelineGeneratorService {
         existing_t02_xml: request.existingT02Xml,
         partitions: request.partitions,
         mailbox: request.mailbox,
+        initial_sequences: request.initialSequences,
       }),
     });
   }

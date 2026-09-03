@@ -18,6 +18,7 @@ import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 import { getById as getObjectById } from '@/services/Object';
 import type { Periodicity } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
+import { formatearSecuencia, parsearSecuencia } from '@/lib/controlmSequence';
 
 const PERIODICITY_TO_DATAX: Record<Periodicity, 'diario' | 'semanal' | 'mensual' | 'anual'> = {
   daily: 'diario',
@@ -143,6 +144,15 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   const [existingT04FileName, setExistingT04FileName] = useState<string>('');
   const [existingT02FileName, setExistingT02FileName] = useState<string>('');
   const [nextSequences, setNextSequences] = useState<{ T: number; C: number; D: number; W: number } | null>(null);
+  // Consecutivo inicial indicado a mano por tipo, en la forma de 3 caracteres
+  // del JOBNAME. Vacio = se sigue deduciendo de las mallas existentes.
+  const [initialSequences, setInitialSequences] = useState<Record<'T' | 'W' | 'C' | 'D', string>>(
+    { T: '', W: '', C: '', D: '' }
+  );
+  // Lo indicado a mano solo cuenta si se puede leer; asi un valor a medio
+  // escribir no cambia los nombres de golpe mientras se teclea.
+  const inicioManual = (tipo: 'T' | 'W' | 'C' | 'D'): number | null =>
+    initialSequences[tipo].trim() ? parsearSecuencia(initialSequences[tipo]) : null;
   const [isAnalyzingXml, setIsAnalyzingXml] = useState(false);
 
   // Estados de descarga
@@ -509,7 +519,10 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     temporalidadCode: string,
     sequence: number
   ): string => {
-    const sequenceStr = sequence.toString().padStart(3, '0');
+    // El consecutivo ocupa 3 caracteres fijos: pasado 999 sigue por letras
+    // (0A0, 1A0, A00...). Un padStart daria "1000" y sacaria al nombre del
+    // estandar, que es como se detecto este fallo.
+    const sequenceStr = formatearSecuencia(sequence) ?? String(sequence).padStart(3, '0');
     return `C${uuaa.toUpperCase()}${jobType}${environment}${temporalidadCode}${sequenceStr}`;
   };
 
@@ -525,14 +538,15 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const temporalidadCode = TEMPORALIDAD_CODES[dataxConfig.periodicity];
 
     // Use next available sequences from analysis (additive mode) or start from 1
-    let tSequence = nextSequences?.T ?? 1;
-    let cSequence = nextSequences?.C ?? 1;
-    let dSequence = nextSequences?.D ?? 1;
+    // Precedencia: lo indicado a mano, luego lo deducido de las mallas, luego 1.
+    let tSequence = inicioManual('T') ?? nextSequences?.T ?? 1;
+    let cSequence = inicioManual('C') ?? nextSequences?.C ?? 1;
+    let dSequence = inicioManual('D') ?? nextSequences?.D ?? 1;
     let order = 1;
 
     // 1. Job iniciador: Datax o FileWatcher
     if (triggerType === 'filewatcher') {
-      const wSequence = nextSequences?.W ?? 1;
+      const wSequence = inicioManual('W') ?? nextSequences?.W ?? 1;
       jobs.push({
         jobName: generateControlMJobName(t02Uuaa, 'W', 'D', temporalidadCode, wSequence),
         type: 'W',
@@ -765,6 +779,11 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         existingT02Xml: existingT02Xml || undefined,
         partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
         mailbox: mailbox.trim() || undefined,
+        initialSequences: Object.fromEntries(
+          (['T', 'W', 'C', 'D'] as const)
+            .filter(tipo => inicioManual(tipo) !== null)
+            .map(tipo => [tipo, initialSequences[tipo].trim().toUpperCase()])
+        ),
       });
 
       if (!response.success) {
@@ -1255,11 +1274,6 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               <span className="text-xs text-gray-500 font-medium">Mallas XML Existentes</span>
               <span className="text-xs text-gray-400">(opcional)</span>
               {isAnalyzingXml && <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-gray-400" />}
-              {nextSequences && !isAnalyzingXml && (
-                <span className="text-xs text-warning bg-warning-subtle px-2 py-0.5 rounded">
-                  Seq: T={nextSequences.T}, C={nextSequences.C}, D={nextSequences.D}, W={nextSequences.W}
-                </span>
-              )}
             </div>
             <div className="flex justify-center gap-3">
               {/* T04 */}
@@ -1303,6 +1317,43 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
                 </label>
               )}
             </div>
+
+            {/* Consecutivo manual por tipo. El placeholder es lo que se usaria
+                si se deja vacio, asi que no hace falta explicarlo aparte. */}
+            <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">Consecutivo manual</span>
+              {(['T', 'W', 'C', 'D'] as const).map((tipo) => {
+                const valor = initialSequences[tipo];
+                const invalido = valor.trim() !== '' && parsearSecuencia(valor) === null;
+                return (
+                  <div key={tipo} className="flex items-center gap-1">
+                    <label htmlFor={`cm-seq-${tipo}`} className="text-[11px] text-gray-400 w-3">
+                      {tipo}
+                    </label>
+                    <input
+                      id={`cm-seq-${tipo}`}
+                      type="text"
+                      maxLength={3}
+                      placeholder={nextSequences ? formatearSecuencia(nextSequences[tipo]) ?? '001' : '001'}
+                      value={valor}
+                      onChange={(e) => setInitialSequences(prev => ({ ...prev, [tipo]: e.target.value.toUpperCase() }))}
+                      className={`w-12 px-1 py-0.5 text-xs text-center rounded border uppercase tracking-wide focus:outline-none focus:ring-1 focus:ring-timia-accent/50 h-7 ${
+                        invalido
+                          ? 'border-red-400 bg-red-50 text-red-700'
+                          : valor.trim()
+                            ? 'border-timia-accent/50 bg-timia-accent/5'
+                            : 'border-gray-200'
+                      }`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {(['T', 'W', 'C', 'D'] as const).some(tipo => initialSequences[tipo].trim() !== '' && parsearSecuencia(initialSequences[tipo]) === null) && (
+              <p className="mt-1 text-center text-[11px] text-red-500">
+                Formato válido: 000-999, 0A0-9ZZ o A00-ZZZ
+              </p>
+            )}
           </div>
 
           {uuaaMismatchWarning && (
