@@ -63,6 +63,12 @@ export interface GenerateControlMRequest {
    * Vacio => el backend usa el generico buzon.proyecto.group@bbva.com.
    */
   mailbox?: string;
+  /**
+   * Consecutivo inicial por tipo de job, en la forma de 3 caracteres del
+   * JOBNAME ('001', '0A0'). Los tipos que no se indiquen se siguen deduciendo
+   * de las mallas existentes.
+   */
+  initialSequences?: Partial<Record<'T' | 'W' | 'C' | 'D', string>>;
 }
 
 export interface AnalyzeSequencesRequest {
