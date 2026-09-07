@@ -6,8 +6,12 @@ export interface ProcessSchemaRequest {
   schemaFile: File;
 }
 
+export type ValidationMode = 'STRICT_VALIDATION' | 'DISCARD_INVALID' | 'TOLERANT';
+
 export interface GenerateKirbyRequest {
   object_id?: string;
+  /** Modo de validación implícita que va al env del job Dataproc. */
+  validation_mode?: ValidationMode;
   raw_schema_data?: Record<string, unknown>;
   master_schema_data: Record<string, unknown>;
   component_type: 'tabla' | 'tablon' | 'tabla_no_raw';
@@ -175,7 +179,6 @@ export interface GenerateHammurabiResponse {
     metadata: {
       componentType: 'tabla' | 'tablon' | 'tabla_no_raw';
       generatedPhases: string[];
-      includeL1T: boolean;
       extractedInfo: {
         alias: string;
         namespace: string;

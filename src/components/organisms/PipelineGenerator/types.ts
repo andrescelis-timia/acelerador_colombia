@@ -21,6 +21,8 @@ export interface GeneratorPanelProps {
   periodicity?: Periodicity;
   /** Override manual del alias. Vacío = derivación automática del nombre físico. */
   aliasOverride?: string;
+  /** Solo lo usa Kirby: es el único generador cuyos jobs llevan `env`. */
+  validationMode?: ValidationMode;
 }
 
 export interface SchemaUploadSectionProps {
@@ -33,7 +35,16 @@ export interface SchemaUploadSectionProps {
   /** Override manual del alias. Vacío = derivación automática. */
   aliasOverride?: string;
   onAliasOverrideChange?: (value: string) => void;
+  /** Modo con el que la plataforma valida durante la ingesta. */
+  validationMode?: ValidationMode;
+  onValidationModeChange?: (value: ValidationMode) => void;
 }
+
+/**
+ * Validación implícita de la plataforma. Sustituye a los Hammurabi de staging
+ * y master, que dejaron de generarse.
+ */
+export type ValidationMode = 'STRICT_VALIDATION' | 'DISCARD_INVALID' | 'TOLERANT';
 
 export interface SchemaFile {
   name: string;

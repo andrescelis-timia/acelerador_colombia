@@ -12,7 +12,7 @@ import {
   PencilSquareIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { SchemaUploadSectionProps, ValidationError } from '../types';
+import { ValidationMode, SchemaUploadSectionProps, ValidationError } from '../types';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
 import { FilePreviewModal } from '@/components/molecules/FilePreviewModal';
 
@@ -26,6 +26,20 @@ const ALIAS_VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
  * una por una. Nunca remueve la primera letra (protege inicio si es vocal).
  * Mismo algoritmo que `shorten_alias` en el backend (path_builder.py).
  */
+const COMPONENT_TYPES = [
+  { value: 'tabla', label: 'Tabla (Raw + Master)' },
+  { value: 'tablon', label: 'Tablón (Solo Master)' },
+  { value: 'tabla_no_raw', label: 'Tabla (Staging - Master)' },
+] as const;
+
+// El nombre corto va en el radio y el detalle debajo, solo del seleccionado:
+// metido dentro de un <option> habria que abrir la lista para leerlo.
+const VALIDATION_MODES = [
+  { value: 'STRICT_VALIDATION', note: '(por defecto)', hint: 'El job falla si algún registro no cumple.' },
+  { value: 'DISCARD_INVALID', note: '', hint: 'Los inválidos no se escriben; el resto sí.' },
+  { value: 'TOLERANT', note: '', hint: 'Se escriben todos, cumplan o no.' },
+] as const;
+
 const shortenAlias = (alias: string): string => {
   if (!alias || alias.length <= ALIAS_MAX_LENGTH) return alias;
   const chars = alias.split('');
@@ -153,39 +167,39 @@ const hasAliasIssue = (physicalName: string, componentType: ComponentTypeArg): b
 
 
 
-/**
- * Avisos de validacion de un esquema, bajo su propio cuadro.
- *
- * Antes iban en un panel al final de la seccion y en una unica lista, asi que
- * validar el master borraba los del raw y no se sabia a cual se referia cada
- * mensaje. Aqui cada esquema muestra los suyos.
- */
-const AvisosEsquema = ({ avisos }: { avisos: ValidationError[] }) => {
-  if (!avisos.length) return null;
-  return (
-    <div className="mt-2 space-y-1">
-      {avisos.map((aviso, i) => (
-        <div
-          key={i}
-          className={`flex items-start gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] ${
-            aviso.severity === 'error'
-              ? 'bg-danger-subtle text-red-800'
-              : 'bg-yellow-50 text-yellow-800'
-          }`}
-        >
-          {aviso.severity === 'error' ? (
-            <ExclamationTriangleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-danger-icon" />
-          ) : (
-            <InformationCircleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
-          )}
-          <span>{aviso.message}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-
+/**
+ * Avisos de validacion de un esquema, bajo su propio cuadro.
+ *
+ * Antes iban en un panel al final de la seccion y en una unica lista, asi que
+ * validar el master borraba los del raw y no se sabia a cual se referia cada
+ * mensaje. Aqui cada esquema muestra los suyos.
+ */
+const AvisosEsquema = ({ avisos }: { avisos: ValidationError[] }) => {
+  if (!avisos.length) return null;
+  return (
+    <div className="mt-2 space-y-1">
+      {avisos.map((aviso, i) => (
+        <div
+          key={i}
+          className={`flex items-start gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] ${
+            aviso.severity === 'error'
+              ? 'bg-danger-subtle text-red-800'
+              : 'bg-yellow-50 text-yellow-800'
+          }`}
+        >
+          {aviso.severity === 'error' ? (
+            <ExclamationTriangleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-danger-icon" />
+          ) : (
+            <InformationCircleIcon className="mt-px h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
+          )}
+          <span>{aviso.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+
 export const SchemaUploadSection = ({
   objectId,
   rawSchema,
@@ -195,6 +209,8 @@ export const SchemaUploadSection = ({
   onComponentTypeChange,
   aliasOverride,
   onAliasOverrideChange,
+  validationMode,
+  onValidationModeChange,
 }: SchemaUploadSectionProps) => {
   const [validationErrors, setValidationErrors] = useState<Record<'raw' | 'master', ValidationError[]>>({ raw: [], master: [] });
   const validados = useRef<Record<'raw' | 'master', File | null>>({ raw: null, master: null });
@@ -203,20 +219,27 @@ export const SchemaUploadSection = ({
     setValidationErrors(prev => ({ ...prev, [type]: errores }));
   const [schemaPreview, setSchemaPreview] = useState<{ title: string; content: string } | null>(null);
   const [masterPhysicalName, setMasterPhysicalName] = useState<string>('');
+  const [masterSecurityLevel, setMasterSecurityLevel] = useState<string>('');
   const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [aliasDraft, setAliasDraft] = useState('');
   const pipelineGeneratorService = usePipelineGeneratorService();
 
   // Leer physical_name del master schema para detectar issue de alias
   useEffect(() => {
-    if (!masterSchema) { setMasterPhysicalName(''); return; }
+    if (!masterSchema) { setMasterPhysicalName(''); setMasterSecurityLevel(''); return; }
     let cancelled = false;
     masterSchema.text().then(txt => {
       try {
         const parsed = JSON.parse(txt);
-        if (!cancelled) setMasterPhysicalName(parsed?.name || '');
+        if (!cancelled) {
+          setMasterPhysicalName(parsed?.name || '');
+          setMasterSecurityLevel(parsed?.securityLevel || '');
+        }
       } catch {
-        if (!cancelled) setMasterPhysicalName('');
+        if (!cancelled) {
+          setMasterPhysicalName('');
+          setMasterSecurityLevel('');
+        }
       }
     });
     return () => { cancelled = true; };
@@ -372,49 +395,52 @@ export const SchemaUploadSection = ({
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <h3 className="text-base font-semibold text-gray-900 mb-3">Configuración y Subida de Schemas</h3>
 
-        {/* Component Type Selection */}
-        <div className="mb-4 pb-3 border-b border-gray-200">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Componente</label>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tabla"
-                checked={componentType === 'tabla'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tabla (Raw + Master)
+        {/* Las dos decisiones que afectan a toda la generacion, en una sola
+            fila: antes iban apiladas y competian entre si, y la ayuda del modo
+            de validacion acababa pegada al primer schema. */}
+        <div className="mb-3 rounded-lg bg-gray-50/70 px-4 py-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+          <div>
+            <span className="block text-sm font-semibold text-gray-800 mb-1.5">Tipo de Componente</span>
+            <div className="space-y-1">
+              {COMPONENT_TYPES.map(({ value, label }) => (
+                <label key={value} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="componentType"
+                    value={value}
+                    checked={componentType === value}
+                    onChange={(e) => onComponentTypeChange(e.target.value as ComponentTypeArg)}
+                    className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="block mb-1.5">
+              <span className="text-sm font-semibold text-gray-800">Validación implícita</span>
+              <span className="ml-2 text-xs text-gray-500">
+                {VALIDATION_MODES.find((m) => m.value === (validationMode ?? 'STRICT_VALIDATION'))?.hint}
               </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tablon"
-                checked={componentType === 'tablon'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tablón (Solo Master)
-              </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="componentType"
-                value="tabla_no_raw"
-                checked={componentType === 'tabla_no_raw'}
-                onChange={(e) => onComponentTypeChange(e.target.value as 'tabla' | 'tablon' | 'tabla_no_raw')}
-                className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                Tabla (Staging - Master)
-              </span>
-            </label>
+            </span>
+            <div className="space-y-1">
+              {VALIDATION_MODES.map(({ value, note }) => (
+                <label key={value} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="validationMode"
+                    value={value}
+                    checked={(validationMode ?? 'STRICT_VALIDATION') === value}
+                    onChange={(e) => onValidationModeChange?.(e.target.value as ValidationMode)}
+                    className="h-4 w-4 text-timia-accent border-gray-300 focus:ring-timia-accent/50"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{value}</span>
+                  {note && <span className="ml-1.5 text-xs text-gray-500">{note}</span>}
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -514,14 +540,12 @@ export const SchemaUploadSection = ({
             {/* Alias contextual: sólo cuando hay master schema y podemos operar.
                 Tres estados: warning (nombre sin alias), override activo, edit affordance sutil. */}
             {masterSchema && onAliasOverrideChange && (
-              <div className="mt-2">
+              <div className="mt-2 rounded-md bg-gray-50 px-3 py-2">
                 {isEditingAlias ? (
-                  // ESTADO EDIT: input con guardar/cancelar + preview de acortamiento
-                  <div className="rounded-md border border-timia-accent/40 bg-timia-accent/5 p-2.5">
-                    <label htmlFor="alias-input" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Alias override
-                    </label>
-                    <div className="flex items-center gap-2">
+                  // ESTADO EDIT: sin caja propia, ya la pone el bloque de metadatos
+                  <div className="text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor="alias-input" className="text-gray-500">Alias:</label>
                       <input
                         id="alias-input"
                         type="text"
@@ -533,32 +557,32 @@ export const SchemaUploadSection = ({
                           if (e.key === 'Escape') cancelEditingAlias();
                         }}
                         placeholder="Ej. hdape001"
-                        className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-timia-accent focus:border-transparent"
+                        className="w-40 rounded border border-gray-300 bg-white px-1.5 py-0.5 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-timia-accent focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={saveAliasDraft}
-                        className="px-2 py-1 text-xs font-medium bg-timia-accent text-white rounded hover:bg-timia-accent/90"
+                        className="font-medium text-timia-accent hover:underline"
                       >
                         Guardar
                       </button>
+                      <span className="text-gray-300">·</span>
                       <button
                         type="button"
                         onClick={cancelEditingAlias}
-                        className="px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-800"
+                        className="text-gray-500 hover:text-gray-800"
                       >
                         Cancelar
                       </button>
                     </div>
                     {aliasDraft.trim().length > ALIAS_MAX_LENGTH ? (
-                      <p className="mt-1.5 text-[11px] text-warning">
+                      <p className="mt-0.5 text-warning">
                         {aliasDraft.trim().length} chars — se acortará a{' '}
-                        <code className="bg-warning-muted px-1 rounded font-mono">{shortenAlias(aliasDraft.trim())}</code>{' '}
-                        (máx {ALIAS_MAX_LENGTH}, quita vocales de derecha a izquierda).
+                        <span className="font-mono">{shortenAlias(aliasDraft.trim())}</span>
                       </p>
                     ) : (
-                      <p className="mt-1.5 text-[11px] text-gray-500">
-                        Máximo {ALIAS_MAX_LENGTH} chars. Si excede, se acortará quitando vocales de derecha a izquierda.
+                      <p className="mt-0.5 text-gray-400">
+                        Máximo {ALIAS_MAX_LENGTH} chars; si excede se quitan vocales de derecha a izquierda.
                       </p>
                     )}
                   </div>
@@ -652,6 +676,20 @@ export const SchemaUploadSection = ({
                         {aliasBreakdown.aplicativoLabel} · <span className="font-mono text-gray-600">{aliasBreakdown.descriptivo}</span>{' '}
                         descriptivo
                       </p>
+                    )}
+                  </div>
+                )}
+                {masterSecurityLevel && (
+                  <div className="mt-1.5 flex items-center gap-2 border-t border-gray-200 pt-1.5 text-[11px]">
+                    <span className="text-gray-500">Nivel de Seguridad:</span>
+                    <span className="font-mono text-gray-700">{masterSecurityLevel}</span>
+                    {masterSecurityLevel === 'L2' && (
+                      <span
+                        className="text-[10px] uppercase tracking-wide font-medium text-info"
+                        title="El schema master es L2, así que Kirby y SmartCleaner generan además la fase L1T."
+                      >
+                        genera L1T
+                      </span>
                     )}
                   </div>
                 )}
