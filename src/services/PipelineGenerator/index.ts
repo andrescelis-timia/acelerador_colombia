@@ -38,6 +38,7 @@ class PipelineGeneratorService {
     try {
       const response = await fetch(`${API_BASE_URL}/pipeline-generator${endpoint}`, {
         ...options,
+        redirect: 'manual',
         headers: {
           'Content-Type': 'application/json',
           'X-User': this.user,
@@ -45,6 +46,13 @@ class PipelineGeneratorService {
           ...options.headers,
         },
       });
+
+      if (response.type === 'opaqueredirect') {
+        throw new PipelineGeneratorException(
+          'BBVA_DLP_BLOCKED',
+          'Bloqueado por la política de seguridad de BBVA (Zscaler DLP). El contenido coincide con un patrón sensible (p. ej. número de cuenta). Anonimiza los valores o prueba desde fuera de la red corporativa.'
+        );
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -59,7 +67,7 @@ class PipelineGeneratorService {
       if (error instanceof PipelineGeneratorException) {
         throw error;
       }
-      
+
       throw new PipelineGeneratorException(
         'NETWORK_ERROR',
         `Error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`
@@ -78,12 +86,20 @@ class PipelineGeneratorService {
     try {
       const response = await fetch(`${API_BASE_URL}/pipeline-generator${endpoint}`, {
         method: 'POST',
+        redirect: 'manual',
         headers: {
           'X-User': this.user,
           'X-Country': this.country,
         },
         body: formData,
       });
+
+      if (response.type === 'opaqueredirect') {
+        throw new PipelineGeneratorException(
+          'BBVA_DLP_BLOCKED',
+          'Bloqueado por la política de seguridad de BBVA (Zscaler DLP). El archivo coincide con un patrón sensible (p. ej. número de cuenta colombiana). Anonimiza los valores o prueba desde fuera de la red corporativa.'
+        );
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -98,7 +114,7 @@ class PipelineGeneratorService {
       if (error instanceof PipelineGeneratorException) {
         throw error;
       }
-      
+
       throw new PipelineGeneratorException(
         'NETWORK_ERROR',
         `Error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`
