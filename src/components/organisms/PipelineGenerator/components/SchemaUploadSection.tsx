@@ -681,6 +681,7 @@ export const SchemaUploadSection = ({
                 )}
                 {masterSecurityLevel && (
                   <div className="mt-1.5 flex items-center gap-2 border-t border-gray-200 pt-1.5 text-[11px]">
+                    <InformationCircleIcon className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
                     <span className="text-gray-500">Nivel de Seguridad:</span>
                     <span className="font-mono text-gray-700">{masterSecurityLevel}</span>
                     {masterSecurityLevel === 'L2' && (
