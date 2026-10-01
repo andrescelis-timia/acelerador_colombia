@@ -30,6 +30,14 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
   const [previewContent, setPreviewContent] = useState<string[][] | null>(null);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['transformations', 'fields']));
 
+  // Nombre de schema por indice de columna. `position` viene 0-based del
+  // analizador, igual que las columnas de la vista previa.
+  const schemaHeaders: Record<number, string> = {};
+  fields.forEach((f, i) => {
+    if (f.schema_field_name) schemaHeaders[f.position ?? i] = f.schema_field_name;
+  });
+  const conNaming = Object.keys(schemaHeaders).length;
+
   const toggleSection = (section: string) => {
     setOpenSections(prev => {
       const next = new Set(prev);
@@ -396,7 +404,12 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                             {fields.map((field) => (
                               <tr key={field.position} className="hover:bg-gray-50">
                                 <td className="px-2.5 py-1.5 text-gray-400">{field.position}</td>
-                                <td className="px-2.5 py-1.5 font-medium text-gray-900 font-mono">{field.field_name}</td>
+                                <td className="px-2.5 py-1.5 font-mono">
+                                  <span className="block font-medium text-gray-900">{field.schema_field_name || field.field_name}</span>
+                                  {field.schema_field_name && field.schema_field_name !== field.field_name && (
+                                    <span className="block text-[10px] text-gray-400">{field.field_name}</span>
+                                  )}
+                                </td>
                                 <td className="px-2.5 py-1.5">
                                   <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${TYPE_COLORS[field.data_type] || 'bg-gray-100'}`}>{field.data_type}</span>
                                 </td>
@@ -427,6 +440,11 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
                 {previewContent && (
                   <span className="text-sm font-normal text-gray-400 ml-2">(primeras {result?.metadata?.has_header ? previewContent.length - 1 : previewContent.length} filas)</span>
                 )}
+                <span className="block text-xs font-normal text-gray-500 mt-0.5">
+                  {conNaming > 0
+                    ? 'Cabeceras con el naming del schema; debajo, el nombre que trae el fichero.'
+                    : 'Cabeceras del fichero: genera los schemas y vuelve a analizar para ver el naming.'}
+                </span>
               </Dialog.Title>
               <button onClick={() => setPreviewOpen(false)} aria-label="Cerrar" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                 <XMarkIcon className="h-5 w-5 text-gray-500" />
@@ -436,11 +454,22 @@ export const SampleAnalysis = ({ objectId, initialData }: SampleAnalysisProps) =
               <table className="min-w-full text-xs font-mono">
                 <thead>
                   <tr>
-                    {previewContent?.[0]?.map((_, ci) => (
-                      <th key={ci} className="px-2 py-1.5 text-left font-semibold text-gray-700 bg-gray-100 border-b border-gray-200 whitespace-nowrap">
-                        {result?.metadata?.has_header && previewContent[0] ? previewContent[0][ci]?.trim() : `col_${ci}`}
-                      </th>
-                    ))}
+                    {previewContent?.[0]?.map((_, ci) => {
+                      const delFichero = result?.metadata?.has_header && previewContent[0]
+                        ? previewContent[0][ci]?.trim()
+                        : `col_${ci}`;
+                      const delSchema = schemaHeaders[ci];
+                      return (
+                        <th key={ci} className="px-2 py-1.5 text-left bg-gray-100 border-b border-gray-200 whitespace-nowrap align-bottom">
+                          <span className="block font-semibold text-gray-700">{delSchema || delFichero}</span>
+                          {/* Debajo, el nombre que venia en el fichero: sirve para
+                              cotejar que la columna es la que se cree. */}
+                          {delSchema && delSchema !== delFichero && (
+                            <span className="block text-[10px] font-normal text-gray-400">{delFichero}</span>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>

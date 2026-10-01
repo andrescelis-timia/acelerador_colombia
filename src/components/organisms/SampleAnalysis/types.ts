@@ -9,6 +9,12 @@ export interface SampleTransformation {
 export interface SampleField {
   position: number;
   field_name: string;
+  /**
+   * Nombre de la columna en el schema master. Lo resuelve el backend al
+   * analizar; falta en los analisis guardados antes de que existiera, y en los
+   * objetos que aun no tienen schemas generados.
+   */
+  schema_field_name?: string;
   data_type: string;
   format: string | null;
   nullable: boolean;
