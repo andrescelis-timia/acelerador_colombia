@@ -73,6 +73,7 @@ export interface GenerateControlMRequest {
    * de las mallas existentes.
    */
   initialSequences?: Partial<Record<'T' | 'W' | 'C' | 'D', string>>;
+  uuaaCorta?: boolean;
 }
 
 export interface AnalyzeSequencesRequest {
