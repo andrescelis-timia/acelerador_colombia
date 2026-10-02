@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   PlayIcon,
   DocumentArrowDownIcon,
@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ProgressBar } from '@/components/molecules/ProgressBar';
 import { usePipelineGeneratorService } from '@/services/PipelineGenerator';
+import type { JobEntry, StoredDataxConfig } from '@/services/PipelineGenerator/types';
 import { getById as getObjectById } from '@/services/Object';
 import type { Periodicity } from '@/services/Object/types';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -62,6 +63,24 @@ interface DataxConfig {
   annualMonth: number;
   annualDay: number;
 }
+
+// El backend guarda datax_config en snake_case; lo que no traiga se queda como
+// estaba en vez de quedar vacio.
+const desdeDataxGuardado = (g: StoredDataxConfig, prev: DataxConfig): DataxConfig => ({
+  ...prev,
+  periodicity: g.periodicity,
+  periodicityType: g.periodicity_type,
+  startTime: g.start_time ?? '',
+  timezone: g.timezone ?? '',
+  isCyclic: g.is_cyclic,
+  intervalHours: g.interval_hours ?? prev.intervalHours,
+  monthDay: g.month_day ?? prev.monthDay,
+  weekDay: g.week_day ?? prev.weekDay,
+  businessDayDirection: g.business_day_direction ?? prev.businessDayDirection,
+  businessDayNumber: g.business_day_number ?? prev.businessDayNumber,
+  annualMonth: g.annual_month ?? prev.annualMonth,
+  annualDay: g.annual_day ?? prev.annualDay,
+});
 
 const DAYS_CSV_PATTERN = /^\s*\d{1,2}\s*(,\s*\d{1,2}\s*)*$/;
 const isValidDaysCsv = (value: string): boolean => {
@@ -124,13 +143,16 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
   const { user, country } = useAuth();
   const [periodicityTouched, setPeriodicityTouched] = useState(false);
+  // La periodicidad guardada al generar manda sobre la del objeto. Es una ref
+  // porque la consulta del objeto puede resolverse despues de restaurarla.
+  const configRestaurada = useRef(false);
 
   useEffect(() => {
     if (!objectId || !user?.email || periodicityTouched) return;
     getObjectById(objectId, user.email, country)
       .then(obj => {
         const p = obj?.periodicity as Periodicity | undefined;
-        if (!p) return;
+        if (!p || configRestaurada.current) return;
         setDataxConfig(prev => ({ ...prev, periodicity: PERIODICITY_TO_DATAX[p] }));
       })
       .catch(() => {});
@@ -210,8 +232,48 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
 
           // Restaurar configuración
           if (data.config) {
-            if (data.config.uuaa) setUuaa(data.config.uuaa);
-            if (data.config.transfer_name) setTransferName(data.config.transfer_name);
+            const c = data.config;
+            if (c.transfer_name) setTransferName(c.transfer_name);
+            if (c.trigger_type) setTriggerType(c.trigger_type);
+            if (c.alias) setAlias(c.alias);
+            if (c.staging_path) setStagingPath(c.staging_path);
+            if (c.mailbox) setMailbox(c.mailbox);
+            if (c.partitions?.length) setSchemaPartitions(c.partitions);
+            if (c.datax_config) {
+              configRestaurada.current = true;
+              setDataxConfig(prev => desdeDataxGuardado(c.datax_config, prev));
+            }
+            if (c.initial_sequences) {
+              const guardados = c.initial_sequences;
+              setInitialSequences(prev => {
+                const next = { ...prev };
+                (['T', 'W', 'C', 'D'] as const).forEach(tipo => {
+                  if (guardados[tipo]) next[tipo] = guardados[tipo] as string;
+                });
+                return next;
+              });
+            }
+            if (c.jobs_list?.length) {
+              setIngestaJobs(c.jobs_list.map(restaurarJob).filter((j): j is IngestaJob => j !== null));
+            }
+
+            // Las mallas subidas se vuelven a analizar como al subirlas: de
+            // ahi salen los consecutivos y la UUAA de cada una.
+            const t04 = c.trigger_type === 'filewatcher' ? null : c.existing_t04_xml || null;
+            const t02 = c.existing_t02_xml || null;
+            if (t04) {
+              setExistingT04Xml(t04);
+              setExistingT04FileName(c.existing_t04_file_name || 'T04 guardada');
+            }
+            if (t02) {
+              setExistingT02Xml(t02);
+              setExistingT02FileName(c.existing_t02_file_name || 'T02 guardada');
+            }
+            if (t04 || t02) await analyzeExistingSequences(t04, t02);
+
+            // Despues del analisis, que rellena la UUAA desde la malla si la
+            // ve vacia: la que se uso al generar es la que vale.
+            if (c.uuaa) setUuaa(c.uuaa);
           }
         }
       } catch {
@@ -333,6 +395,14 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   };
 
   // Extraer jobs desde los nombres de jobs guardados
+  // Un job guardado vuelve tal cual. Si le falta la fase o el tipo, se deduce
+  // del nombre igual que al cargarlo desde Pipeline Generator.
+  const restaurarJob = (j: JobEntry): IngestaJob | null => {
+    if (j.type === 'datax') return null;
+    if (j.phase && j.kind) return { name: j.name, generator: j.type, phase: j.phase, type: j.kind };
+    return extractJobsFromNames([j.name], j.type)[0] ?? null;
+  };
+
   const extractJobsFromNames = (jobNames: string[], generator: 'kirby' | 'hammurabi' | 'smartcleaner'): IngestaJob[] => {
     const jobs: IngestaJob[] = [];
 
@@ -755,7 +825,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
       // Llamar al API para guardar en S3
       const response = await pipelineService.generateControlM({
         object_id: objectId,
-        jobsList: ingestaJobs.map(j => ({ name: j.name, type: j.generator })),
+        jobsList: ingestaJobs.map(j => ({ name: j.name, type: j.generator, phase: j.phase, kind: j.type })),
         componentType: 'tabla',
         dataxConfig: {
           periodicity: dataxConfig.periodicity,
@@ -786,6 +856,8 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
         })),
         existingT04Xml: triggerType === 'datax' ? (existingT04Xml || undefined) : undefined,
         existingT02Xml: existingT02Xml || undefined,
+        existingT04FileName: triggerType === 'datax' ? (existingT04FileName || undefined) : undefined,
+        existingT02FileName: existingT02FileName || undefined,
         partitions: schemaPartitions.length > 0 ? schemaPartitions : undefined,
         mailbox: mailbox.trim() || undefined,
         initialSequences: Object.fromEntries(

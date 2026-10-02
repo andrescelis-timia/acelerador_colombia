@@ -217,6 +217,8 @@ class PipelineGeneratorService {
         generated_jobs: request.generatedJobs,
         existing_t04_xml: request.existingT04Xml,
         existing_t02_xml: request.existingT02Xml,
+        existing_t04_file_name: request.existingT04FileName,
+        existing_t02_file_name: request.existingT02FileName,
         partitions: request.partitions,
         mailbox: request.mailbox,
         initial_sequences: request.initialSequences,
