@@ -29,7 +29,10 @@ export const BarChart = ({ data }: BarChartProps) => {
               <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                 <div
                   className={`h-2.5 rounded-full transition-all duration-500 ${isHovered ? 'bg-timia-accent' : 'bg-timia-accent/60'}`}
-                  style={{ width: `${Math.max(pct, 3)}%` }}
+                  /* El minimo del 3% es para que un valor pequeno no quede
+                     invisible, pero no se aplica al cero: pintaria una barra
+                     donde no hubo nada. */
+                  style={{ width: item.value === 0 ? 0 : `${Math.max(pct, 3)}%` }}
                 />
               </div>
             </div>
