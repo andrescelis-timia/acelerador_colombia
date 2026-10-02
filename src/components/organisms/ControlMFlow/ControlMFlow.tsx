@@ -102,6 +102,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
   // legacy, el T04 nuevo NO debe heredar su UUAA de 3 chars.
   const [xmlT04Uuaa, setXmlT04Uuaa] = useState<string | null>(null);
   const [xmlT02Uuaa, setXmlT02Uuaa] = useState<string | null>(null);
+  const [uuaaCortaPedida, setUuaaCortaPedida] = useState(false);
   const [ingestaJobs, setIngestaJobs] = useState<IngestaJob[]>([]);
   const [hasL1T, setHasL1T] = useState(false);
 
@@ -511,6 +512,15 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     return normalized;
   };
 
+  // UUAA de las mallas nuevas, la misma que el backend pone en su nombre y
+  // APPLICATION: la de la malla subida, y si no hay ninguna, la completa o la
+  // de 3 letras si se pidio. En filewatcher la T04 no se envia, asi que no cuenta.
+  const fullUuaa = normalizeUuaa(uuaa).toUpperCase();
+  const uuaaCorta = fullUuaa.length === 4 && fullUuaa.startsWith('C') ? fullUuaa.slice(1) : null;
+  const uuaaSubida = (triggerType === 'datax' ? xmlT04Uuaa : null) || xmlT02Uuaa;
+  const pedirCorta = !uuaaSubida && uuaaCortaPedida && uuaaCorta !== null;
+  const uuaaMallaNueva = uuaaSubida || (pedirCorta && uuaaCorta ? uuaaCorta : fullUuaa);
+
   // Generar nombre de job Control-M
   const generateControlMJobName = (
     uuaa: string,
@@ -531,10 +541,9 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
     const jobs: ControlMJob[] = [];
     // El JOBNAME es 'C' + UUAA. Cada malla usa la UUAA de su propio folder:
     // los jobs Datax (T) viven en el T04 y los de ingesta/borrado/filewatcher
-    // (C/D/W) en el T02. Si esa malla es nueva, se usa la UUAA full.
-    const fullUuaa = normalizeUuaa(uuaa).toUpperCase();
-    const t04Uuaa = xmlT04Uuaa || fullUuaa;
-    const t02Uuaa = xmlT02Uuaa || fullUuaa;
+    // (C/D/W) en el T02. Si esa malla es nueva, la de las mallas nuevas.
+    const t04Uuaa = xmlT04Uuaa || uuaaMallaNueva;
+    const t02Uuaa = xmlT02Uuaa || uuaaMallaNueva;
     const temporalidadCode = TEMPORALIDAD_CODES[dataxConfig.periodicity];
 
     // Use next available sequences from analysis (additive mode) or start from 1
@@ -784,6 +793,7 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
             .filter(tipo => inicioManual(tipo) !== null)
             .map(tipo => [tipo, initialSequences[tipo].trim().toUpperCase()])
         ),
+        uuaaCorta: pedirCorta || undefined,
       });
 
       if (!response.success) {
@@ -1353,6 +1363,21 @@ export const ControlMFlow = ({ objectId }: ControlMFlowProps) => {
               <p className="mt-1 text-center text-[11px] text-red-500">
                 Formato válido: 000-999, 0A0-9ZZ o A00-ZZZ
               </p>
+            )}
+
+            {/* Con una malla subida la nueva sigue a esa: solo sin ninguna hay
+                algo que decidir. */}
+            {!uuaaSubida && uuaaCorta && (
+              <label htmlFor="cm-uuaa-corta" className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500 cursor-pointer">
+                <input
+                  id="cm-uuaa-corta"
+                  type="checkbox"
+                  checked={uuaaCortaPedida}
+                  onChange={(e) => setUuaaCortaPedida(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-timia-accent"
+                />
+                Crear las mallas con la UUAA de 3 letras ({uuaaCorta} en vez de {fullUuaa})
+              </label>
             )}
           </div>
 

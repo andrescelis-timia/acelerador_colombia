@@ -220,6 +220,7 @@ class PipelineGeneratorService {
         partitions: request.partitions,
         mailbox: request.mailbox,
         initial_sequences: request.initialSequences,
+        uuaa_corta: request.uuaaCorta,
       }),
     });
   }
