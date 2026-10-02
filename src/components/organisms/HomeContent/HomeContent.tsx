@@ -80,6 +80,9 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
 
   const phaseOrder = ['gobierno', 'kirby', 'hammurabi', 'smartcleaner', 'controlm'];
 
+  const objectsByMonth = stats.objects_by_month ?? [];
+  const objectsByMonthTotal = objectsByMonth.reduce((acc, m) => acc + m.value, 0);
+
   const projectChartData = stats.projects_detail.map(p => ({
     label: p.name.length > 100 ? p.name.substring(0, 100) + '...' : p.name,
     value: p.total_objects,
@@ -190,9 +193,14 @@ export const HomeContent = ({ stats, loading }: HomeContentProps) => {
       {/* Objects by Month + Project Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Objetos Creados por Mes</h3>
-          {stats.objects_by_month && stats.objects_by_month.length > 0 ? (
-            <BarChart data={stats.objects_by_month} />
+          <h3 className="text-lg font-semibold text-gray-900">Objetos Creados por Mes</h3>
+          {/* El rango sale del propio dato. Escrito a mano mentiria en cuanto
+              cambiase la ventana en el backend. */}
+          <p className="text-xs text-gray-500 mb-4">Últimos {objectsByMonth.length} meses</p>
+          {/* El backend rellena los meses sin objetos con 0, asi que la lista
+              nunca viene vacia: el estado vacio se decide por la suma. */}
+          {objectsByMonthTotal > 0 ? (
+            <BarChart data={objectsByMonth} />
           ) : (
             <p className="text-gray-400 text-sm text-center py-8">Sin datos</p>
           )}
