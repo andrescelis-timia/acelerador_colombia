@@ -56,6 +56,8 @@ export interface GenerateControlMRequest {
   generatedJobs?: ControlMJobGenerated[];
   existingT04Xml?: string;
   existingT02Xml?: string;
+  existingT04FileName?: string;
+  existingT02FileName?: string;
   /**
    * Campos de partición del schema. Sirven al backend para derivar las
    * variables de SENTRY_PARM (YEAR/MONTH/DAY/CUTOFF_DATE) según los
@@ -111,6 +113,24 @@ export interface ControlMJobGenerated {
 export interface JobEntry {
   name: string;
   type: 'datax' | 'kirby' | 'hammurabi' | 'smartcleaner';
+  phase?: 'staging' | 'raw' | 'master' | 'master-l1t' | null;
+  kind?: 'ingesta' | 'borrado' | null;
+}
+
+/** datax_config tal como lo guarda el backend: en snake_case. */
+export interface StoredDataxConfig {
+  periodicity: DataxConfig['periodicity'];
+  periodicity_type: DataxConfig['periodicityType'];
+  start_time: string;
+  timezone: string;
+  is_cyclic: boolean;
+  interval_hours?: number | null;
+  month_day?: string | null;
+  week_day?: number | null;
+  business_day_direction?: 'D' | 'L' | null;
+  business_day_number?: string | null;
+  annual_month?: number | null;
+  annual_day?: number | null;
 }
 
 export interface DataxConfig {
@@ -217,8 +237,21 @@ export interface GenerateControlMResponse {
     config: {
       uuaa: string;
       transfer_name: string;
-      datax_config: DataxConfig;
+      datax_config: StoredDataxConfig;
       component_type: string;
+      // Se guardan desde que la pantalla restaura la configuracion: faltan en
+      // los artefactos generados antes.
+      trigger_type?: 'datax' | 'filewatcher';
+      alias?: string | null;
+      staging_path?: string | null;
+      mailbox?: string | null;
+      initial_sequences?: Partial<Record<'T' | 'W' | 'C' | 'D', string>> | null;
+      partitions?: string[] | null;
+      jobs_list?: JobEntry[];
+      existing_t04_xml?: string | null;
+      existing_t02_xml?: string | null;
+      existing_t04_file_name?: string | null;
+      existing_t02_file_name?: string | null;
     };
     statistics: {
       total_jobs: number;
