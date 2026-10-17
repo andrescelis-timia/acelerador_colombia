@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dialog } from '@headlessui/react';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { CreateUserWithPasswordForm } from '@/components/organisms/CreateUserWithPasswordForm';
+import { ObservabilityPanel } from '@/components/organisms/ObservabilityPanel';
 import { ResponseUserDto } from '@/services/User/types';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -29,7 +30,7 @@ export default function AdminPage() {
   const [sortField, setSortField] = useState<'email' | 'country' | 'role'>('email');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'assignments'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'assignments' | 'observability'>('users');
   const { isAdmin, loading } = useUserRole();
   const { user } = useAuth();
 
@@ -326,6 +327,15 @@ export default function AdminPage() {
               >
                 Asignaciones
               </button>
+              <button
+                onClick={() => setActiveTab('observability')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'observability'
+                  ? 'border-timia-accent text-timia-accent'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Observabilidad
+              </button>
             </nav>
           </div>
         </div>
@@ -488,6 +498,13 @@ export default function AdminPage() {
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'observability' && user?.email && (
+          <ObservabilityPanel
+            user={user.email}
+            country={(typeof window !== 'undefined' && localStorage.getItem('selectedCountry')) || 'CO'}
+          />
         )}
 
         {activeTab === 'assignments' && (

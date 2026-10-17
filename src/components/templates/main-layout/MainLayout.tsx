@@ -54,11 +54,14 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       />
       <main className={`flex-1 overflow-x-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'pl-[180px]' : 'pl-[64px]'
         }`}>
+        {/* La cabecera ocupa todo el ancho: dentro del max-w-7xl dejaba huecos
+            a los lados en pantallas anchas o con zoom reducido. Su contenido
+            ya se centra con el mismo ancho maximo. */}
+        <Header
+          email={user?.email || ''}
+          onSignOut={handleSignOut}
+        />
         <div className="max-w-7xl mx-auto">
-          <Header
-            email={user?.email || ''}
-            onSignOut={handleSignOut}
-          />
           <div className="p-6">
             {children}
           </div>
