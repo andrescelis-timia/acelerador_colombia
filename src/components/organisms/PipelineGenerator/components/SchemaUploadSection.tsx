@@ -102,7 +102,7 @@ const APLICATIVO_LABELS: Record<string, string> = {
   sp: 'MIS productos', rv: 'Riesgos ALTAMIRA', tc: 'Tablas corporativas',
   tp: 'Fondos de inversión', ug: 'Préstamos ALTAMIRA', v7: 'Impuestos',
   w9: 'SAP Cloud Nómina', xc: 'Comercio exterior', xg: 'Rating empresarial',
-  xo: 'SIRO',
+  xo: 'SIRO', xt: 'Nuevo módulo de Banktrade',
   // Externos
   mk: 'Marketing', kp: 'KPIs', dg: 'Diálogo', fi: 'Info financiera',
   ct: 'Catálogos locales', af: 'Activos fijos', sr: 'BCBS239 SREP',
