@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useRouter, usePathname } from 'next/navigation';
@@ -22,6 +22,14 @@ import {
   createSessionStateSaver,
   SessionState 
 } from '@/lib/auth/sessionPersistence';
+import {
+  startSession,
+  checkSession,
+  endSession,
+  storeSessionId,
+  clearSessionId,
+  CHECK_INTERVAL_MS,
+} from '@/lib/auth/singleSession';
 
 // Types for password authentication
 export interface LoginResult {
@@ -112,6 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMethod, setAuthMethod] = useState<'google' | 'password' | null>(null);
   const [sessionData, setSessionData] = useState<JWTPayload | null>(null);
+  // Mientras se abre la sesion de Google aun no hay identificador guardado:
+  // la comprobacion de sesion unica espera a que termine.
+  const startingSessionRef = useRef(false);
   
   // Session persistence
   const saveSession = createSessionStateSaver();
@@ -179,12 +190,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      startingSessionRef.current = true;
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
       setAuthMethod('google');
+      // Solo en el login explicito: Firebase tambien avisa al recargar la
+      // pagina, y abrir sesion ahi echaria a los otros navegadores sin motivo.
+      if (result.user.email) {
+        await startSession(result.user.email, localStorage.getItem('selectedCountry') || 'CO');
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al iniciar sesión con Google');
       throw error;
+    } finally {
+      startingSessionRef.current = false;
     }
   };
 
@@ -236,8 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('auth_user_country', data.user.country);
         localStorage.setItem('auth_user_role', data.user.role);
         localStorage.setItem('selectedCountry', data.user.country);
-        
-
+        storeSessionId(data.session_id);
         
         // Set session cookie for middleware compatibility
         document.cookie = `session=${data.user.id_user}; path=/; secure; samesite=strict`;
@@ -311,6 +329,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Set logging out state to prevent error messages
       setLoggingOut(true);
+
+      // Antes de limpiar el storage: la peticion lleva el identificador de sesion.
+      if (user?.email) {
+        await endSession(user.email, country);
+      }
       
       // Sign out from Firebase if using Google auth
       if (auth.currentUser && authMethod === 'google') {
@@ -467,6 +490,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth_user_email');
     localStorage.removeItem('auth_user_country');
     localStorage.removeItem('auth_user_role');
+    clearSessionId();
     tokenStorage.remove();
 
     // loggingOut se apaga en el effect de pathname cuando /login monta;
@@ -546,6 +570,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     return cleanup;
   }, [authMethod]);
+
+  // Sesion unica: si otro navegador entro despues con este usuario, se sale.
+  // Se comprueba cada minuto y al volver a la pestana.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) return;
+    const email = user.email;
+
+    const verify = async () => {
+      if (startingSessionRef.current || document.visibilityState !== 'visible') return;
+      const status = await checkSession(email, country);
+      if (status === 'replaced' || status === 'missing') {
+        setErrorMessage(status === 'replaced'
+          ? 'Se inició sesión con tu usuario en otro navegador. Esta sesión se ha cerrado.'
+          : 'Tu sesión ha caducado. Vuelve a iniciar sesión.');
+        logout();
+      }
+    };
+
+    verify();
+    const interval = setInterval(verify, CHECK_INTERVAL_MS);
+    document.addEventListener('visibilitychange', verify);
+    window.addEventListener('focus', verify);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', verify);
+      window.removeEventListener('focus', verify);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.email, country]);
 
   return (
     <AuthContext.Provider value={{ 
