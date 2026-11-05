@@ -41,6 +41,7 @@ const FASES: Record<string, string> = {
   generando_embeddings: 'Generando embeddings',
   aplicando: 'Aplicando los cambios',
   limpiando: 'Terminando',
+  volcando: 'Preparando el volcado local',
 };
 
 // es-CO: es-ES no agrupa los miles en cifras de cuatro digitos.
