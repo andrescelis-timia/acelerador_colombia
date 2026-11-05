@@ -1,0 +1,1 @@
+export { RcnCargaPanel } from './RcnCargaPanel';
