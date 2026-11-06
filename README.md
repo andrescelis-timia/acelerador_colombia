@@ -110,4 +110,4 @@ npm run lint       # ESLint
 ## Repos hermanos
 
 - `bbva-ingesta-api` — Backend principal (FastAPI)
-- `bbva-ingesta-api-ai` — Servicio de IA (Anthropic + Qdrant)
+- `bbva-ingesta-api-ai` — Servicio de IA (Claude en Bedrock + catálogo por `rcn-api-gateway`)
