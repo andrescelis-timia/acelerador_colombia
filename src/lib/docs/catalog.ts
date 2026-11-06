@@ -73,7 +73,7 @@ export const DOCS_CATALOG: DocGroup[] = [
       {
         slug: 'flujo-ia',
         title: 'Flujo del servicio IA',
-        description: 'Estrategia cascada (catálogos → Qdrant → Claude) para generar diccionarios.',
+        description: 'Cómo se resuelve un diccionario: matching contra el RCN (rcn-api) y generación con Claude.',
         file: 'diagramas/flujo-ia.svg',
         type: 'svg',
         icon: SparklesIcon,
