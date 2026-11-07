@@ -197,7 +197,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Solo en el login explicito: Firebase tambien avisa al recargar la
       // pagina, y abrir sesion ahi echaria a los otros navegadores sin motivo.
       if (result.user.email) {
-        await startSession(result.user.email, localStorage.getItem('selectedCountry') || 'CO');
+        await startSession(
+          result.user.email,
+          localStorage.getItem('selectedCountry') || 'CO',
+          await result.user.getIdToken(),
+        );
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Error al iniciar sesión con Google');
@@ -436,7 +440,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user?.email && !authMethod) { // Only handle Google auth if no other method is active
           try {
-            const userData = await getUserByEmail(user.email);
+            const userData = await getUserByEmail(user.email, await user.getIdToken());
             
             if (Array.isArray(userData) && userData.length > 0) {
               const userCountries = userData.map(user => user.country);

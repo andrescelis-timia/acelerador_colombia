@@ -28,10 +28,10 @@ const headers = (email: string, country: string): Record<string, string> => {
 };
 
 /** Login con Google: el de contrasena ya devuelve la sesion en la respuesta. */
-export const startSession = async (email: string, country: string): Promise<void> => {
+export const startSession = async (email: string, country: string, idToken: string): Promise<void> => {
   const response = await fetch(`${API_URL}/auth/session/start`, {
     method: 'POST',
-    headers: headers(email, country),
+    headers: { ...headers(email, country), Authorization: `Bearer ${idToken}` },
   });
   if (response.ok) {
     const data = await response.json();
