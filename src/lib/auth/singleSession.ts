@@ -20,6 +20,61 @@ export const storeSessionId = (sessionId: string | null | undefined) => {
 
 export const clearSessionId = () => localStorage.removeItem(STORAGE_KEY);
 
+/** Lo emite cada respuesta 401 de una peticion que llevaba sesion. */
+export const SESION_RECHAZADA = 'sesion-rechazada';
+
+// Durante el login con Google la app ya pide datos y aun no hay identificador
+// que enviar: esas peticiones esperan a que la sesion quede abierta.
+let aperturaEnCurso: Promise<void> = Promise.resolve();
+
+/** Marca el inicio de la apertura; la funcion devuelta marca el final. */
+export const empezarAperturaSesion = (): (() => void) => {
+  let terminar = () => {};
+  aperturaEnCurso = new Promise((resolve) => {
+    terminar = resolve;
+  });
+  return terminar;
+};
+
+const urlDe = (input: RequestInfo | URL): string => {
+  if (typeof input === 'string') return input;
+  return input instanceof URL ? input.href : input.url;
+};
+
+// API_URL puede venir con barra final: se quitan las barras antes de comparar.
+const API_BASE = API_URL.replace(/\/+$/, '');
+const esDeAuth = (url: string) => url.slice(API_BASE.length).replace(/^\/+/, '').startsWith('auth/');
+
+/**
+ * Anade X-Session a todas las peticiones a la API y a /api/docs, que el servidor
+ * de Next reenvia. Va aqui y no en cada llamada porque la app las construye a
+ * mano en muchos sitios y una que se olvide daria 401.
+ */
+export const enviarSesionEnLasPeticiones = () => {
+  const fetchOriginal = window.fetch.bind(window);
+
+  window.fetch = async (input, init) => {
+    const url = urlDe(input);
+    if (!url.startsWith(API_BASE) && !url.startsWith('/api/docs')) {
+      return fetchOriginal(input, init);
+    }
+
+    // Las de /auth son las que abren la sesion: no pueden esperarse a si mismas.
+    const auth = url.startsWith(API_BASE) && esDeAuth(url);
+    if (!auth) await aperturaEnCurso;
+
+    const cabeceras = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+    const sessionId = localStorage.getItem(STORAGE_KEY);
+    if (sessionId) cabeceras.set('X-Session', sessionId);
+
+    const response = await fetchOriginal(input, { ...init, headers: cabeceras });
+    if (response.status === 401 && sessionId && !auth) {
+      window.dispatchEvent(new Event(SESION_RECHAZADA));
+    }
+    return response;
+  };
+};
+
 const headers = (email: string, country: string): Record<string, string> => {
   const h: Record<string, string> = { 'X-User': email, 'X-Country': country || 'CO' };
   const sessionId = localStorage.getItem(STORAGE_KEY);

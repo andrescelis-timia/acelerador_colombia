@@ -24,7 +24,7 @@ export async function checkAdmin(req: NextRequest): Promise<AdminCheckResult> {
 
   try {
     const response = await fetch(`${API_URL}/users/role/${encodeURIComponent(email)}`, {
-      headers: { 'X-User': email, 'X-Country': country },
+      headers: { 'X-User': email, 'X-Country': country, 'X-Session': req.headers.get('X-Session') || '' },
       cache: 'no-store',
     });
     if (!response.ok) {

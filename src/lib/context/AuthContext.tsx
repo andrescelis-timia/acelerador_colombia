@@ -25,6 +25,9 @@ import {
 import {
   startSession,
   checkSession,
+  empezarAperturaSesion,
+  enviarSesionEnLasPeticiones,
+  SESION_RECHAZADA,
   endSession,
   storeSessionId,
   clearSessionId,
@@ -81,6 +84,8 @@ export type AuthContextType = {
   authMethod: 'google' | 'password' | null;
   sessionData: JWTPayload | null;
 };
+
+if (typeof window !== 'undefined') enviarSesionEnLasPeticiones();
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -189,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    const terminarApertura = empezarAperturaSesion();
     try {
       startingSessionRef.current = true;
       const provider = new GoogleAuthProvider();
@@ -208,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     } finally {
       startingSessionRef.current = false;
+      terminarApertura();
     }
   };
 
@@ -596,10 +603,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(verify, CHECK_INTERVAL_MS);
     document.addEventListener('visibilitychange', verify);
     window.addEventListener('focus', verify);
+    window.addEventListener(SESION_RECHAZADA, verify);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', verify);
       window.removeEventListener('focus', verify);
+      window.removeEventListener(SESION_RECHAZADA, verify);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.email, country]);
