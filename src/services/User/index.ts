@@ -1,12 +1,15 @@
 import { ResponseUserDto } from './types';
 import { API_CONFIG } from '@/lib/api/config';
 
-async function getUserByEmail(email: string): Promise<ResponseUserDto[]> {
-  try {    
+/** Se llama tras el login con Google, antes de tener sesion: va con su token. */
+async function getUserByEmail(email: string, idToken: string): Promise<ResponseUserDto[]> {
+  try {
     const url = `${API_CONFIG.BASE_URL}/users/${email}`;
-    
-    const response = await fetch(url);
-    
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${idToken}` },
+    });
+
     if (!response.ok) {
       if (response.status === 404) {
         return []; // Devolver array vacío en lugar de null
