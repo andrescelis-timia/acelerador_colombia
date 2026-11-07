@@ -95,9 +95,8 @@ export const startSession = async (email: string, country: string, idToken: stri
 };
 
 /**
- * 'missing': sesion de antes de este cambio (sin identificador), hay que entrar
- * de nuevo. 'unknown': no se pudo comprobar (red, backend caido); no se echa a
- * nadie por eso.
+ * 'missing': sesion sin identificador o caducada, hay que entrar de nuevo.
+ * 'unknown': no se pudo comprobar (red, backend caido); no se echa a nadie por eso.
  */
 export const checkSession = async (email: string, country: string): Promise<SessionStatus> => {
   if (!localStorage.getItem(STORAGE_KEY)) return 'missing';
@@ -108,7 +107,8 @@ export const checkSession = async (email: string, country: string): Promise<Sess
     });
     if (!response.ok) return 'unknown';
     const data = await response.json();
-    return data.valid ? 'valid' : 'replaced';
+    if (data.valid) return 'valid';
+    return data.caducada ? 'missing' : 'replaced';
   } catch {
     return 'unknown';
   }
