@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Segoe UI, Arial, sans-serif">
+  <!-- Iconos: AWS Architecture Icons (set 01/30/2026), via el paquete npm aws-icons 3.3.0. -->
   <defs>
     <filter id="cs" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.10"/>
@@ -14,282 +15,233 @@
 
   <rect width="1280" height="720" fill="#FFFFFF"/>
 
-  <!-- Titulo -->
   <text x="40" y="42" font-size="24" font-weight="700" fill="#1A2433">Arquitectura cloud en AWS</text>
   <text x="40" y="64" font-size="13" fill="#5A7A9C">Entorno dev · us-east-1 · plataforma encendida de lunes a viernes, 07:40–18:30 (Bogotá)</text>
 
-  <!-- ============ VPC ============ -->
   <rect x="455" y="100" width="560" height="405" rx="10" fill="#FAF7FF" stroke="#8C4FFF" stroke-width="1.2" stroke-dasharray="5,3"/>
-  <text x="470" y="120" font-size="10" font-weight="700" fill="#8C4FFF" letter-spacing="1">VPC DEV · 10.1.0.0/16</text>
-
-  <!-- Subred privada del RCN -->
-  <rect x="835" y="318" width="175" height="90" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="843" y="332" font-size="8.5" font-weight="700" fill="#C925D1" letter-spacing="0.5">SUBRED PRIVADA</text>
-
-  <!-- ============ CAJAS ============ -->
-  <!-- Usuario -->
+  <svg x="466" y="107" width="18" height="18" viewBox="0 0 40 40"><g fill="none" fill-rule="evenodd"><path fill="#8c4fff" d="M0 0h40v40H0z"/><path fill="#fff" d="m30.97 21.03-2.943-1.264v10.49c2.545-.353 2.932-2.969 2.948-3.088zm-3.943 9.24V19.76l-3.035 1.272v6.201c.013.054.445 2.767 3.035 3.036m.306-11.723a.5.5 0 0 1 .39.001l3.945 1.692a.5.5 0 0 1 .303.46v6.533c-.183 1.447-1.357 4.063-4.527 4.063-3.075 0-4.254-2.612-4.448-3.994l-.004-6.603c0-.2.12-.383.306-.46zm5.65.637-5.461-2.406-5.53 2.327v7.128c-.001.042-.054 2.868 1.657 4.623.917.941 2.194 1.42 3.795 1.42 1.602 0 2.887-.48 3.819-1.423 1.735-1.758 1.72-4.585 1.72-4.613zM31.98 31.55c-1.127 1.144-2.654 1.725-4.536 1.725-1.884 0-3.404-.58-4.517-1.727-2.005-2.063-1.94-5.197-1.935-5.329v-7.446a.5.5 0 0 1 .305-.46l6.035-2.54a.5.5 0 0 1 .396.003l5.956 2.625c.182.08.299.26.299.457v7.375c.002.125.027 3.255-2.003 5.317m-20.988-7.314h8v1h-8c-2.811 0-4.811-2.016-4.98-5.016A4 4 0 0 1 6 19.841c0-2.509 1.318-4.223 3.817-4.979a8 8 0 0 1-.032-.647c0-2.916 1.577-5.445 4.017-6.445 3.298-1.348 7.042-.894 9.106 1.104a8.2 8.2 0 0 1 1.76 2.485c.609-.45 1.4-.66 2.349-.614 1.78.09 3.149 1.713 3.433 4.007 1.498.124 2.485.883 3.01 2.308l-.937.346c-.428-1.157-1.208-1.673-2.531-1.673a.5.5 0 0 1-.5-.47c-.138-2.338-1.406-3.463-2.526-3.519-.945-.053-1.645.22-2.08.791a.5.5 0 0 1-.472.193.5.5 0 0 1-.395-.323 7.4 7.4 0 0 0-1.807-2.814c-1.788-1.73-5.09-2.099-8.031-.895-2.063.845-3.396 3.011-3.396 5.52 0 .272.035.695.066.958a.5.5 0 0 1-.376.544C8.169 16.29 7 17.678 7 19.841c0 .101-.001.201.009.302.14 2.495 1.703 4.093 3.983 4.093"/></g></svg>
+  <text letter-spacing="1" x="490" y="120" text-anchor="start" font-size="10" font-weight="700" fill="#8C4FFF">VPC DEV · 10.1.0.0/16</text>
+  <rect x="835" y="318" width="177" height="90" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1" stroke-dasharray="3,2"/>
+  <svg x="841" y="321" width="14" height="14" viewBox="0 0 40 40"><g fill="none" fill-rule="evenodd"><path fill="#00a4a6" d="M0 0h40v40H0z"/><path fill="#fff" d="M19.536 22.049c1.106 0 2.006.899 2.006 2.005s-.9 2.006-2.006 2.006-2.006-.9-2.006-2.006.9-2.005 2.006-2.005m-.524 4.958v3.494h1v-3.489a3 3 0 0 0 2.53-2.958 3.01 3.01 0 0 0-3.006-3.005 3.01 3.01 0 0 0-3.006 3.005 3.006 3.006 0 0 0 2.482 2.953M10 33.014h19.012V18H10zm4.046-20.53A5.49 5.49 0 0 1 19.529 7a5.49 5.49 0 0 1 5.483 5.484V17H14.046zM29.512 17h-3.5v-4.516A6.49 6.49 0 0 0 19.529 6a6.49 6.49 0 0 0-6.483 6.484V17H9.5a.5.5 0 0 0-.5.5v16.014a.5.5 0 0 0 .5.5h20.012a.5.5 0 0 0 .5-.5V17.5a.5.5 0 0 0-.5-.5"/></g></svg>
+  <text x="859" y="332" text-anchor="start" font-size="8.5" font-weight="700" fill="#C925D1">SUBRED PRIVADA</text>
   <g transform="translate(40, 140)" filter="url(#cs)">
     <rect width="170" height="56" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
     <rect width="170" height="3" rx="1" fill="#6B7280"/>
-    <text x="85" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO</text>
-    <text x="85" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Usuario</text>
-    <text x="85" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">Google o usuario y contraseña</text>
-  </g>
-
-  <!-- Firebase -->
+    <text x="85.0" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO</text>
+    <text x="85.0" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Usuario</text>
+    <text x="85.0" y="46" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5A7A9C">Google o usuario y contraseña</text>
+    </g>
   <g transform="translate(40, 300)" filter="url(#cs)">
     <rect width="170" height="56" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
     <rect width="170" height="3" rx="1" fill="#6B7280"/>
-    <text x="85" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO · GOOGLE</text>
-    <text x="85" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Firebase Auth</text>
-    <text x="85" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">solo el login con Google</text>
-  </g>
-
-  <!-- Amplify -->
+    <text x="85.0" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO · GOOGLE</text>
+    <text x="85.0" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Firebase Auth</text>
+    <text x="85.0" y="46" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5A7A9C">solo el login con Google</text>
+    </g>
   <g transform="translate(250, 140)" filter="url(#cs)">
     <rect width="170" height="56" rx="6" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.5"/>
     <rect width="170" height="3" rx="1" fill="#DD344C"/>
-    <text x="85" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#DD344C">AWS AMPLIFY</text>
-    <text x="85" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-app</text>
-    <text x="85" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">Next.js</text>
-  </g>
-
-  <!-- CloudFront API -->
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#dd344c" d="M0 0h64v64H0z"/><path fill="#fff" d="M46.637 47.677 32.333 17h3.794L50.43 47.677zm6.27.578L37.67 15.577a1 1 0 0 0-.906-.577h-6a1 1 0 0 0-.906 1.422l15.236 32.677a1 1 0 0 0 .906.578h6a1 1 0 0 0 .907-1.422m-16.277-.578-10.536-22.03 2.325-3.846 12.015 25.876zm-7.187-28.422a1 1 0 0 0-.853-.578.96.96 0 0 0-.91.481l-3.576 5.915a1 1 0 0 0-.047.95l11.04 23.086c.167.347.519.568.903.568h6a1 1 0 0 0 .908-1.421zm-16.67 28.422 9.639-15.94 1.619 3.236-4.782 8.102a1 1 0 0 0 .862 1.508h8.704l1.56 3.094zm17.55-4.544a1 1 0 0 0-.893-.55h-7.568l4.168-7.062c.17-.292.184-.652.033-.955l-2.673-5.347a1 1 0 0 0-.855-.552.99.99 0 0 0-.895.482l-11.495 19.01A1 1 0 0 0 11 49.677h21a1 1 0 0 0 .893-1.451z"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#DD344C">AWS AMPLIFY</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-app</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">Next.js</text>
+    </g>
   <g transform="translate(250, 300)" filter="url(#cs)">
     <rect width="170" height="56" rx="6" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.5"/>
     <rect width="170" height="3" rx="1" fill="#8C4FFF"/>
-    <text x="85" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#8C4FFF">AMAZON CLOUDFRONT</text>
-    <text x="85" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Entrada de la API</text>
-    <text x="85" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">HTTPS hacia el usuario</text>
-  </g>
-
-  <!-- ALB API -->
-  <g transform="translate(475, 140)" filter="url(#cs)">
-    <rect width="120" height="56" rx="6" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#8C4FFF"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#8C4FFF">ELB</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">ALB API</text>
-  </g>
-
-  <!-- API -->
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#8c4fff" d="M0 0h64v64H0z"/><path fill="#fff" d="M41.5 43.5c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2m0-6c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4m-19-5c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2m0-6c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4m22.889 20.624a29 29 0 0 0-.704-1.533l-1.789.895c.274.549.524 1.113.76 1.679a19 19 0 0 1-2.628 1.575c.356-.875.666-1.765.946-2.728l-1.92-.558a25.2 25.2 0 0 1-1.87 4.679A19.2 19.2 0 0 1 32.5 52c-3.035 0-5.933-.686-8.629-2.024-1.368-3.361-2.033-6.442-2.033-9.417 0-1.292.225-2.363.484-3.603q.096-.455.192-.932l-1.963-.386q-.092.465-.186.907c-.271 1.293-.527 2.515-.527 4.014 0 2.515.436 5.085 1.316 7.795A19.46 19.46 0 0 1 13 32.5c0-.111.01-.227.012-.339a24 24 0 0 1 4.842-.59l-.05-1.999c-1.635.04-3.11.207-4.641.512.918-7.401 6.049-13.69 13.16-16.065 1.55.799 2.697 1.505 3.812 2.351l1.209-1.594a24 24 0 0 0-2.198-1.477A19.6 19.6 0 0 1 32.5 13c2.532 0 5.032.494 7.349 1.439a33 33 0 0 0-1.606.532l.68 1.881c1.393-.503 2.485-.812 3.648-1.031C48.399 19.341 52 25.667 52 32.5a19.36 19.36 0 0 1-6.611 14.624m-2.381-33.375A21.4 21.4 0 0 0 32.5 11c-2.108 0-4.176.301-6.143.895-8.634 2.569-14.789 10.335-15.312 19.301-.035.429-.045.866-.045 1.304a21.47 21.47 0 0 0 11.354 18.955A21.54 21.54 0 0 0 32.5 54a21.1 21.1 0 0 0 6.937-1.157 21 21 0 0 0 6.209-3.336C50.955 45.399 54 39.2 54 32.5a21.52 21.52 0 0 0-10.992-18.751m-4.624 23.662-1.381 1.447c-2.981-2.843-5.956-4.712-9.366-5.883l.65-1.892c3.692 1.268 6.901 3.279 10.097 6.328m.06-15.047c2.838 4.328 4.436 9.08 4.749 14.124l-1.996.124c-.292-4.693-1.78-9.117-4.425-13.152zm-11.993 4.433-1.678-1.089c1.543-2.376 2.866-3.95 4.563-5.43l1.314 1.508c-1.547 1.349-2.764 2.801-4.199 5.011M34.5 16.5c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2m0 6c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#8C4FFF">AMAZON CLOUDFRONT</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Entrada de la API</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">HTTPS hacia el usuario</text>
+    </g>
+  <g transform="translate(470, 140)" filter="url(#cs)">
+    <rect width="135" height="56" rx="6" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.5"/>
+    <rect width="135" height="3" rx="1" fill="#8C4FFF"/>
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#8c4fff" d="M0 0h64v64H0z"/><path fill="#fff" d="M23.5 42C17.71 42 13 37.29 13 31.5S17.71 21 23.5 21 34 25.71 34 31.5 29.29 42 23.5 42M48 48c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3m-3-35c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3m3 16c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3m-12.099 4h7.201A5.01 5.01 0 0 0 48 37c2.757 0 5-2.243 5-5s-2.243-5-5-5a5.01 5.01 0 0 0-4.898 4h-7.127a12.5 12.5 0 0 0-.879-4.144l7.703-6.389A4.94 4.94 0 0 0 45 21c2.757 0 5-2.243 5-5s-2.243-5-5-5-5 2.243-5 5c0 1.224.459 2.331 1.191 3.201l-7.019 5.823C31.977 21.42 28.021 19 23.5 19 16.607 19 11 24.607 11 31.5S16.607 44 23.5 44c4.243 0 7.993-2.129 10.254-5.371l7.437 6.17C40.459 45.669 40 46.776 40 48c0 2.757 2.243 5 5 5s5-2.243 5-5-2.243-5-5-5a4.94 4.94 0 0 0-2.201.533l-8.029-6.66c.574-1.2.966-2.5 1.131-3.873"/></g></svg>
+    <text x="47" y="24" text-anchor="start" font-size="9" font-weight="700" fill="#8C4FFF">ELB</text>
+    <text x="47" y="40" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">ALB API</text>
+    </g>
   <g transform="translate(625, 140)" filter="url(#cs)">
     <rect width="190" height="56" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
     <rect width="190" height="3" rx="1" fill="#ED7100"/>
-    <text x="95" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">ECS FARGATE</text>
-    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-api</text>
-    <text x="95" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">FastAPI · exige sesión vigente</text>
-  </g>
-
-  <!-- ALB IA -->
-  <g transform="translate(475, 240)" filter="url(#cs)">
-    <rect width="120" height="56" rx="6" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#8C4FFF"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#8C4FFF">ELB</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">ALB IA</text>
-  </g>
-
-  <!-- IA -->
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#ed7100" d="M0 0h64v64H0z"/><path fill="#fff" d="M42.467 46.382v-3.764l1.994-1v3.764zm-3.987-4.764 1.994 1v3.764l-1.994-1zm-4.983 9.764v-3.764l1.993-1v3.764zm-3.987-4.764 1.993 1v3.764l-1.993-1zm-4.984-.236v-3.764l1.994-1v3.764zm-3.987-4.764 1.994 1v3.764l-1.994-1zm2.99-2.5 1.759.882-1.758.882L21.77 40zm8.971 5 1.758.882-1.758.882L30.742 45zm8.97-5L43.23 40l-1.759.882L39.712 40zm4.433-.012-3.987-2a.99.99 0 0 0-.891 0l-3.987 2a1 1 0 0 0-.551.894v3.882l-3.541-1.776a.99.99 0 0 0-.892 0l-3.54 1.776V40a1 1 0 0 0-.552-.894l-3.987-2a.99.99 0 0 0-.89 0l-3.988 2a1 1 0 0 0-.55.894v6c0 .379.212.725.55.895l3.987 2a1 1 0 0 0 .891 0l3.541-1.777V51c0 .379.214.725.552.895l3.986 2a1 1 0 0 0 .892 0l3.986-2c.338-.17.552-.516.552-.895v-3.882l3.54 1.777a1 1 0 0 0 .892 0l3.987-2c.338-.17.55-.516.55-.895v-6a1 1 0 0 0-.55-.894M54 28.09c0 5.103-11.077 7.856-21.5 7.856S11 33.193 11 28.09c0-2.461 2.68-4.616 7.547-6.067l.568 1.917c-3.776 1.126-6.122 2.716-6.122 4.15 0 2.764 8.343 5.856 19.507 5.856s19.507-3.092 19.507-5.856c0-1.434-2.346-3.024-6.122-4.15l.568-1.917C51.32 23.474 54 25.629 54 28.09M32.5 12.064 40.547 15 32.5 17.936 24.453 15zm8.868 16.584c-1.556.7-4.155 1.516-7.871 1.645V19.701l8.97-3.273v10.485c0 .754-.431 1.435-1.1 1.735m-18.835-1.735V16.428l8.97 3.273v10.592c-3.716-.129-6.315-.945-7.87-1.645-.669-.3-1.1-.981-1.1-1.735m.283 3.56c1.87.842 5.07 1.846 9.684 1.846 4.615 0 7.813-1.004 9.684-1.846 1.383-.622 2.277-2.019 2.277-3.56V15a1 1 0 0 0-.656-.94l-10.964-4a1 1 0 0 0-.682 0l-10.964 4a1 1 0 0 0-.656.94v11.913c0 1.541.894 2.938 2.277 3.56"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#ED7100">ECS FARGATE</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-api</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">FastAPI · valida la sesión</text>
+    </g>
+  <g transform="translate(470, 240)" filter="url(#cs)">
+    <rect width="135" height="56" rx="6" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.5"/>
+    <rect width="135" height="3" rx="1" fill="#8C4FFF"/>
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#8c4fff" d="M0 0h64v64H0z"/><path fill="#fff" d="M23.5 42C17.71 42 13 37.29 13 31.5S17.71 21 23.5 21 34 25.71 34 31.5 29.29 42 23.5 42M48 48c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3m-3-35c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3m3 16c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3m-12.099 4h7.201A5.01 5.01 0 0 0 48 37c2.757 0 5-2.243 5-5s-2.243-5-5-5a5.01 5.01 0 0 0-4.898 4h-7.127a12.5 12.5 0 0 0-.879-4.144l7.703-6.389A4.94 4.94 0 0 0 45 21c2.757 0 5-2.243 5-5s-2.243-5-5-5-5 2.243-5 5c0 1.224.459 2.331 1.191 3.201l-7.019 5.823C31.977 21.42 28.021 19 23.5 19 16.607 19 11 24.607 11 31.5S16.607 44 23.5 44c4.243 0 7.993-2.129 10.254-5.371l7.437 6.17C40.459 45.669 40 46.776 40 48c0 2.757 2.243 5 5 5s5-2.243 5-5-2.243-5-5-5a4.94 4.94 0 0 0-2.201.533l-8.029-6.66c.574-1.2.966-2.5 1.131-3.873"/></g></svg>
+    <text x="47" y="24" text-anchor="start" font-size="9" font-weight="700" fill="#8C4FFF">ELB</text>
+    <text x="47" y="40" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">ALB IA</text>
+    </g>
   <g transform="translate(625, 240)" filter="url(#cs)">
     <rect width="190" height="56" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
     <rect width="190" height="3" rx="1" fill="#ED7100"/>
-    <text x="95" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">ECS FARGATE</text>
-    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-api-ai</text>
-    <text x="95" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">matching RCN + naming con Claude</text>
-  </g>
-
-  <!-- Carga RCN -->
-  <g transform="translate(475, 340)" filter="url(#cs)">
-    <rect width="120" height="56" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5" stroke-dasharray="3,2"/>
-    <rect width="120" height="3" rx="1" fill="#ED7100"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">TAREA ECS</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Carga RCN</text>
-    <text x="60" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">la lanza el admin</text>
-  </g>
-
-  <!-- rcn-api -->
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#ed7100" d="M0 0h64v64H0z"/><path fill="#fff" d="M42.467 46.382v-3.764l1.994-1v3.764zm-3.987-4.764 1.994 1v3.764l-1.994-1zm-4.983 9.764v-3.764l1.993-1v3.764zm-3.987-4.764 1.993 1v3.764l-1.993-1zm-4.984-.236v-3.764l1.994-1v3.764zm-3.987-4.764 1.994 1v3.764l-1.994-1zm2.99-2.5 1.759.882-1.758.882L21.77 40zm8.971 5 1.758.882-1.758.882L30.742 45zm8.97-5L43.23 40l-1.759.882L39.712 40zm4.433-.012-3.987-2a.99.99 0 0 0-.891 0l-3.987 2a1 1 0 0 0-.551.894v3.882l-3.541-1.776a.99.99 0 0 0-.892 0l-3.54 1.776V40a1 1 0 0 0-.552-.894l-3.987-2a.99.99 0 0 0-.89 0l-3.988 2a1 1 0 0 0-.55.894v6c0 .379.212.725.55.895l3.987 2a1 1 0 0 0 .891 0l3.541-1.777V51c0 .379.214.725.552.895l3.986 2a1 1 0 0 0 .892 0l3.986-2c.338-.17.552-.516.552-.895v-3.882l3.54 1.777a1 1 0 0 0 .892 0l3.987-2c.338-.17.55-.516.55-.895v-6a1 1 0 0 0-.55-.894M54 28.09c0 5.103-11.077 7.856-21.5 7.856S11 33.193 11 28.09c0-2.461 2.68-4.616 7.547-6.067l.568 1.917c-3.776 1.126-6.122 2.716-6.122 4.15 0 2.764 8.343 5.856 19.507 5.856s19.507-3.092 19.507-5.856c0-1.434-2.346-3.024-6.122-4.15l.568-1.917C51.32 23.474 54 25.629 54 28.09M32.5 12.064 40.547 15 32.5 17.936 24.453 15zm8.868 16.584c-1.556.7-4.155 1.516-7.871 1.645V19.701l8.97-3.273v10.485c0 .754-.431 1.435-1.1 1.735m-18.835-1.735V16.428l8.97 3.273v10.592c-3.716-.129-6.315-.945-7.87-1.645-.669-.3-1.1-.981-1.1-1.735m.283 3.56c1.87.842 5.07 1.846 9.684 1.846 4.615 0 7.813-1.004 9.684-1.846 1.383-.622 2.277-2.019 2.277-3.56V15a1 1 0 0 0-.656-.94l-10.964-4a1 1 0 0 0-.682 0l-10.964 4a1 1 0 0 0-.656.94v11.913c0 1.541.894 2.938 2.277 3.56"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#ED7100">ECS FARGATE</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">bbva-ingesta-api-ai</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">matching RCN y naming</text>
+    </g>
+  <g transform="translate(470, 340)" filter="url(#cs)">
+    <rect width="135" height="56" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <rect width="135" height="3" rx="1" fill="#ED7100"/>
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#ed7100" d="M0 0h64v64H0z"/><path fill="#fff" d="m50 36.382-6-3V25a1 1 0 0 0-.515-.874L35 19.412V12.75l15 8.822zm1.507-16.244-17-10a1.001 1.001 0 0 0-1.507.863v9c0 .362.197.697.515.873L42 25.588V34c0 .38.214.725.553.895l8 4a1 1 0 0 0 .972-.044c.295-.183.475-.504.475-.85V21c0-.355-.188-.683-.493-.863M32 51.828 15 41.439V21.554l14-8.75v6.642l-7.53 4.706A1 1 0 0 0 21 25v13a1 1 0 0 0 .485.857l10 6a1 1 0 0 0 .994.021l10.509-5.732 5.047 2.883zm18.496-10.696-7-4a1 1 0 0 0-.975-.01l-10.498 5.726L23 37.434v-11.88l7.53-4.706A1 1 0 0 0 31 20v-9a1 1 0 0 0-1.53-.847l-16 10A1 1 0 0 0 13 21v21c0 .348.182.671.479.854l18 11a1 1 0 0 0 1.042 0l18-11a1 1 0 0 0-.025-1.722"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#ED7100">TAREA ECS</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Carga RCN</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">desde el admin</text>
+    </g>
   <g transform="translate(625, 340)" filter="url(#cs)">
     <rect width="190" height="56" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
     <rect width="190" height="3" rx="1" fill="#ED7100"/>
-    <text x="95" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">ECS SOBRE EC2 · c6i.large</text>
-    <text x="95" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">rcn-api</text>
-    <text x="95" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">búsquedas RCN para la API y la IA</text>
-  </g>
-
-  <!-- Aurora -->
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#ed7100" d="M0 0h64v64H0z"/><path fill="#fff" d="M22 41h19V23H22zm21-18h3v2h-3v2h3v2h-3v2h3v2h-3v3h3v2h-3v2h3v2h-3.137c-.255.587-.84 1-1.519 1H41v3h-2v-3h-2v3h-2v-3h-2v3h-2v-3h-2v3h-2v-3h-3v3h-2v-3h-.344a1.66 1.66 0 0 1-1.519-1H18v-2h2v-2h-2v-2h2v-3h-2v-2h2v-2h-2v-2h2v-2h-2v-2h2v-.344c0-.913.743-1.656 1.656-1.656H22v-3h2v3h3v-3h2v3h2v-3h2v3h2v-3h2v3h2v-3h2v3h.344c.913 0 1.656.743 1.656 1.656zM32 52H12V32h4v-2h-4.157A1.845 1.845 0 0 0 10 31.843v20.314c0 1.016.826 1.843 1.843 1.843h20.314A1.845 1.845 0 0 0 34 52.157V48h-2zm22-40.157v20.314A1.845 1.845 0 0 1 52.157 34H48v-2h4V12H32v4h-2v-4.157c0-1.016.826-1.843 1.843-1.843h20.314c1.017 0 1.843.827 1.843 1.843"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#ED7100">ECS SOBRE EC2</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">rcn-api</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">c6i.large · gateway del RCN</text>
+    </g>
   <g transform="translate(845, 140)" filter="url(#cs)">
-    <rect width="155" height="56" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
-    <rect width="155" height="3" rx="1" fill="#C925D1"/>
-    <text x="77.5" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#C925D1">AURORA POSTGRESQL</text>
-    <text x="77.5" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">bbvadev</text>
-    <text x="77.5" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">datos de la plataforma</text>
-  </g>
-
-  <!-- RDS RCN -->
+    <rect width="162" height="56" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
+    <rect width="162" height="3" rx="1" fill="#C925D1"/>
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#c925d1" d="M0 0h64v64H0z"/><path fill="#fff" d="M36.213 16.011h-2.016v-2.005h2.016V12h2.017v2.006h2.016v2.005H38.23v2.006h-2.017zm9.074 8.023h-2.016v-2.006h2.016v-2.005h2.016v2.005h2.017v2.006h-2.017v2.006h-2.016v-2.006m-3.434 22.64c-1.495-3.292-4.482-6.263-7.792-7.75 3.31-1.487 6.297-4.459 7.792-7.75 1.494 3.291 4.482 6.263 7.791 7.75-3.31 1.487-6.297 4.458-7.79 7.75m12.139-8.753c-5.202 0-11.13-5.898-11.13-11.071 0-.555-.452-1.003-1.009-1.003s-1.008.448-1.008 1.003c0 5.173-5.93 11.071-11.13 11.071-.558 0-1.009.448-1.009 1.003s.45 1.003 1.008 1.003c5.202 0 11.13 5.898 11.13 11.07 0 .554.452 1.003 1.01 1.003.556 0 1.007-.45 1.007-1.003 0-5.172 5.93-11.07 11.13-11.07.558 0 1.009-.45 1.009-1.003 0-.555-.45-1.003-1.008-1.003m-31.39-19.904c6.85 0 10.587 1.988 10.587 3.008s-3.737 3.009-10.586 3.009-10.587-1.988-10.587-3.009 3.737-3.008 10.587-3.008m-.35 15.15c-5.012 0-8.62-1.063-10.236-2.19v-7.113c2.367 1.433 6.487 2.176 10.587 2.176s8.22-.743 10.586-2.176v6.484c-1.016 1.406-5.247 2.819-10.936 2.819M33.19 45.975c0 1.435-4.126 3.52-10.59 3.52-6.46 0-10.583-2.085-10.583-3.52v-4.407c2.258 1.354 6.014 2.192 10.276 2.192 2.942 0 5.786-.413 8.01-1.166l-.651-1.898c-2.019.682-4.633 1.058-7.359 1.058-5.39 0-9.252-1.402-10.276-2.76v-5.707c2.411 1.176 6.113 1.885 10.237 1.885 3.92 0 8.34-.725 10.936-2.269v2.162h2.016v-14.04c0-3.292-6.34-5.014-12.602-5.014S10 17.733 10 21.025v24.95c0 3.59 6.49 5.526 12.598 5.526 6.112 0 12.607-1.937 12.607-5.526v-2.887h-2.016z"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#C925D1">AURORA POSTGRESQL</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">bbvadev</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">datos de la plataforma</text>
+    </g>
   <g transform="translate(845, 340)" filter="url(#cs)">
-    <rect width="155" height="56" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
-    <rect width="155" height="3" rx="1" fill="#C925D1"/>
-    <text x="77.5" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#C925D1">RDS POSTGRESQL 16</text>
-    <text x="77.5" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">RCN y legacy</text>
-    <text x="77.5" y="49" text-anchor="middle" font-size="9.5" fill="#5A7A9C">pgvector</text>
-  </g>
-
-  <!-- Notas de red -->
-  <text x="475" y="448" font-size="10" fill="#5A7A9C">API, IA y rcn-api corren en subredes públicas; rcn-api solo se alcanza</text>
-  <text x="475" y="463" font-size="10" fill="#5A7A9C">dentro de la VPC (rcn-api.bbva-dev.internal).</text>
-  <text x="475" y="483" font-size="10" fill="#5A7A9C">Aurora solo admite conexiones desde la VPC y desde dos IP de administración.</text>
-
-  <!-- ============ SERVICIOS FUERA DE LA VPC ============ -->
-  <text x="1060" y="100" font-size="9" font-weight="700" fill="#94A3B8" letter-spacing="1">USADOS DESDE LA VPC</text>
-
-  <g transform="translate(1060, 110)" filter="url(#cs)">
-    <rect width="180" height="52" rx="6" fill="#FFFFFF" stroke="#01A88D" stroke-width="1.5"/>
-    <rect width="180" height="3" rx="1" fill="#01A88D"/>
-    <text x="90" y="17" text-anchor="middle" font-size="9" font-weight="700" fill="#01A88D">AMAZON BEDROCK</text>
-    <text x="90" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Claude Sonnet 5.5</text>
-    <text x="90" y="45" text-anchor="middle" font-size="9.5" fill="#5A7A9C">lo usa la IA</text>
-  </g>
-
-  <g transform="translate(1060, 175)" filter="url(#cs)">
-    <rect width="180" height="52" rx="6" fill="#FFFFFF" stroke="#7AA116" stroke-width="1.5"/>
-    <rect width="180" height="3" rx="1" fill="#7AA116"/>
-    <text x="90" y="17" text-anchor="middle" font-size="9" font-weight="700" fill="#7AA116">AMAZON S3</text>
-    <text x="90" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Artefactos y cargas RCN</text>
-    <text x="90" y="45" text-anchor="middle" font-size="9.5" fill="#5A7A9C">API, carga RCN y rcn-api</text>
-  </g>
-
-  <g transform="translate(1060, 240)" filter="url(#cs)">
-    <rect width="180" height="52" rx="6" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.5"/>
-    <rect width="180" height="3" rx="1" fill="#DD344C"/>
-    <text x="90" y="17" text-anchor="middle" font-size="9" font-weight="700" fill="#DD344C">SECRETS MANAGER</text>
-    <text x="90" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Credenciales</text>
-    <text x="90" y="45" text-anchor="middle" font-size="9.5" fill="#5A7A9C">bases, clave RCN, cuenta Google</text>
-  </g>
-
-  <g transform="translate(1060, 305)" filter="url(#cs)">
-    <rect width="180" height="52" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
-    <rect width="180" height="3" rx="1" fill="#E7157B"/>
-    <text x="90" y="17" text-anchor="middle" font-size="9" font-weight="700" fill="#E7157B">CLOUDWATCH</text>
-    <text x="90" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Logs</text>
-    <text x="90" y="45" text-anchor="middle" font-size="9.5" fill="#5A7A9C">de todos los servicios</text>
-  </g>
-
-  <g transform="translate(1060, 370)" filter="url(#cs)">
-    <rect width="180" height="52" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
-    <rect width="180" height="3" rx="1" fill="#6B7280"/>
-    <text x="90" y="17" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO · GOOGLE</text>
-    <text x="90" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Sheets y Drive</text>
-    <text x="90" y="45" text-anchor="middle" font-size="9.5" fill="#5A7A9C">prediccionarios · los usa la IA</text>
-  </g>
-
-
-  <!-- ============ FLECHAS ============ -->
-  <!-- Usuario -> Amplify -->
+    <rect width="162" height="56" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
+    <rect width="162" height="3" rx="1" fill="#C925D1"/>
+    <svg x="9" y="14.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#c925d1" d="M0 0h64v64H0z"/><path fill="#fff" d="M54 11v8h-2v-5.586l-6.293 6.293-1.414-1.414L50.586 12h-5.461v-2H53a1 1 0 0 1 1 1m-42 7.875h-2V11a1 1 0 0 1 1-1h8v2h-5.586l6.293 6.293-1.414 1.414L12 13.414zm7.707 26.832L13.414 52h5.461v2H11a1 1 0 0 1-1-1v-8h2v5.586l6.293-6.293zM51.5 31.781c0-2.429-2.866-4.849-7.667-6.474l.641-1.894c5.736 1.941 9.026 4.991 9.026 8.368s-3.29 6.427-9.026 8.369l-.641-1.895c4.801-1.624 7.667-4.045 7.667-6.474m-38.957 0c0 2.324 2.681 4.679 7.172 6.3l-.68 1.88c-5.396-1.947-8.492-4.928-8.492-8.18s3.096-6.233 8.492-8.18l.68 1.881c-4.491 1.621-7.172 3.976-7.172 6.299M52 45.125h2V53a1 1 0 0 1-1 1h-8v-2h5.586l-6.293-6.293 1.414-1.414L52 50.586zM32.022 31.402c-5.023 0-7.896-1.343-8.022-1.919v-3.226c2.159 1.009 5.609 1.336 8 1.336s5.841-.327 8-1.336v3.226c-.106.574-2.949 1.919-7.978 1.919m0 5.728c-5.023 0-7.896-1.344-8.022-1.92v-3.254c1.953.981 5.055 1.446 8.022 1.446 2.951 0 6.033-.464 7.978-1.442v3.25c-.106.575-2.948 1.92-7.978 1.92M32 42.268c-5.05 0-7.896-1.351-8-1.922v-2.663c1.953.982 5.055 1.447 8.022 1.447 2.951 0 6.033-.464 7.978-1.443v2.655c-.104.575-2.95 1.926-8 1.926m0-20.075c4.971 0 7.642 1.177 7.982 1.701-.34.523-3.011 1.699-7.982 1.699-5.091 0-7.767-1.232-8-1.644v-.019c.233-.504 2.909-1.737 8-1.737m0-2c-3.714 0-10 .78-10 3.701v16.452c0 2.695 5.184 3.922 10 3.922s10-1.227 10-3.922V23.894c0-2.921-6.286-3.701-10-3.701"/></g></svg>
+    <text x="47" y="18" text-anchor="start" font-size="9" font-weight="700" fill="#C925D1">RDS POSTGRESQL 16</text>
+    <text x="47" y="34" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">RCN y legacy</text>
+    <text x="47" y="46" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">pgvector</text>
+    </g>
+  <text x="475" y="448" text-anchor="start" font-size="10" font-weight="400" fill="#5A7A9C">API, IA y rcn-api corren en subredes públicas; rcn-api solo se alcanza</text>
+  <text x="475" y="463" text-anchor="start" font-size="10" font-weight="400" fill="#5A7A9C">dentro de la VPC (rcn-api.bbva-dev.internal).</text>
+  <text x="475" y="483" text-anchor="start" font-size="10" font-weight="400" fill="#5A7A9C">Aurora solo admite conexiones desde la VPC y desde dos IP de administración.</text>
+  <text letter-spacing="1" x="1052" y="100" text-anchor="start" font-size="9" font-weight="700" fill="#94A3B8">USADOS DESDE LA VPC</text>
+  <g transform="translate(1052, 110)" filter="url(#cs)">
+    <rect width="196" height="52" rx="6" fill="#FFFFFF" stroke="#01A88D" stroke-width="1.5"/>
+    <rect width="196" height="3" rx="1" fill="#01A88D"/>
+    <svg x="9" y="12.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#01a88d" d="M0 0h64v64H0z"/><path fill="#fff" d="M51 31a1.001 1.001 0 0 1 0-2 1.001 1.001 0 0 1 0 2M26.977 51.848l-3.203-1.746 3.741-2.245-1.03-1.714-4.747 2.848L17 46.406v-5.84l4.515-2.71-1.03-1.713L16 38.833l-4-2.4v-3.815l5.447-2.723-.894-1.79L12 30.382v-2.764l4.956-2.478L21 27.566v2.816l-3.447 1.723.894 1.79 3.556-1.778 3.554 1.76.886-1.792L23 30.38v-2.814l4.515-2.71A1 1 0 0 0 28 24v-5h-2v4.434l-4 2.4-4-2.4v-6.846l3-1.666V21h2v-7.19l3.024-1.68 4.978 2.486-.001 21.834-10.538 6.706 1.074 1.688 9.464-6.022L31 49.434zM48 39a1.001 1.001 0 0 1 0 2 1.001 1.001 0 0 1 0-2m-8 10a1.001 1.001 0 0 1 0-2 1.001 1.001 0 0 1 0 2m2-33a1.001 1.001 0 0 1 0 2 1.001 1.001 0 0 1 0-2m9 11a3 3 0 0 0-2.816 2H33.001v-4H42a1 1 0 0 0 1-1v-4.184A3 3 0 0 0 45 17c0-1.654-1.346-3-3-3s-3 1.346-3 3c0 1.302.839 2.402 2 2.816V23h-7.999l.001-9.002a1 1 0 0 0-.553-.894l-6.002-3a1 1 0 0 0-.932.022l-9 5A1 1 0 0 0 16 16v7.382l-5.447 2.723c-.339.17-.553.516-.553.895v10a1 1 0 0 0 .485.857L15 40.566V47a1 1 0 0 0 .521.878l11 6a1 1 0 0 0 .994-.021l5-3A1 1 0 0 0 33 50v-7h6v2.184A3 3 0 0 0 37 48c0 1.654 1.346 3 3 3s3-1.346 3-3a3 3 0 0 0-2-2.816V42a1 1 0 0 0-1-1h-7l.001-4h10.585l1.715 1.715A2.95 2.95 0 0 0 45 40c0 1.654 1.346 3 3 3s3-1.346 3-3-1.346-3-3-3a2.95 2.95 0 0 0-1.285.3l-2.008-2.007A1 1 0 0 0 44 35H33.001v-4h15.183A3 3 0 0 0 51 33c1.654 0 3-1.346 3-3s-1.346-3-3-3"/></g></svg>
+    <text x="47" y="16" text-anchor="start" font-size="9" font-weight="700" fill="#01A88D">AMAZON BEDROCK</text>
+    <text x="47" y="32" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Claude Sonnet 5.5</text>
+    <text x="47" y="44" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">lo usa la IA</text>
+    </g>
+  <g transform="translate(1052, 175)" filter="url(#cs)">
+    <rect width="196" height="52" rx="6" fill="#FFFFFF" stroke="#7AA116" stroke-width="1.5"/>
+    <rect width="196" height="3" rx="1" fill="#7AA116"/>
+    <svg x="9" y="12.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#7aa116" d="M0 0h64v64H0z"/><path fill="#fff" d="m47.759 33.948.234-1.817c2.173 1.254 2.849 1.99 3.044 2.293-.324.061-1.205.085-3.278-.476M30.499 21c-10.374 0-17.117-2.512-17.5-4.304v-.185c.35-1.119 6.14-4.51 17.5-4.51 11.34 0 17.133 3.38 17.5 4.504v.111C47.725 18.446 40.962 21 30.5 21m15.319 12.362c-4.765-1.565-10.906-4.383-13.224-5.474a2.09 2.09 0 0 0-2.082-1.982A2.097 2.097 0 0 0 28.418 28c0 1.154.94 2.094 2.094 2.094.457 0 .877-.152 1.22-.4 2.4 1.128 8.887 4.104 13.826 5.686l-1.721 13.344C43.583 50.352 38.919 52 30.497 52c-8.425 0-13.092-1.648-13.342-3.249l-3.72-28.937C16.945 21.915 23.749 23 30.5 23c6.75 0 13.554-1.085 17.065-3.185zM50 16.5c0-3.069-8.34-6.5-19.5-6.5S11 13.431 11 16.5v.543l4.174 31.99C15.874 53.516 26.123 54 30.497 54c4.372 0 14.616-.484 15.32-4.993l1.684-13.06c1.277.332 2.31.51 3.115.508.99 0 1.657-.252 2.08-.758.35-.416.489-.94.389-1.476-.228-1.22-1.682-2.509-4.715-4.177l-.1-.055L50 17.044z"/></g></svg>
+    <text x="47" y="16" text-anchor="start" font-size="9" font-weight="700" fill="#7AA116">AMAZON S3</text>
+    <text x="47" y="32" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Artefactos</text>
+    <text x="47" y="44" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">y ficheros de carga del RCN</text>
+    </g>
+  <g transform="translate(1052, 240)" filter="url(#cs)">
+    <rect width="196" height="52" rx="6" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.5"/>
+    <rect width="196" height="3" rx="1" fill="#DD344C"/>
+    <svg x="9" y="12.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#dd344c" d="M0 0h64v64H0z"/><path fill="#fff" d="M31.24 34.64a.76.76 0 0 0 1.52 0 .76.76 0 0 0-1.52 0m-2 0A2.763 2.763 0 0 1 32 31.88a2.764 2.764 0 0 1 2.76 2.76A2.76 2.76 0 0 1 33 37.205V40h-2v-2.795a2.76 2.76 0 0 1-1.76-2.565M39 31H25v10h14v-2h-2v-2h2v-2h-2v-2h2zm-12-2h9.999L37 25c0-.865-.576-1.859-1.543-2.659-1.014-.84-2.305-1.341-3.454-1.341h-.002c-2.383 0-5 2.093-5.001 4zm12-4-.001 4H40a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H24a1 1 0 0 1-1-1V30a1 1 0 0 1 1-1h1v-4c.001-3.029 3.469-6 7.001-6h.002c1.625 0 3.348.657 4.729 1.801C38.174 21.994 39.001 23.525 39 25M15.489 43.95l1.621-1.173A18.2 18.2 0 0 1 13.676 33H16v-2h-2.322a18.2 18.2 0 0 1 3.432-9.719l-1.621-1.173A20.18 20.18 0 0 0 11.678 31H10v2h1.676c.185 3.962 1.484 7.731 3.813 10.95m27.258 2.968A18.2 18.2 0 0 1 33 50.35V48h-2v2.35a18.2 18.2 0 0 1-9.75-3.432l-1.172 1.62A20.17 20.17 0 0 0 31 52.35V54h2v-1.65c3.951-.19 7.709-1.488 10.919-3.812zM21.25 17.14A18.2 18.2 0 0 1 31 13.707V16h2v-2.293a18.2 18.2 0 0 1 9.747 3.433l1.172-1.62A20.16 20.16 0 0 0 33 11.707V10h-2v1.707a20.17 20.17 0 0 0-10.922 3.813zM52.319 31a20.17 20.17 0 0 0-3.81-10.892l-1.622 1.173A18.16 18.16 0 0 1 50.319 31H48v2h2.322a18.2 18.2 0 0 1-3.435 9.777l1.622 1.173c2.329-3.219 3.627-6.988 3.813-10.95H54v-2zm-7.293-10.584 6.159-6.16-1.414-1.414-6.159 6.16zM18.971 43.642l-6.16 6.16 1.414 1.414 6.161-6.16zm4.275-21.809-11.66-11.66-1.414 1.414 11.66 11.66zM43.303 41.89l10.523 10.523-1.414 1.414-10.524-10.523z"/></g></svg>
+    <text x="47" y="16" text-anchor="start" font-size="9" font-weight="700" fill="#DD344C">SECRETS MANAGER</text>
+    <text x="47" y="32" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Credenciales</text>
+    <text x="47" y="44" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">bases, clave RCN y Google</text>
+    </g>
+  <g transform="translate(1052, 305)" filter="url(#cs)">
+    <rect width="196" height="52" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
+    <rect width="196" height="3" rx="1" fill="#E7157B"/>
+    <svg x="9" y="12.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#e7157b" d="M0 0h64v64H0z"/><path fill="#fff" d="M42.184 39.381a4.095 4.095 0 0 0-8.189 0 4.095 4.095 0 0 0 8.189 0m2 0c0 3.353-2.734 6.081-6.095 6.081s-6.094-2.728-6.094-6.08c0-3.354 2.734-6.082 6.094-6.082s6.095 2.728 6.095 6.081m6.559 10.235-4.897-4.4a10 10 0 0 1-1.061 1.19l4.886 4.397a.806.806 0 0 0 1.131-.059.8.8 0 0 0-.059-1.128m-12.654-2.524c4.262 0 7.729-3.46 7.729-7.71 0-4.252-3.467-7.711-7.729-7.711-4.26 0-7.727 3.459-7.727 7.71s3.467 7.71 7.727 7.71m13.992 1.042a2.796 2.796 0 0 1 .207 3.946c-.553.61-1.317.92-2.083.92a2.8 2.8 0 0 1-1.872-.713l-5.161-4.646a9.67 9.67 0 0 1-5.083 1.446c-5.364 0-9.727-4.354-9.727-9.706s4.363-9.706 9.727-9.706c5.365 0 9.729 4.354 9.729 9.706a9.6 9.6 0 0 1-.921 4.095zM17.697 23.538c0 .401.023.8.07 1.185a.997.997 0 0 1-.806 1.101C15.084 26.308 12 27.772 12 32.157c0 3.323 1.836 5.157 3.377 6.11.672.423 1.263.638 1.761.643h8.989v1.996h-9c-.884-.01-1.827-.329-2.81-.947C12.708 38.964 10 36.62 10 32.157c0-5.27 3.526-7.293 5.71-8.04a14 14 0 0 1-.013-.579c0-4.378 2.976-8.916 6.924-10.56 4.611-1.927 9.498-.971 13.066 2.556 1.047 1.033 1.917 2.274 2.598 3.702a5.3 5.3 0 0 1 3.174-1.061c2.415 0 5.128 1.793 5.663 5.715C50.58 24.722 54 27.278 54 32.217c0 2.89-1.136 5.24-3.287 6.792l-1.172-1.616C51.173 36.214 52 34.473 52 32.217c0-4.978-4.189-6.217-5.99-6.519a.996.996 0 0 1-.824-1.127c-.255-3.04-2.045-4.401-3.727-4.401-1.057 0-2.05.516-2.725 1.416a.999.999 0 0 1-1.741-.26c-.634-1.752-1.547-3.223-2.712-4.375-1.43-1.411-5.348-4.444-10.89-2.132-3.193 1.33-5.694 5.16-5.694 8.72"/></g></svg>
+    <text x="47" y="16" text-anchor="start" font-size="9" font-weight="700" fill="#E7157B">CLOUDWATCH</text>
+    <text x="47" y="32" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Logs</text>
+    <text x="47" y="44" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">de todos los servicios</text>
+    </g>
+  <g transform="translate(1052, 370)" filter="url(#cs)">
+    <rect width="196" height="52" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
+    <rect width="196" height="3" rx="1" fill="#6B7280"/>
+    <text x="98.0" y="16" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO · GOOGLE</text>
+    <text x="98.0" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Sheets y Drive</text>
+    <text x="98.0" y="44" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5A7A9C">prediccionarios · los usa la IA</text>
+    </g>
   <path d="M210,168 H248" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="229" y="161" text-anchor="middle" font-size="9" fill="#5A7A9C">HTTPS</text>
-
-  <!-- Amplify -> Firebase -->
+  <text x="229" y="161" text-anchor="middle" font-size="9" font-weight="400" fill="#5A7A9C">HTTPS</text>
   <path d="M290,196 V250 H125 V298" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="135" y="244" font-size="9" fill="#5A7A9C">login Google</text>
-
-  <!-- Amplify -> CloudFront -->
+  <text x="135" y="244" text-anchor="start" font-size="9" font-weight="400" fill="#5A7A9C">login Google</text>
   <path d="M370,196 V298" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="364" y="262" text-anchor="end" font-size="9" fill="#5A7A9C">REST · X-Session</text>
-
-  <!-- CloudFront -> ALB API -->
-  <path d="M420,328 H440 V168 H473" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="434" y="250" text-anchor="end" font-size="9" fill="#5A7A9C">HTTP</text>
-
-  <!-- ALB -> servicios -->
-  <path d="M595,168 H623" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M595,268 H623" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-
-  <!-- API -> ALB IA -->
-  <path d="M680,196 V218 H535 V238" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="608" y="213" text-anchor="middle" font-size="9" fill="#5A7A9C">generar diccionario</text>
-
-  <!-- API -> Aurora -->
+  <text x="364" y="262" text-anchor="end" font-size="9" font-weight="400" fill="#5A7A9C">REST · X-Session</text>
+  <path d="M420,328 H440 V168 H468" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="434" y="250" text-anchor="end" font-size="9" font-weight="400" fill="#5A7A9C">HTTP</text>
+  <path d="M605,168 H623" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M605,268 H623" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M680,196 V218 H537 V238" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="610" y="213" text-anchor="middle" font-size="9" font-weight="400" fill="#5A7A9C">generar diccionario</text>
   <path d="M815,168 H843" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-
-  <!-- IA -> rcn-api -->
   <path d="M720,296 V338" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="726" y="322" font-size="9" fill="#5A7A9C">búsquedas</text>
-
-  <!-- rcn-api -> RDS -->
+  <text x="726" y="322" text-anchor="start" font-size="9" font-weight="400" fill="#5A7A9C">búsquedas</text>
   <path d="M815,368 H843" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-
-  <!-- Carga -> RDS -->
-  <path d="M535,396 V420 H922 V398" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arOpt)"/>
-  <text x="700" y="415" text-anchor="middle" font-size="9" fill="#5A7A9C">carga quincenal</text>
-
-  <!-- VPC -> servicios -->
-  <path d="M1015,300 H1040" fill="none" stroke="#5A7A9C" stroke-width="1.5"/>
-  <path d="M1040,136 V396" fill="none" stroke="#5A7A9C" stroke-width="1.5"/>
-  <path d="M1040,136 H1058" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M1040,201 H1058" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M1040,266 H1058" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M1040,331 H1058" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M1040,396 H1058" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-
-  <!-- ============ CI/CD ============ -->
+  <path d="M537,396 V420 H926 V398" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arOpt)"/>
+  <text x="700" y="415" text-anchor="middle" font-size="9" font-weight="400" fill="#5A7A9C">carga quincenal</text>
+  <path d="M1015,300 H1034" fill="none" stroke="#5A7A9C" stroke-width="1.5"/>
+  <path d="M1034,136 V396" fill="none" stroke="#5A7A9C" stroke-width="1.5"/>
+  <path d="M1034,136 H1050" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M1034,201 H1050" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M1034,266 H1050" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M1034,331 H1050" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M1034,396 H1050" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
   <rect x="40" y="585" width="600" height="115" rx="10" fill="#FBF5FC" stroke="#C925D1" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="55" y="605" font-size="10" font-weight="700" fill="#C925D1" letter-spacing="1">CI/CD</text>
-
-  <g transform="translate(60, 620)" filter="url(#cs)">
-    <rect width="120" height="48" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#6B7280"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">GitHub</text>
-  </g>
-  <g transform="translate(200, 620)" filter="url(#cs)">
-    <rect width="120" height="48" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#C925D1"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#C925D1">AWS</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">CodePipeline</text>
-  </g>
-  <g transform="translate(340, 620)" filter="url(#cs)">
-    <rect width="120" height="48" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#C925D1"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#C925D1">AWS</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">CodeBuild</text>
-  </g>
-  <g transform="translate(480, 620)" filter="url(#cs)">
-    <rect width="120" height="48" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
-    <rect width="120" height="3" rx="1" fill="#ED7100"/>
-    <text x="60" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#ED7100">AMAZON ECR</text>
-    <text x="60" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Imágenes</text>
-  </g>
-  <path d="M180,644 H198" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M320,644 H338" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M460,644 H478" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="60" y="688" font-size="9.5" fill="#5A7A9C">Un pipeline por servicio: api, api-ai y rcn-api. Amplify compila el front directamente desde GitHub.</text>
-
-  <!-- ECR -> VPC -->
-  <path d="M600,644 H660 V507" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arOpt)"/>
-  <text x="666" y="550" font-size="9" fill="#5A7A9C">despliegue en ECS</text>
-
-  <!-- ============ HORARIO ============ -->
+  <text letter-spacing="1" x="55" y="605" text-anchor="start" font-size="10" font-weight="700" fill="#C925D1">CI/CD</text>
+  <g transform="translate(55, 618)" filter="url(#cs)">
+    <rect width="130" height="50" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
+    <rect width="130" height="3" rx="1" fill="#6B7280"/>
+    <text x="65.0" y="21" text-anchor="middle" font-size="9" font-weight="700" fill="#6B7280">EXTERNO</text>
+    <text x="65.0" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">GitHub</text>
+    </g>
+  <g transform="translate(199, 618)" filter="url(#cs)">
+    <rect width="130" height="50" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
+    <rect width="130" height="3" rx="1" fill="#C925D1"/>
+    <svg x="9" y="11.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#c925d1" d="M0 0h64v64H0z"/><path fill="#fff" d="M23 25h4v-2h-4zm6.732 23.123-1.849-.759 5.943-14.503 1.852.759zm6.629-4.463 4.117-3.612-4.113-3.566 1.311-1.51 4.978 4.317a1 1 0 0 1 .004 1.507l-4.978 4.368zm-15.783-3.54a1 1 0 0 1 .338-.756l4.962-4.386 1.324 1.498-4.103 3.628 4.077 3.516-1.307 1.514-4.944-4.263a1 1 0 0 1-.347-.751M48.535 28h-33.07c-1.751 0-3.189-1.311-3.418-3H21v-2h-9v-6.536A3.47 3.47 0 0 1 15.465 13h33.07A3.47 3.47 0 0 1 52 16.464V23H29v2h22.953c-.229 1.689-1.667 3-3.418 3M18 52h27V30H18zm30.535-41h-33.07A5.47 5.47 0 0 0 10 16.464v8.072A5.47 5.47 0 0 0 15.465 30H16v23a1 1 0 0 0 1 1h29a1 1 0 0 0 1-1V30h1.535A5.47 5.47 0 0 0 54 24.536v-8.072A5.47 5.47 0 0 0 48.535 11"/></g></svg>
+    <text x="47" y="21" text-anchor="start" font-size="9" font-weight="700" fill="#C925D1">AWS</text>
+    <text x="47" y="37" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">CodePipeline</text>
+    </g>
+  <g transform="translate(343, 618)" filter="url(#cs)">
+    <rect width="130" height="50" rx="6" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.5"/>
+    <rect width="130" height="3" rx="1" fill="#C925D1"/>
+    <svg x="9" y="11.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#c925d1" d="M0 0h64v64H0z"/><path fill="#fff" d="m50.518 18-3.96-3.424L42.811 18zm-6.284-4h-8.197l4.386 3.485zM40.55 27.325 33.971 30h12.26zM29.853 45h19.852V32H29.853zm8.012-27-3.91-3.106L30.072 18zm-10.382-.483L31.88 14H23.1zM24.898 18l-3.908-3.136L17.081 18zm-1.994 2h-5.636l5.636 4.835zm0 9.227L16.457 35l6.447 5.773zm0 16-6.948 6.222V52h6.948zm-6.948-8v11.546L22.403 43zm0-4.454 6.428-5.757-6.428-5.515zm-.993-15.63L18.88 14h-3.917zM11.985 20h.993v-8h-.993zm41.945-.629a.995.995 0 0 1-.922.629H40.77v5.274c.078.016.157.02.23.055l10.117 4.765-.002.006c.337.16.574.5.574.9v15c0 .552-.444 1-.992 1H28.86a.996.996 0 0 1-.993-1V31c0-.42.257-.776.623-.925l-.001-.002 10.297-4.187V20H24.89v33c0 .552-.444 1-.992 1h-8.934a.996.996 0 0 1-.992-1V22h-2.978A.996.996 0 0 1 10 21V11c0-.552.444-1 .993-1h2.978c.547 0 .992.448.992 1v1h31.764a1 1 0 0 1 .683.274l6.28 6c.295.282.39.716.24 1.097M38.715 43.372l3.97-10-1.843-.744-3.97 10zm5.085-3.579 1.403 1.414 2.978-3a1.003 1.003 0 0 0-.029-1.443l-3.234-3-1.345 1.472 2.473 2.294zm-11.175-1.586a1.007 1.007 0 0 1 .029-1.443l3.235-3 1.345 1.472-2.474 2.294 2.246 2.263-1.403 1.414z"/></g></svg>
+    <text x="47" y="21" text-anchor="start" font-size="9" font-weight="700" fill="#C925D1">AWS</text>
+    <text x="47" y="37" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">CodeBuild</text>
+    </g>
+  <g transform="translate(487, 618)" filter="url(#cs)">
+    <rect width="130" height="50" rx="6" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.5"/>
+    <rect width="130" height="3" rx="1" fill="#ED7100"/>
+    <svg x="9" y="11.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#ed7100" d="M0 0h64v64H0z"/><path fill="#fff" d="M30.726 29.922c-.447.26-.726.745-.726 1.263v20.35l-15-8.677V23.01l17.172-9.933 14.916 7.38zm18.978-9.502c0-.518-.278-1-.783-1.288l-16.042-7.936a1.45 1.45 0 0 0-1.451-.002l-17.699 10.24c-.449.259-.729.743-.729 1.263v20.476c0 .518.279 1.001.728 1.262l16.088 9.306a1.45 1.45 0 0 0 1.456.001c.449-.259.728-.743.728-1.263v-20.98l16.978-9.821c.448-.259.726-.74.726-1.258M50 42.941l-12.996 8.592V44.41l6.599-4.994c.25-.19.397-.486.397-.8V30.48l6-3.474zm1.273-18.142a1.45 1.45 0 0 0-1.456 0l-6.938 4.014c-.24.13-.879.475-.879 1.217v8.087l-6.337 4.796a1.47 1.47 0 0 0-.659 1.221v8.412c0 .52.28 1.004.729 1.264.218.125.462.19.712.19.264 0 .537-.072.794-.222l14.036-9.28c.447-.26.725-.744.725-1.262V26.063c0-.52-.279-1.004-.727-1.264"/></g></svg>
+    <text x="47" y="21" text-anchor="start" font-size="9" font-weight="700" fill="#ED7100">AMAZON ECR</text>
+    <text x="47" y="37" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Imágenes</text>
+    </g>
+  <path d="M185,643 H197" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M329,643 H341" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M473,643 H485" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="60" y="688" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">Un pipeline por servicio: api, api-ai y rcn-api. Amplify compila el front directamente desde GitHub.</text>
+  <path d="M617,643 H660 V507" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arOpt)"/>
+  <text x="666" y="550" text-anchor="start" font-size="9" font-weight="400" fill="#5A7A9C">despliegue en ECS</text>
   <rect x="680" y="585" width="560" height="115" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="695" y="605" font-size="10" font-weight="700" fill="#64748B" letter-spacing="1">HORARIO · LUNES A VIERNES (BOGOTÁ)</text>
-
-  <g transform="translate(700, 620)" filter="url(#cs)">
-    <rect width="150" height="48" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
+  <text letter-spacing="1" x="695" y="605" text-anchor="start" font-size="10" font-weight="700" fill="#64748B">HORARIO · LUNES A VIERNES (BOGOTÁ)</text>
+  <g transform="translate(700, 618)" filter="url(#cs)">
+    <rect width="150" height="50" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
     <rect width="150" height="3" rx="1" fill="#E7157B"/>
-    <text x="75" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#E7157B">EVENTBRIDGE</text>
-    <text x="75" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Scheduler</text>
-  </g>
-  <g transform="translate(880, 620)" filter="url(#cs)">
-    <rect width="170" height="48" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
-    <rect width="170" height="3" rx="1" fill="#E7157B"/>
-    <text x="85" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#E7157B">STEP FUNCTIONS</text>
-    <text x="85" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2433">Encender · Apagar</text>
-  </g>
-  <g transform="translate(1080, 620)" filter="url(#cs)">
-    <rect width="145" height="48" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,2"/>
-    <rect width="145" height="3" rx="1" fill="#64748B"/>
-    <text x="72.5" y="19" text-anchor="middle" font-size="9" font-weight="700" fill="#64748B">ENCIENDE Y APAGA</text>
-    <text x="72.5" y="35" text-anchor="middle" font-size="11" font-weight="700" fill="#1A2433">bases y servicios ECS</text>
-  </g>
-  <path d="M850,644 H878" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M1050,644 H1078" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="700" y="688" font-size="9.5" fill="#5A7A9C">Enciende a las 07:40 y apaga a las 18:30. Fuera de ese horario se puede encender a mano.</text>
+    <svg x="9" y="11.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#e7157b" d="M0 0h64v64H0z"/><path fill="#fff" d="M43.262 52c-1.566 0-2.84-1.264-2.84-2.818s1.274-2.818 2.84-2.818 2.839 1.264 2.839 2.818S44.827 52 43.26 52m-6.718-13H28.4l-4.072-7 4.072-7h8.144l4.072 7zM22.746 17.636c-1.566 0-2.84-1.264-2.84-2.818S21.18 12 22.746 12s2.84 1.264 2.84 2.818-1.275 2.818-2.84 2.818m20.516 26.728c-.542 0-1.055.109-1.543.272l-3.103-5.198 4.036-6.938c.18-.31.18-.69 0-1l-4.654-8c-.18-.31-.512-.5-.873-.5h-8.324l-2.777-4.651c.963-.881 1.576-2.132 1.576-3.531 0-2.656-2.177-4.818-4.854-4.818s-4.855 2.162-4.855 4.818c0 2.657 2.177 4.818 4.855 4.818.542 0 1.055-.109 1.542-.272l2.566 4.295-4.561 7.841c-.18.31-.18.69 0 1l4.653 8c.18.31.512.5.873.5h9.306c.026 0 .05-.008.075-.01l2.783 4.661c-.962.881-1.575 2.132-1.575 3.531 0 2.656 2.177 4.818 4.854 4.818s4.854-2.162 4.854-4.818c0-2.657-2.177-4.818-4.854-4.818m4.672-18.728c-1.566 0-2.84-1.264-2.84-2.818S46.367 20 47.933 20c1.564 0 2.839 1.264 2.839 2.818s-1.275 2.818-2.84 2.818m3.045.903c1.094-.884 1.809-2.214 1.809-3.721 0-2.656-2.177-4.818-4.854-4.818a4.8 4.8 0 0 0-1.8.353l-2.73-3.921c-.189-.27-.499-.432-.83-.432h-9.067v2h8.54l2.41 3.466a4.78 4.78 0 0 0-1.379 3.352c0 2.657 2.178 4.818 4.856 4.818.434 0 .848-.075 1.25-.182L51.83 32l-3.85 6.616 1.746 1 4.139-7.116c.18-.31.18-.69 0-1zM17.71 43.636c-1.566 0-2.84-1.264-2.84-2.818S16.142 38 17.708 38c1.564 0 2.839 1.264 2.839 2.818s-1.275 2.818-2.84 2.818m2.913 1.011c1.17-.88 1.94-2.261 1.94-3.829 0-2.656-2.177-4.818-4.854-4.818-.7 0-1.364.155-1.965.421L13.17 32l4.472-7.689-1.745-1-4.763 8.189c-.18.31-.18.69 0 1l2.974 5.114c-.771.854-1.256 1.969-1.256 3.204 0 2.657 2.178 4.818 4.855 4.818.368 0 .723-.048 1.066-.125l2.821 4.057c.189.27.498.432.83.432h9.067v-2h-8.537z"/></g></svg>
+    <text x="47" y="21" text-anchor="start" font-size="9" font-weight="700" fill="#E7157B">EVENTBRIDGE</text>
+    <text x="47" y="37" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Scheduler</text>
+    </g>
+  <g transform="translate(870, 618)" filter="url(#cs)">
+    <rect width="185" height="50" rx="6" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.5"/>
+    <rect width="185" height="3" rx="1" fill="#E7157B"/>
+    <svg x="9" y="11.0" width="30" height="30" viewBox="0 0 64 64"><g fill="none" fill-rule="evenodd"><path fill="#e7157b" d="M0 0h64v64H0z"/><path fill="#fff" d="M37 34h15v-4H37zm16-6H36a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h17a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1M34.5 49.5c0 1.378-1.121 2.5-2.5 2.5a2.503 2.503 0 0 1-2.5-2.5c0-1.378 1.121-2.5 2.5-2.5s2.5 1.122 2.5 2.5M12 38v-3h13v3H12m0-9v-3h13v3zm17.5-14.5c0-1.378 1.121-2.5 2.5-2.5s2.5 1.122 2.5 2.5S33.379 17 32 17a2.503 2.503 0 0 1-2.5-2.5M44 42H20v-2h6a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1h-6v-2h6a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1h-6v-2h24v4h2v-5a1 1 0 0 0-1-1H33v-1.121c2-.457 3.5-2.242 3.5-4.379 0-2.481-2.019-4.5-4.5-4.5a4.505 4.505 0 0 0-4.5 4.5c0 2.137 1.5 3.922 3.5 4.379V20H19a1 1 0 0 0-1 1v3h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7v2h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7v3a1 1 0 0 0 1 1h12v1.121c-2 .457-3.5 2.242-3.5 4.379 0 2.481 2.019 4.5 4.5 4.5s4.5-2.019 4.5-4.5c0-2.137-1.5-3.922-3.5-4.379V44h12a1 1 0 0 0 1-1v-5h-2z"/></g></svg>
+    <text x="47" y="21" text-anchor="start" font-size="9" font-weight="700" fill="#E7157B">STEP FUNCTIONS</text>
+    <text x="47" y="37" text-anchor="start" font-size="12" font-weight="700" fill="#1A2433">Encender · Apagar</text>
+    </g>
+  <g transform="translate(1075, 618)" filter="url(#cs)">
+    <rect width="150" height="50" rx="6" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <rect width="150" height="3" rx="1" fill="#64748B"/>
+    <text x="75.0" y="21" text-anchor="middle" font-size="9" font-weight="700" fill="#64748B">ENCIENDE Y APAGA</text>
+    <text x="75.0" y="37" text-anchor="middle" font-size="11" font-weight="700" fill="#1A2433">bases y servicios ECS</text>
+    </g>
+  <path d="M850,643 H868" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M1055,643 H1073" fill="none" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="700" y="688" text-anchor="start" font-size="9.5" font-weight="400" fill="#5A7A9C">Enciende a las 07:40 y apaga a las 18:30. Fuera de ese horario se puede encender a mano.</text>
 </svg>
