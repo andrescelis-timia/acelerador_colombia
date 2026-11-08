@@ -95,7 +95,7 @@
 
   <!-- STEP 2: Amplify → api (POST /schemas) -->
   <line x1="335" y1="213" x2="535" y2="213" stroke="#5A7A9C" stroke-width="1.5" marker-end="url(#ar)"/>
-  <text x="435" y="207" text-anchor="middle" font-size="10" fill="#5A7A9C">POST /pipeline-generator/schemas</text>
+  <text x="435" y="207" text-anchor="middle" font-size="10" fill="#5A7A9C">PUT /pipeline-generator/schemas</text>
   <circle cx="335" cy="213" r="11" fill="#FF9900"/>
   <text x="335" y="217" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">2</text>
 
@@ -141,7 +141,7 @@
 
   <!-- STEP 9: Amplify → api (Control-M) -->
   <line x1="335" y1="418" x2="535" y2="418" stroke="#0EA5E9" stroke-width="1.5" marker-end="url(#arPhase)"/>
-  <text x="435" y="412" text-anchor="middle" font-size="10" fill="#0EA5E9">POST /controlm/analyze-sequences + /controlm</text>
+  <text x="435" y="412" text-anchor="middle" font-size="10" fill="#0EA5E9">POST /generators/controlm (+ /analyze-sequences)</text>
   <circle cx="335" cy="418" r="11" fill="#FF9900"/>
   <text x="335" y="422" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">9</text>
 
