@@ -1,6 +1,6 @@
 export interface DataGovernmentFlowProps {
   objectId: string;
-  country: 'CO' | 'PE';
+  country: 'CO' | 'PE' | 'AR';
 }
 
 export interface CountryConfig {

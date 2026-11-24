@@ -61,7 +61,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
             País actual: &quot;{country}&quot; (vacío o inválido)
           </p>
         </div>
-      ) : (country === 'CO' || country === 'PE') ? (
+      ) : (country === 'CO' || country === 'PE' || country === 'AR') ? (
         <>
         <TabGroup>
           <TabList>
@@ -73,7 +73,7 @@ export const ObjectDetailContent = ({ objectId, objectName, projectId }: ObjectD
           </TabList>
           <TabPanel>
             <div className={`p-4 ${isReadOnly ? 'pointer-events-none opacity-60' : ''}`}>
-              <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE'} />
+              <DataGovernmentFlow objectId={objectId} country={country as 'CO' | 'PE' | 'AR'} />
             </div>
           </TabPanel>
           {isAdmin && (

@@ -43,7 +43,7 @@ export interface LoginResult {
 export interface CreateUserWithPasswordRequest {
   email: string;
   password: string;
-  country: 'CO' | 'PE';
+  country: 'CO' | 'PE' | 'AR';
   role: 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER';
 }
 
@@ -425,7 +425,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const mockSessionData = {
               sub: authUserEmail,
               email: authUserEmail,
-              country: authUserCountry as 'CO' | 'PE',
+              country: authUserCountry as 'CO' | 'PE' | 'AR',
               role: authUserRole as 'ADMIN' | 'APP_OWNER' | 'SERVICE_OWNER' | 'DATA_ENGINEER',
               iat: Date.now() / 1000, // issued at (now)
               exp: Date.now() / 1000 + 86400 // expires at (24 horas)
@@ -460,8 +460,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               const savedCountry = localStorage.getItem('selectedCountry');
               
-              if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'PE')) {
-                setCountry(savedCountry as 'CO' | 'PE');
+              if (savedCountry && userCountries.includes(savedCountry as 'CO' | 'PE' | 'AR')) {
+                setCountry(savedCountry as 'CO' | 'PE' | 'AR');
               } else {
                 setCountry(userCountries[0]);
                 localStorage.setItem('selectedCountry', userCountries[0]);

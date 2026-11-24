@@ -220,14 +220,14 @@ export const DataGovernmentFlow = ({ objectId, country }: DataGovernmentFlowProp
   }, [country]);
 
   // Validar país después de todos los hooks
-  if (!country || (country !== 'CO' && country !== 'PE')) {
+  if (!country || (country !== 'CO' && country !== 'PE' && country !== 'AR')) {
     return (
       <div className="bg-danger-subtle border border-danger-border rounded-md p-4">
         <p className="text-sm text-danger">
           País no soportado: &quot;{country || '(vacío)'}&quot;
         </p>
         <p className="text-xs text-danger mt-1">
-          Solo se soportan los países CO (Colombia) y PE (Perú).
+          Se soportan CO (Colombia), PE (Perú) y AR (Argentina).
         </p>
       </div>
     );

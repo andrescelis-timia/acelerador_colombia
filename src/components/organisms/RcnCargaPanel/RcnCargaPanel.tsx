@@ -14,7 +14,7 @@ import { analizarCarga, aplicarCarga, crearCarga, getCargas, subirArchivo } from
 import type { Carga, EstadoCarga, ResumenCarga, TipoCarga } from '@/services/RcnCarga/types';
 
 const REFRESCO_MS = 5000;
-const PAISES = ['CO', 'PE'];
+const PAISES = ['CO', 'PE', 'AR'];
 
 const TIPOS: { tipo: TipoCarga; titulo: string; detalle: string }[] = [
   { tipo: 'rcn', titulo: 'Catálogo RCN', detalle: 'Aplica solo lo que cambió' },
